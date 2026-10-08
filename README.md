@@ -1,5 +1,7 @@
 # R for Sport & Exercise Science: interactive course
 
+**👉 Open the course: https://deca10.github.io/IntroStatsBMEauth/**
+
 A self-paced Quarto website. Students read short explanations, run R **in the browser** (webR via the
 [quarto-live](https://r-wasm.github.io/quarto-live/) extension), solve auto-graded exercises with hints and
 solutions, and take quizzes. Progress (completed lessons, quiz results) is stored in each student's browser.
