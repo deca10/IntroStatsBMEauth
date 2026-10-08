@@ -1,0 +1,264 @@
+---
+title: "4.1 Sampling and confidence intervals"
+subtitle: "From one sample to a statement about the population, with honest uncertainty"
+webr:
+  packages: ['ggplot2']
+  resources:
+    - data/jump_squad.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+theme_set(theme_classic(base_size = 14))
+squad <- read.csv("data/jump_squad.csv")
+```
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- explain why a sample mean is an **estimate** with uncertainty,
+- calculate the **standard error** and a **95 % confidence interval** (CI) of a mean, by hand and with `t.test()`,
+- interpret a CI correctly,
+- see how sample size and variability change the width of a CI.
+
+⏱️ About 35 minutes. Module 4 builds directly on Module 2, especially [lesson 2.4](m2-04-normal-clt.qmd) (central limit theorem).
+:::
+
+## From descriptive to inferential statistics
+
+In Module 2 you *described* data. Now we want to *generalise*. The `squad` dataset contains 42 professional soccer players. Their mean jump height is a **statistic**. What we really want to know is the **parameter**: the mean jump height of *all* professional soccer players of this level.
+
+```{webr}
+soccer <- subset(squad, sport == "Soccer")
+mean(soccer$jump_height_m)
+```
+
+If we had tested 42 *other* soccer players, we would have found a slightly different mean. This **sampling variability** is why an estimate always needs a measure of its uncertainty.
+
+## The standard error
+
+You met the standard error in [lesson 2.4](m2-04-normal-clt.qmd): it's the standard deviation of the sample means you would get if you repeated the study many times. You can estimate it from a single sample:
+
+$$SE = \frac{SD}{\sqrt{n}}$$
+
+```{webr}
+sd(soccer$jump_height_m) / sqrt(nrow(soccer))
+```
+
+## Confidence intervals
+
+A **95 % confidence interval** gives a range of plausible values for the population mean:
+
+$$\bar{x} \pm t^* \times SE$$
+
+where $t^*$ is a value from the ***t*-distribution** with *n* − 1 degrees of freedom. The *t*-distribution looks like the normal distribution but has heavier tails, which accounts for the extra uncertainty of estimating the SD from a small sample. For large samples $t^*$ is close to the familiar 1.96. You get it with `qt()`:
+
+```{webr}
+qt(0.975, df = 41)    # n = 42
+qt(0.975, df = 9)     # n = 10: wider interval
+qt(0.975, df = 1000)  # very large n: ~1.96
+```
+
+(0.975 because 2.5 % is cut off in each tail, leaving 95 % in the middle.)
+
+::: {.task}
+Calculate the 95 % CI of the mean jump height of the **soccer players** by hand.
+
+1. Calculate `m` (mean), `se` (standard error) and `t_star` (with `qt()`, df = *n* − 1).
+2. Calculate `lower` and `upper`.
+:::
+
+```{webr}
+#| exercise: ci_1
+#| caption: "Exercise · A 95 % CI by hand"
+soccer <- subset(squad, sport == "Soccer")
+x <- soccer$jump_height_m
+n <- length(x)
+
+# 1. Ingredients
+m <- ______
+se <- ______
+t_star <- qt(______, df = ______)
+
+# 2. The interval
+lower <- ______
+upper <- ______
+c(lower, upper)
+```
+
+::: {.hint exercise="ci_1"}
+`m <- mean(x)`, `se <- sd(x) / sqrt(n)`, `t_star <- qt(0.975, df = n - 1)`, `lower <- m - t_star * se`, `upper <- m + t_star * se`.
+:::
+
+::: {.solution exercise="ci_1"}
+```{webr}
+#| exercise: ci_1
+#| solution: true
+soccer <- subset(squad, sport == "Soccer")
+x <- soccer$jump_height_m
+n <- length(x)
+
+# 1. Ingredients
+m <- mean(x)
+se <- sd(x) / sqrt(n)
+t_star <- qt(0.975, df = n - 1)
+
+# 2. The interval
+lower <- m - t_star * se
+upper <- m + t_star * se
+c(lower, upper)
+```
+:::
+
+```{webr}
+#| exercise: ci_1
+#| check: true
+.check_vars(c("m", "se", "t_star", "lower", "upper"), .envir_result, .checker_args$envir_solution,
+  ok = paste0("Correct! 95 % CI: ", round(100 * get("lower", envir = .checker_args$envir_solution), 1), " to ",
+              round(100 * get("upper", envir = .checker_args$envir_solution), 1), " cm."))
+```
+
+R does all of this in one step with `t.test()`. The CI is part of its output, and you can extract it with `$conf.int`:
+
+```{webr}
+t.test(soccer$jump_height_m)$conf.int
+```
+
+## What does "95 % confidence" mean?
+
+This is subtle and often misunderstood. The population mean is a fixed (unknown) number; it's the **interval** that varies from sample to sample. The correct interpretation:
+
+> If we repeated the study many times and calculated a 95 % CI each time, about **95 % of those intervals would contain the true population mean**.
+
+A simulation makes this concrete. Let's pretend we know the truth: jump heights in a population are normal with mean 40 cm and SD 5 cm. We draw 50 samples of 15 athletes and compute a CI from each:
+
+```{webr}
+#| fig-width: 9
+#| fig-height: 6
+set.seed(2024)
+sims <- data.frame(sample = 1:50, lower = NA, upper = NA)
+for (i in 1:50) {
+  x <- rnorm(15, mean = 40, sd = 5)       # one study with n = 15
+  sims[i, c("lower", "upper")] <- t.test(x)$conf.int
+}
+sims$hit <- sims$lower <= 40 & sims$upper >= 40
+
+ggplot(sims, aes(y = sample, xmin = lower, xmax = upper, colour = hit)) +
+  geom_linerange(linewidth = 0.8) +
+  geom_vline(xintercept = 40, linetype = "dashed") +
+  scale_colour_manual(values = c(`TRUE` = "grey40", `FALSE` = "firebrick")) +
+  labs(x = "95 % CI of the mean jump height (cm)", y = "Simulated study", colour = "Contains\ntrue mean")
+
+mean(sims$hit)
+```
+
+`rnorm(n, mean, sd)` draws random numbers from a normal distribution, and the `for` loop repeats the code for `i = 1, 2, …, 50`. Most intervals (grey) contain the true mean of 40 cm; a few (red) miss it. Run the code with another seed to see that it's about 95 % in the long run.
+
+::: {.quiz id="ci-q1"}
+A study reports *"mean jump height 40.6 cm, 95 % CI 39.0 to 42.1 cm"*. Which interpretation is correct?
+
+- [ ] 95 % of the players jump between 39.0 and 42.1 cm
+- [ ] There is a 95 % probability that the true mean lies in this specific interval
+- [x] The interval was produced by a method that captures the true population mean in 95 % of studies; values in the interval are plausible values for that mean
+
+::: {.explanation}
+The first statement confuses the CI of the **mean** with the spread of **individual** values (that would be roughly mean ± 2 SD). The second is a very common shortcut; strictly, the true mean is either in the interval or not. The probability belongs to the method, not to one interval.
+:::
+:::
+
+## What makes a CI narrow?
+
+The width of a CI is $2 \times t^* \times SD / \sqrt{n}$, so a CI gets **narrower** when:
+
+- the **sample size** *n* increases (but slowly: 4× the athletes for half the width),
+- the **variability** (SD) is smaller, e.g. thanks to a more reliable test,
+- you accept **less confidence** (a 90 % CI is narrower than a 95 % CI).
+
+::: {.task}
+Compare the precision of the estimates for the two sports. Use `t.test()` to get the 95 % CI of the mean **body mass** of the **basketball** players (`ci_basket`) and of the **soccer** players (`ci_soccer`). Then calculate the **width** of each CI (`upper − lower`, use `diff()`).
+:::
+
+```{webr}
+#| exercise: ci_2
+#| caption: "Exercise · CI width"
+basket <- subset(squad, sport == "Basketball")
+soccer <- subset(squad, sport == "Soccer")
+
+ci_basket <- t.test(______)$conf.int
+ci_soccer <- t.test(______)$conf.int
+
+# Widths
+diff(ci_basket)
+diff(ci_soccer)
+```
+
+::: {.hint exercise="ci_2"}
+`t.test(basket$body_mass_kg)$conf.int` and the same for `soccer`.
+:::
+
+::: {.solution exercise="ci_2"}
+```{webr}
+#| exercise: ci_2
+#| solution: true
+basket <- subset(squad, sport == "Basketball")
+soccer <- subset(squad, sport == "Soccer")
+
+ci_basket <- t.test(basket$body_mass_kg)$conf.int
+ci_soccer <- t.test(soccer$body_mass_kg)$conf.int
+
+# Widths
+diff(ci_basket)
+diff(ci_soccer)
+```
+:::
+
+```{webr}
+#| exercise: ci_2
+#| check: true
+.check_vars(c("ci_basket", "ci_soccer"), .envir_result, .checker_args$envir_solution,
+  ok = "Correct! Both groups have n = 42, so the basketball CI is a little wider only because body mass varies more among basketball players (SD 10.4 vs. 9.3 kg).")
+```
+
+::: {.quiz id="ci-q2"}
+You want to halve the width of a confidence interval. Roughly how many more athletes do you need?
+
+- [ ] Twice as many
+- [x] Four times as many
+- [ ] Ten times as many
+
+::: {.explanation}
+The width is proportional to 1/√n. To halve it, √n must double, so n must be 4 times larger.
+:::
+:::
+
+::: {.quiz id="ci-q3"}
+In a paper, two groups' means are plotted with error bars that **don't** say what they are. Why is that a problem?
+
+- [ ] It isn't: all error bars mean the same
+- [x] SD, SE and 95 % CI bars have very different sizes and meanings; the reader can't interpret the figure
+- [ ] Error bars should never be used
+
+::: {.explanation}
+For n = 42, the 95 % CI is about 2 × SE, and SD bars are √42 ≈ 6.5 times larger than SE bars. The caption must say which one is shown.
+:::
+:::
+
+## Lesson summary
+
+- A sample statistic estimates a population parameter; the **SE = SD / √n** quantifies its precision.
+- **95 % CI = mean ± t\* × SE**, with `t* = qt(0.975, df = n - 1)`. Shortcut: `t.test(x)$conf.int`.
+- Interpretation: 95 % of CIs constructed this way contain the true value.
+- Narrower CIs come from larger samples and less variability.
+
+### Scratchpad
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

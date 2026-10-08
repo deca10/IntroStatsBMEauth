@@ -1,0 +1,74 @@
+---
+title: "R for Sport & Exercise Science"
+subtitle: "A self-paced, interactive introduction to R for sports science and kinesiology students"
+toc: false
+---
+
+Welcome! 👋 This course teaches you **R**, the programming language used by sport scientists, biomechanists, physiologists and performance analysts to clean, analyse and visualise data.
+
+You don't need to install anything to get started. **Every page has live R code that runs directly in your web browser.** Read a concept, try it immediately, check your answer, and test yourself with a quiz.
+
+## Your progress
+
+::: {.progress-overview}
+*Loading your progress…*
+:::
+
+## How each lesson works
+
+| Step | What you do |
+|------|-------------|
+| 📖 **Read** | Short explanations of one concept at a time, with sport-science examples. |
+| ▶️ **Try** | Grey *R Code* boxes are a live console. Edit the code and press **Run Code**. |
+| ✍️ **Practise** | *Exercise* boxes give you a task. Press **Run Code** to get instant feedback. Stuck? Use **Show Hint**, then **Show Solution**. |
+| ✅ **Quiz** | Multiple-choice questions check your understanding. Try again until you get it right. |
+| 🏁 **Complete** | At the end of each lesson, press **Mark this lesson as complete** to unlock the next step on your progress tracker. |
+
+New here? Read [How this course works](how-to-use.qmd) first (5 minutes).
+
+## Course map
+
+**Module 1 · Introduction to R** 
+
+1. [R basics](m1-01-basics.qmd): arithmetic, variables and data types
+2. [Vectors](m1-02-vectors.qmd): storing a week of training data, selecting and comparing values
+3. [Factors](m1-03-factors.qmd): categorical variables such as sex, age group and activity level
+4. [Data frames](m1-04-data-frames.qmd): working with a real balance-assessment dataset
+5. [Plotting with ggplot2](m1-05-ggplot.qmd): histograms, scatter plots, box plots, raincloud plots and line plots
+6. [Module checkpoint](m1-06-checkpoint.qmd): pull everything together
+
+**Module 2 · Introduction to statistics** 
+
+1. [What is statistics?](m2-01-what-is-statistics.qmd): descriptive vs. inferential statistics, types of data
+2. [Measures of center](m2-02-center.qmd): mean, median, and when to use which
+3. [Measures of spread](m2-03-spread.qmd): variance, SD, CV, quantiles and outliers
+4. [Normal distribution & CLT](m2-04-normal-clt.qmd): the bell curve, z-scores and the central limit theorem
+5. [Module checkpoint](m2-05-checkpoint.qmd): from raw force-platform data to jump height
+
+**Module 3 · Data visualisation in depth**
+
+1. [Summaries and raw data](m3-01-summaries.qmd)
+2. [Facets and annotations](m3-02-facets.qmd)
+3. [Scales, colours and labels](m3-03-scales-colours.qmd)
+4. [Themes and exporting](m3-04-themes.qmd)
+5. [Force curves and multi-panel figures](m3-05-timeseries-patchwork.qmd)
+6. [Module checkpoint](m3-06-checkpoint.qmd)
+
+**Module 4 · Inferential statistics**
+
+1. [Confidence intervals](m4-01-confidence-intervals.qmd)
+2. [Hypothesis testing](m4-02-hypothesis-testing.qmd)
+3. [Comparing two groups](m4-03-t-tests.qmd)
+4. [ANOVA](m4-04-anova.qmd)
+5. [Correlation](m4-05-correlation.qmd)
+6. [Simple linear regression](m4-06-simple-regression.qmd)
+7. [Multiple regression](m4-07-multiple-regression.qmd)
+8. [Chi-square tests](m4-08-chi-square.qmd)
+9. [Reliability](m4-09-reliability.qmd)
+10. [Module checkpoint](m4-10-checkpoint.qmd)
+
+## The data you will use
+
+Modules 2–4 use real **force-platform data**: the raw force curves of three countermovement jumps by a professional basketball player, CMJ variables of **84 professional basketball and soccer players**, and three repeated jumps of 56 players for reliability analysis.
+
+Module 1 mainly uses a real, open dataset of balance assessments: **163 adults (18–86 years)** who completed the Mini-BESTest, questionnaires on fear of falling and physical activity, and cognitive tests ([Santos & Duarte, 2016, *PeerJ*](https://doi.org/10.7717/peerj.2648)). You can read more about it in [How this course works](how-to-use.qmd#the-datasets).

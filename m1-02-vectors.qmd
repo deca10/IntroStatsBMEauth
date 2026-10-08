@@ -1,0 +1,592 @@
+---
+title: "1.2 Vectors"
+subtitle: "Storing, naming, calculating with and selecting a week of training data"
+---
+
+{{< include _common.qmd >}}
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- create **vectors** with `c()` and give their elements names,
+- do calculations with whole vectors at once (`+`, `sum()`, `mean()`),
+- **select** elements by position, by name and by comparison.
+
+⏱️ About 40 minutes.
+:::
+
+## The story for this lesson
+
+You are coaching a triathlete. Every weekday they run and cycle, and you record the distances (in km). By the end of the lesson you'll be able to answer questions such as *"How much did they train in total?"*, *"On which days did they run more than 10 km?"* and *"What was their average cycling distance early in the week?"*
+
+## Create a vector
+
+A **vector** is a sequence of values of the **same type**. You create one with the *combine* function `c()`, separating the values with commas:
+
+```{webr}
+running_km <- c(8, 12, 5, 15, 10)
+running_km
+
+positions <- c("Goalkeeper", "Defender", "Midfielder", "Forward")
+positions
+
+passed_test <- c(TRUE, FALSE, TRUE)
+passed_test
+```
+
+Most data you collect is naturally a vector: the jump heights of a team, the heart rate every second, the names of all participants.
+
+::: {.task}
+The triathlete's distances from Monday to Friday are:
+
+- **running:** 8, 12, 5, 15, 10 km
+- **cycling:** 20, 0, 35, 15, 25 km
+
+Create the vector `running_km` (given) and the vector `cycling_km` in the same order.
+:::
+
+```{webr}
+#| exercise: vec_1
+#| caption: "Exercise · Create a vector"
+# Running distances, Monday to Friday
+running_km <- c(8, 12, 5, 15, 10)
+
+# Cycling distances, Monday to Friday
+cycling_km <- ______
+```
+
+::: {.hint exercise="vec_1"}
+Use the same pattern as `running_km`: `c(20, 0, 35, 15, 25)`.
+:::
+
+::: {.solution exercise="vec_1"}
+```{webr}
+#| exercise: vec_1
+#| solution: true
+# Running distances, Monday to Friday
+running_km <- c(8, 12, 5, 15, 10)
+
+# Cycling distances, Monday to Friday
+cycling_km <- c(20, 0, 35, 15, 25)
+```
+:::
+
+```{webr}
+#| exercise: vec_1
+#| check: true
+.check_vars(c("running_km", "cycling_km"), .envir_result, .checker_args$envir_solution,
+  ok = "Great! You now have two vectors holding a week of training.")
+```
+
+::: {.quiz id="vec-q1"}
+What happens if you combine different types, e.g. `c(12, "rest", 8)`?
+
+- [ ] R gives an error
+- [x] Everything is converted to text (character)
+- [ ] R drops `"rest"` and keeps the numbers
+
+::: {.explanation}
+A vector can only hold one type. R converts all values to the most flexible type, here **character**: `"12" "rest" "8"`. Try `class(c(12, "rest", 8))` in a code box!
+:::
+:::
+
+## Naming a vector
+
+Looking at `running_km`, it isn't obvious which value belongs to which day. You can give each element a **name** with the `names()` function:
+
+```{webr}
+running_km <- c(8, 12, 5, 15, 10)
+names(running_km) <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+running_km
+```
+
+If you need the same names for several vectors, store them in a vector first and reuse it. That saves typing and avoids typos:
+
+```r
+days_vector <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+names(running_km) <- days_vector
+```
+
+::: {.task}
+The vector `days_vector` is created for you. Use it to name **both** `running_km` and `cycling_km`.
+:::
+
+```{webr}
+#| exercise: vec_2
+#| caption: "Exercise · Naming a vector"
+running_km <- c(8, 12, 5, 15, 10)
+cycling_km <- c(20, 0, 35, 15, 25)
+days_vector <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+
+# Assign the names of the days to running_km and cycling_km
+names(running_km) <- ______
+names(cycling_km) <- ______
+```
+
+::: {.hint exercise="vec_2"}
+Put `days_vector` on the right-hand side of both assignments.
+:::
+
+::: {.solution exercise="vec_2"}
+```{webr}
+#| exercise: vec_2
+#| solution: true
+running_km <- c(8, 12, 5, 15, 10)
+cycling_km <- c(20, 0, 35, 15, 25)
+days_vector <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+
+# Assign the names of the days to running_km and cycling_km
+names(running_km) <- days_vector
+names(cycling_km) <- days_vector
+```
+:::
+
+```{webr}
+#| exercise: vec_2
+#| check: true
+.check_vars(c("running_km", "cycling_km"), .envir_result, .checker_args$envir_solution,
+  ok = "Nice! Print `running_km` to see the names above the values.")
+```
+
+## Calculating total training volume (example 1)
+
+Arithmetic on vectors works **element by element**. If you add two vectors of the same length, R adds the first elements together, then the second elements, and so on:
+
+```{webr}
+a <- c(1, 2, 3)
+b <- c(10, 20, 30)
+a + b
+```
+
+This is extremely handy: with one line you can calculate a value for every day, every athlete or every trial.
+
+::: {.task}
+Calculate the **total distance per day** (running + cycling) and store it in `total_daily`. Then print it.
+:::
+
+```{webr}
+#| exercise: vec_3
+#| caption: "Exercise · Calculating totals (1)"
+days_vector <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+running_km <- c(8, 12, 5, 15, 10)
+cycling_km <- c(20, 0, 35, 15, 25)
+names(running_km) <- days_vector
+names(cycling_km) <- days_vector
+
+# Total distance per day
+total_daily <- ______
+
+# Print total_daily
+
+```
+
+::: {.hint exercise="vec_3"}
+Add the two vectors: `running_km + cycling_km`.
+:::
+
+::: {.solution exercise="vec_3"}
+```{webr}
+#| exercise: vec_3
+#| solution: true
+days_vector <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+running_km <- c(8, 12, 5, 15, 10)
+cycling_km <- c(20, 0, 35, 15, 25)
+names(running_km) <- days_vector
+names(cycling_km) <- days_vector
+
+# Total distance per day
+total_daily <- running_km + cycling_km
+
+# Print total_daily
+total_daily
+```
+:::
+
+```{webr}
+#| exercise: vec_3
+#| check: true
+.check_vars("total_daily", .envir_result, .checker_args$envir_solution,
+  ok = "Correct! Wednesday was the biggest day (40 km). Notice that the names were kept.")
+```
+
+## Calculating total training volume (example 2)
+
+Now let's summarise the whole week. The function `sum()` adds up all elements of a vector, and `mean()` gives the average:
+
+```{webr}
+running_km <- c(8, 12, 5, 15, 10)
+sum(running_km)
+mean(running_km)
+```
+
+You can also **compare** values with `>`, `<` and `==`. The result is a logical value:
+
+```{webr}
+sum(running_km) > 40
+```
+
+::: {.task}
+1. Calculate the weekly running total and store it in `total_running`.
+2. Calculate the weekly cycling total and store it in `total_cycling`.
+3. On the last line, check whether the triathlete cycled **more** than they ran (`total_cycling > total_running`).
+:::
+
+```{webr}
+#| exercise: vec_4
+#| caption: "Exercise · Calculating totals (2)"
+running_km <- c(8, 12, 5, 15, 10)
+cycling_km <- c(20, 0, 35, 15, 25)
+
+# Weekly totals
+total_running <- ______
+total_cycling <- ______
+
+# Did they cycle more than they ran?
+______
+```
+
+::: {.hint exercise="vec_4"}
+Use `sum(running_km)` and `sum(cycling_km)`, then compare them with `>`.
+:::
+
+::: {.solution exercise="vec_4"}
+```{webr}
+#| exercise: vec_4
+#| solution: true
+running_km <- c(8, 12, 5, 15, 10)
+cycling_km <- c(20, 0, 35, 15, 25)
+
+# Weekly totals
+total_running <- sum(running_km)
+total_cycling <- sum(cycling_km)
+
+# Did they cycle more than they ran?
+total_cycling > total_running
+```
+:::
+
+```{webr}
+#| exercise: vec_4
+#| check: true
+res <- .check_vars(c("total_running", "total_cycling"), .envir_result, .checker_args$envir_solution)
+if (isTRUE(res$correct)) {
+  res <- .check_result(.result, .checker_args$solution,
+    ok = "Correct! 95 km of cycling vs. 50 km of running, so the answer is TRUE.",
+    no = "Your totals are right, but the last line should compare them: `total_cycling > total_running`.")
+}
+res
+```
+
+::: {.quiz id="vec-q2"}
+What does `c(2, 4, 6) * 2` return?
+
+- [ ] `24`
+- [x] `4 8 12`
+- [ ] `2 4 6 2`
+
+::: {.explanation}
+Arithmetic is applied to **each element**: 2×2, 4×2 and 6×2. This is called *vectorisation*, and it's one of R's superpowers.
+:::
+:::
+
+## Vector selection (indexing)
+
+Often you only need part of a vector. You select elements with **square brackets** `[ ]`. Inside the brackets you put the **position(s)** you want. In R, the first element has position **1**.
+
+```{webr}
+running_km <- c(Monday = 8, Tuesday = 12, Wednesday = 5, Thursday = 15, Friday = 10)
+
+running_km[3]           # the third element (Wednesday)
+running_km[c(1, 5)]     # first and fifth (Monday and Friday)
+running_km[2:4]         # positions 2 to 4: 2:4 is short for c(2, 3, 4)
+running_km["Thursday"]  # select by name
+running_km[-1]          # a minus sign *drops* an element: everything except Monday
+```
+
+::: {.callout-tip}
+The shorthand `c(Monday = 8, Tuesday = 12, ...)` creates a vector and names it in one step.
+:::
+
+::: {.task}
+1. Select the cycling distance on **Wednesday** and store it in `cycling_wednesday`.
+2. Select the cycling distances from **Tuesday to Thursday** (use `:`) and store them in `cycling_midweek`.
+3. Select **Monday** and **Friday** by name and store them in `cycling_edges`.
+:::
+
+```{webr}
+#| exercise: vec_5
+#| caption: "Exercise · Vector selection"
+cycling_km <- c(Monday = 20, Tuesday = 0, Wednesday = 35, Thursday = 15, Friday = 25)
+
+# Wednesday (by position)
+cycling_wednesday <- cycling_km[______]
+
+# Tuesday to Thursday (use :)
+cycling_midweek <- cycling_km[______]
+
+# Monday and Friday (by name)
+cycling_edges <- cycling_km[c("______", "______")]
+```
+
+::: {.hint exercise="vec_5"}
+Wednesday is the 3rd element. Tuesday to Thursday is `2:4`. For names, use `c("Monday", "Friday")`.
+:::
+
+::: {.solution exercise="vec_5"}
+```{webr}
+#| exercise: vec_5
+#| solution: true
+cycling_km <- c(Monday = 20, Tuesday = 0, Wednesday = 35, Thursday = 15, Friday = 25)
+
+# Wednesday (by position)
+cycling_wednesday <- cycling_km[3]
+
+# Tuesday to Thursday (use :)
+cycling_midweek <- cycling_km[2:4]
+
+# Monday and Friday (by name)
+cycling_edges <- cycling_km[c("Monday", "Friday")]
+```
+:::
+
+```{webr}
+#| exercise: vec_5
+#| check: true
+.check_vars(c("cycling_wednesday", "cycling_midweek", "cycling_edges"), .envir_result, .checker_args$envir_solution,
+  ok = "Well done! You can now select by position, by range and by name.")
+```
+
+::: {.quiz id="vec-q3"}
+`hr <- c(62, 65, 61, 70)`. What does `hr[-2]` return?
+
+- [ ] `65`
+- [x] `62 61 70`
+- [ ] `61`
+
+::: {.explanation}
+A negative index **removes** that position, so you get everything except the second element.
+:::
+:::
+
+## Selection by comparison: step 1
+
+Comparison operators let you ask questions about **every** element of a vector at once:
+
+| Operator | Meaning |
+|:--:|---|
+| `<` / `>` | less than / greater than |
+| `<=` / `>=` | less than or equal / greater than or equal |
+| `==` | equal to (two `=` signs!) |
+| `!=` | not equal to |
+
+```{webr}
+running_km <- c(Monday = 8, Tuesday = 12, Wednesday = 5, Thursday = 15, Friday = 10)
+running_km > 9
+```
+
+The result is a **logical vector**: `TRUE` for the days with more than 9 km of running, `FALSE` for the others.
+
+::: {.task}
+Create a logical vector `long_ride` that is `TRUE` for every day on which the triathlete cycled **20 km or more**. Print it.
+:::
+
+```{webr}
+#| exercise: vec_6
+#| caption: "Exercise · Selection by comparison (1)"
+cycling_km <- c(Monday = 20, Tuesday = 0, Wednesday = 35, Thursday = 15, Friday = 25)
+
+# Which days had 20 km or more of cycling?
+long_ride <- ______
+
+# Print long_ride
+
+```
+
+::: {.hint exercise="vec_6"}
+"20 km or more" means *greater than or equal to*: `cycling_km >= 20`.
+:::
+
+::: {.solution exercise="vec_6"}
+```{webr}
+#| exercise: vec_6
+#| solution: true
+cycling_km <- c(Monday = 20, Tuesday = 0, Wednesday = 35, Thursday = 15, Friday = 25)
+
+# Which days had 20 km or more of cycling?
+long_ride <- cycling_km >= 20
+
+# Print long_ride
+long_ride
+```
+:::
+
+```{webr}
+#| exercise: vec_6
+#| check: true
+.check_vars("long_ride", .envir_result, .checker_args$envir_solution,
+  ok = "Correct! Monday, Wednesday and Friday were long rides. Did you use >= rather than >?")
+```
+
+## Selection by comparison: step 2
+
+Here is the trick: you can put a **logical vector inside the square brackets**. R then keeps only the elements where the logical vector is `TRUE`:
+
+```{webr}
+running_km <- c(Monday = 8, Tuesday = 12, Wednesday = 5, Thursday = 15, Friday = 10)
+selection_vector <- running_km > 9
+running_km[selection_vector]
+```
+
+You can also do it in one step: `running_km[running_km > 9]`.
+
+::: {.task}
+Use `long_ride` to select only the cycling distances of the long-ride days. Store the result in `long_ride_km`.
+:::
+
+```{webr}
+#| exercise: vec_7
+#| caption: "Exercise · Selection by comparison (2)"
+cycling_km <- c(Monday = 20, Tuesday = 0, Wednesday = 35, Thursday = 15, Friday = 25)
+long_ride <- cycling_km >= 20
+
+# Select the distances of the long-ride days
+long_ride_km <- ______
+
+long_ride_km
+```
+
+::: {.hint exercise="vec_7"}
+Put the logical vector inside the square brackets: `cycling_km[long_ride]`.
+:::
+
+::: {.solution exercise="vec_7"}
+```{webr}
+#| exercise: vec_7
+#| solution: true
+cycling_km <- c(Monday = 20, Tuesday = 0, Wednesday = 35, Thursday = 15, Friday = 25)
+long_ride <- cycling_km >= 20
+
+# Select the distances of the long-ride days
+long_ride_km <- cycling_km[long_ride]
+
+long_ride_km
+```
+:::
+
+```{webr}
+#| exercise: vec_7
+#| check: true
+.check_vars("long_ride_km", .envir_result, .checker_args$envir_solution,
+  ok = "Excellent! Selecting with logical vectors is one of the most useful skills in R.")
+```
+
+## Advanced selection
+
+You can combine selection with functions like `mean()` and `sum()` to answer more specific questions.
+
+```{webr}
+running_km <- c(Monday = 8, Tuesday = 12, Wednesday = 5, Thursday = 15, Friday = 10)
+
+# Average running distance in the first three days
+mean(running_km[1:3])
+
+# How many days had more than 9 km? (TRUE counts as 1, FALSE as 0)
+sum(running_km > 9)
+```
+
+You can also combine conditions: `&` means **and** (both must be true), `|` means **or** (at least one must be true):
+
+```{webr}
+# Days with more than 6 km AND less than 13 km
+running_km[running_km > 6 & running_km < 13]
+```
+
+::: {.task}
+1. Calculate the **average cycling distance** from **Monday to Wednesday**, selecting the days by name. Store it in `early_week_avg`.
+2. Count on how many days the triathlete did **no cycling at all** (`== 0`). Store it in `rest_days`.
+:::
+
+```{webr}
+#| exercise: vec_8
+#| caption: "Exercise · Advanced selection"
+cycling_km <- c(Monday = 20, Tuesday = 0, Wednesday = 35, Thursday = 15, Friday = 25)
+
+# Average cycling distance Monday to Wednesday
+early_week_avg <- mean(cycling_km[c(______)])
+
+# Number of days without cycling
+rest_days <- sum(______)
+
+early_week_avg
+rest_days
+```
+
+::: {.hint exercise="vec_8"}
+Select with `c("Monday", "Tuesday", "Wednesday")`. For the rest days, `cycling_km == 0` gives a logical vector, and `sum()` counts the `TRUE`s.
+:::
+
+::: {.solution exercise="vec_8"}
+```{webr}
+#| exercise: vec_8
+#| solution: true
+cycling_km <- c(Monday = 20, Tuesday = 0, Wednesday = 35, Thursday = 15, Friday = 25)
+
+# Average cycling distance Monday to Wednesday
+early_week_avg <- mean(cycling_km[c("Monday", "Tuesday", "Wednesday")])
+
+# Number of days without cycling
+rest_days <- sum(cycling_km == 0)
+
+early_week_avg
+rest_days
+```
+:::
+
+```{webr}
+#| exercise: vec_8
+#| check: true
+.check_vars(c("early_week_avg", "rest_days"), .envir_result, .checker_args$envir_solution,
+  ok = "Brilliant! (20 + 0 + 35) / 3 = 18.3 km, and there was 1 rest day from cycling.")
+```
+
+::: {.quiz id="vec-q4"}
+`rpe <- c(6, 8, 3, 9, 7)`. What does `rpe[rpe >= 7]` return?
+
+- [ ] `TRUE FALSE TRUE TRUE`
+- [ ] `2 4 5`
+- [x] `8 9 7`
+
+::: {.explanation}
+`rpe >= 7` produces `FALSE TRUE FALSE TRUE TRUE`. Putting it in square brackets keeps the **values** where it is `TRUE`: 8, 9 and 7. (`which(rpe >= 7)` would give the *positions* 2, 4, 5.)
+:::
+:::
+
+::: {.quiz id="vec-q5"}
+Which code counts how many values of `rpe` are **above 5 and below 9**?
+
+- [ ] `sum(rpe > 5 | rpe < 9)`
+- [x] `sum(rpe > 5 & rpe < 9)`
+- [ ] `rpe[rpe > 5 & rpe < 9]`
+
+::: {.explanation}
+Both conditions must hold, so you need `&` (and). `sum()` counts the `TRUE` values. The third option returns the values themselves (`6 8 7`), not how many there are.
+:::
+:::
+
+## Lesson summary
+
+- Create vectors with `c()`. All elements must have the same type.
+- Name elements with `names(x) <- ...` or `c(Monday = 8, ...)`.
+- Arithmetic is element-wise. `sum()` and `mean()` summarise a whole vector.
+- Select with `[ ]`: by position (`x[3]`, `x[2:4]`, `x[-1]`), by name (`x["Monday"]`) or with a logical vector (`x[x > 9]`).
+- Combine conditions with `&` (and) and `|` (or).
+
+### Scratchpad
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

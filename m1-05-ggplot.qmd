@@ -1,0 +1,590 @@
+---
+title: "1.5 Plotting with ggplot2"
+subtitle: "Histograms, scatter plots, box plots, raincloud plots and line plots"
+webr:
+  packages: ['ggplot2', 'ggdist']
+  resources:
+    - data/balance.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+library(ggdist)
+theme_set(theme_gray(base_size = 14))
+balance <- read.csv("data/balance.csv")
+balance$activity <- factor(balance$activity, levels = c("Low", "Moderate", "High"))
+balance$fear_falling <- factor(balance$fear_falling, levels = c("Low", "Moderate", "High"))
+
+# Simulated heart-rate data from an incremental treadmill test (3 athletes, 1 value per minute)
+minute <- 0:12
+hr_test <- data.frame(
+  athlete = rep(c("Athlete A", "Athlete B", "Athlete C"), each = length(minute)),
+  minute  = rep(minute, times = 3),
+  hr      = c(pmin(70 + 11 * minute, 196),
+              pmin(65 + 11 * minute, 190),
+              pmin(85 + 10 * minute, 172))
+)
+rm(minute)
+
+# Mean Mini-BESTest score per age band and sex
+balance$age_band <- cut(balance$age, breaks = c(18, 30, 40, 50, 60, 70, 80, 90), right = FALSE,
+                        labels = c("18-29", "30-39", "40-49", "50-59", "60-69", "70-79", "80+"))
+best_by_age <- aggregate(minibest ~ age_band + sex, data = balance, FUN = mean)
+```
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- build plots layer by layer with the **grammar of graphics**,
+- make **histograms**, **scatter plots**, **box plots**, **raincloud plots** and **line plots**,
+- use the aesthetics `fill`, `colour` and `group`, and know when to put them **inside** or **outside** `aes()`.
+
+⏱️ About 50 minutes. This page loads the **ggplot2** and **ggdist** packages, which can take up to a minute the first time.
+:::
+
+::: {.callout-tip}
+## Data on this page
+The `balance` dataset is loaded for you. The columns `activity` and `fear_falling` are already (ordered) factors with the levels Low, Moderate, High, just as you learned in [lesson 1.3](m1-03-factors.qmd). A second dataset, `hr_test`, is introduced in the line-plot section.
+:::
+
+## The grammar of graphics
+
+**ggplot2** is the most popular plotting package in R. It builds every plot from the same three ingredients:
+
+1. **data**: a data frame,
+2. **aesthetics** (`aes()`): which columns go on which visual property, e.g. `x`, `y`, `colour`, `fill`,
+3. **geoms** (`geom_...()`): the geometric shapes that represent the data, e.g. points, bars, boxes, lines.
+
+You start a plot with `ggplot()` and add layers with `+`:
+
+```r
+ggplot(data = my_data, aes(x = column1, y = column2)) +
+  geom_point()
+```
+
+Before you can use ggplot2 you load it with `library(ggplot2)`. On this page that's already done for you. Run the code below to see your first plot:
+
+```{webr}
+ggplot(balance, aes(x = age, y = minibest)) +
+  geom_point()
+```
+
+::: {.callout-important}
+## Put the `+` at the end of the line
+The `+` must be at the **end** of a line, not at the start of the next one. Otherwise R thinks the plot is finished and doesn't know what to do with the next line.
+:::
+
+## Histograms
+
+A **histogram** shows the **distribution** of one numeric variable: the x-axis is divided into intervals (*bins*) and the height of each bar is the number of observations in that bin. Only an `x` aesthetic is needed.
+
+```{webr}
+ggplot(balance, aes(x = minibest)) +
+  geom_histogram(binwidth = 2)
+```
+
+The `binwidth` argument sets the width of each bin (here 2 points). Always try a few values: too wide hides details, too narrow makes the histogram noisy.
+
+### `fill` and `colour`
+
+Two aesthetics control colour, and beginners often mix them up:
+
+- **`fill`** is the colour *inside* a shape (the bars),
+- **`colour`** (or `color`) is the colour of the *outline* (or of points and lines).
+
+```{webr}
+ggplot(balance, aes(x = minibest)) +
+  geom_histogram(binwidth = 2, fill = "steelblue", colour = "white")
+```
+
+::: {.task}
+Make a histogram of participants' **age** with a `binwidth` of **5** years, dark-green bars (`fill = "darkgreen"`) and black outlines (`colour = "black"`).
+:::
+
+```{webr}
+#| exercise: gg_1
+#| caption: "Exercise · Histogram"
+ggplot(balance, aes(x = ______)) +
+  geom_histogram(binwidth = ______, fill = "______", colour = "______")
+```
+
+::: {.hint exercise="gg_1"}
+`aes(x = age)` and `geom_histogram(binwidth = 5, fill = "darkgreen", colour = "black")`.
+:::
+
+::: {.solution exercise="gg_1"}
+```{webr}
+#| exercise: gg_1
+#| solution: true
+ggplot(balance, aes(x = age)) +
+  geom_histogram(binwidth = 5, fill = "darkgreen", colour = "black")
+```
+:::
+
+```{webr}
+#| exercise: gg_1
+#| check: true
+p <- .result
+if (!inherits(p, "ggplot")) {
+  .no("Your code should produce a ggplot.")
+} else if (!identical(rlang::as_label(p$mapping$x), "age")) {
+  .no("Put `age` on the x-axis: `aes(x = age)`.")
+} else {
+  .check_plot(p, geoms = "GeomBar", aes = c("fill", "colour"),
+    ok = "Nice! Do you see the two 'humps'? The study recruited a young group and an old group, with few participants aged 40-60.")
+}
+```
+
+### Mapping `fill` to a variable
+
+So far we **set** `fill` to one fixed colour. You can also **map** `fill` to a column **inside `aes()`**. ggplot2 then gives each group its own colour and adds a legend automatically:
+
+```{webr}
+ggplot(balance, aes(x = minibest, fill = age_group)) +
+  geom_histogram(binwidth = 2, colour = "white", alpha = 0.6, position = "identity")
+```
+
+`alpha` (0–1) makes the bars transparent so both groups are visible, and `position = "identity"` draws them on top of each other instead of stacking them.
+
+::: {.callout-tip}
+## The golden rule
+- **Inside `aes()`** → the colour *depends on the data*: `aes(fill = age_group)`
+- **Outside `aes()`** → one fixed value for everything: `geom_histogram(fill = "steelblue")`
+:::
+
+::: {.quiz id="gg-q1"}
+You write `geom_histogram(aes(fill = "blue"))`. What happens?
+
+- [ ] All bars are blue
+- [x] The bars get a default colour (salmon-red) and a legend with the label "blue" appears
+- [ ] R gives an error
+
+::: {.explanation}
+Inside `aes()`, ggplot2 treats `"blue"` as a *data value* (a group called "blue"), not as a colour, so it picks its own colour and adds a legend. To make the bars blue, put it **outside**: `geom_histogram(fill = "blue")`.
+:::
+:::
+
+::: {.quiz id="gg-q2"}
+Which aesthetic changes the colour of the **outline** of histogram bars?
+
+- [ ] `fill`
+- [x] `colour`
+- [ ] `alpha`
+
+::: {.explanation}
+`colour` (or `color`) controls outlines, points and lines. `fill` controls the inside of shapes. `alpha` controls transparency.
+:::
+:::
+
+## Scatter plots
+
+A **scatter plot** shows the relationship between **two numeric variables**, one point per observation. Use `geom_point()`.
+
+```{webr}
+ggplot(balance, aes(x = age, y = minibest)) +
+  geom_point(size = 2, alpha = 0.6)
+```
+
+Each point is a participant. There is a clear pattern: older participants tend to have lower Mini-BESTest scores. Note: `size` and `alpha` are set outside `aes()`, so they apply to all points.
+
+For points, **`colour`** is the most important aesthetic (points have no inside to fill). Mapping it to a categorical variable shows groups:
+
+```{webr}
+ggplot(balance, aes(x = height_cm, y = mass_kg, colour = sex)) +
+  geom_point(size = 2)
+```
+
+You can add a **trend line** with `geom_smooth()`. `method = "lm"` draws a straight (linear regression) line, and `se = FALSE` hides the confidence band:
+
+```{webr}
+ggplot(balance, aes(x = height_cm, y = mass_kg, colour = sex)) +
+  geom_point(size = 2) +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+Because `colour = sex` is in the main `ggplot()` call, *both* layers use it, so you get one line per sex.
+
+::: {.task}
+Make a scatter plot of **Trail Making Test A time** (`tmt_a_s`, x-axis) against **Mini-BESTest score** (`minibest`, y-axis), with the points coloured by `age_group`.
+:::
+
+```{webr}
+#| exercise: gg_2
+#| caption: "Exercise · Scatter plot"
+ggplot(balance, aes(x = ______, y = ______, colour = ______)) +
+  ______()
+```
+
+::: {.hint exercise="gg_2"}
+`aes(x = tmt_a_s, y = minibest, colour = age_group)` and the geom for points is `geom_point()`.
+:::
+
+::: {.solution exercise="gg_2"}
+```{webr}
+#| exercise: gg_2
+#| solution: true
+ggplot(balance, aes(x = tmt_a_s, y = minibest, colour = age_group)) +
+  geom_point()
+```
+:::
+
+```{webr}
+#| exercise: gg_2
+#| check: true
+p <- .result
+res <- .check_plot(p, geoms = "GeomPoint", aes = "colour")
+if (isTRUE(res$correct)) {
+  m <- vapply(p$mapping[c("x", "y", "colour")], function(a) if (is.null(a)) "" else rlang::as_label(a), "")
+  if (!identical(unname(m), c("tmt_a_s", "minibest", "age_group")))
+    res <- .no("Check your aesthetics: x = tmt_a_s, y = minibest, colour = age_group.")
+  else res <- .ok("Great! Participants who were slower on the cognitive test tended to have poorer balance, and most of them are in the old group.")
+}
+res
+```
+
+## Box plots
+
+A **box plot** summarises a numeric variable for each **group**. Put the grouping (categorical) variable on `x` and the numeric variable on `y`:
+
+```{webr}
+ggplot(balance, aes(x = age_group, y = minibest)) +
+  geom_boxplot()
+```
+
+How to read it:
+
+- the thick line in the box is the **median**,
+- the box covers the middle 50 % of the data (from the 25th to the 75th percentile, the *interquartile range*, IQR),
+- the whiskers extend to the most extreme values within 1.5 × IQR of the box,
+- dots beyond the whiskers are potential **outliers**.
+
+Box plots look better with `fill`. Map it to the same variable as `x` to colour each box (`show.legend = FALSE` hides the then-redundant legend):
+
+```{webr}
+ggplot(balance, aes(x = age_group, y = minibest, fill = age_group)) +
+  geom_boxplot(show.legend = FALSE)
+```
+
+Map `fill` to a **different** variable to compare subgroups side by side:
+
+```{webr}
+ggplot(balance, aes(x = age_group, y = minibest, fill = sex)) +
+  geom_boxplot()
+```
+
+::: {.task}
+Make a box plot of **fear-of-falling score** (`fes_total`, y-axis) for each **physical-activity level** (`activity`, x-axis), with the boxes filled by `activity`. Because `activity` is an ordered factor, the boxes appear in a logical order: Low, Moderate, High.
+:::
+
+```{webr}
+#| exercise: gg_3
+#| caption: "Exercise · Box plot"
+ggplot(balance, aes(x = ______, y = ______, fill = ______)) +
+  ______()
+```
+
+::: {.hint exercise="gg_3"}
+`aes(x = activity, y = fes_total, fill = activity)` + `geom_boxplot()`.
+:::
+
+::: {.solution exercise="gg_3"}
+```{webr}
+#| exercise: gg_3
+#| solution: true
+ggplot(balance, aes(x = activity, y = fes_total, fill = activity)) +
+  geom_boxplot()
+```
+:::
+
+```{webr}
+#| exercise: gg_3
+#| check: true
+p <- .result
+res <- .check_plot(p, geoms = "GeomBoxplot", aes = "fill")
+if (isTRUE(res$correct)) {
+  m <- vapply(p$mapping[c("x", "y")], function(a) if (is.null(a)) "" else rlang::as_label(a), "")
+  if (!identical(unname(m), c("activity", "fes_total")))
+    res <- .no("Check your aesthetics: x = activity, y = fes_total.")
+  else res <- .ok("Well done! Compare the medians: is fear of falling related to activity level?")
+}
+res
+```
+
+::: {.quiz id="gg-q3"}
+In a box plot, what does the line inside the box represent?
+
+- [ ] The mean
+- [x] The median
+- [ ] The mode
+
+::: {.explanation}
+The line is the **median** (50th percentile). Box plots don't show the mean by default.
+:::
+:::
+
+## Raincloud plots
+
+Box plots hide the **shape** of the distribution and how many observations there are. A **raincloud plot** combines three layers to show everything at once:
+
+1. a **half-violin** ("cloud"): the shape of the distribution,
+2. a narrow **box plot**: the median and quartiles,
+3. the **raw data points** ("rain").
+
+ggplot2 doesn't have a raincloud geom, but because plots are built from layers, you can stack the three yourself. The half-violin comes from the **ggdist** package (`stat_halfeye()`), which is loaded on this page.
+
+```{webr}
+ggplot(balance, aes(x = age_group, y = minibest, fill = age_group)) +
+  # 1. the cloud: half-violin, nudged to the right
+  stat_halfeye(adjust = 0.6, width = 0.6, justification = -0.25,
+               .width = 0, point_colour = NA) +
+  # 2. a narrow box plot, without outlier dots (the raw data shows them)
+  geom_boxplot(width = 0.12, outlier.shape = NA) +
+  # 3. the rain: raw data, jittered slightly so points don't overlap
+  geom_jitter(width = 0.05, alpha = 0.4) +
+  coord_flip()
+```
+
+What the arguments do:
+
+- `adjust` controls the smoothness of the cloud (smaller = more detail),
+- `justification` moves the cloud away from the box,
+- `.width = 0` and `point_colour = NA` hide the interval and point that `stat_halfeye()` draws by default,
+- `geom_jitter()` is `geom_point()` with a small random horizontal shift,
+- `coord_flip()` swaps x and y, giving the typical horizontal "raincloud" look.
+
+Now you can see that the old group's scores are spread out widely, while most young participants score close to the maximum: something a box plot alone doesn't show.
+
+::: {.task}
+The raincloud plot below is missing its **rain**. Complete it so it shows **BMI** (`bmi`) for each `sex`, and add the raw-data layer with `geom_jitter(width = 0.05, alpha = 0.4)`.
+:::
+
+```{webr}
+#| exercise: gg_4
+#| caption: "Exercise · Raincloud plot"
+ggplot(balance, aes(x = sex, y = ______, fill = sex)) +
+  stat_halfeye(adjust = 0.6, width = 0.6, justification = -0.25,
+               .width = 0, point_colour = NA) +
+  geom_boxplot(width = 0.12, outlier.shape = NA) +
+  ______ +
+  coord_flip()
+```
+
+::: {.hint exercise="gg_4"}
+Use `y = bmi`, and replace the second blank with `geom_jitter(width = 0.05, alpha = 0.4)`.
+:::
+
+::: {.solution exercise="gg_4"}
+```{webr}
+#| exercise: gg_4
+#| solution: true
+ggplot(balance, aes(x = sex, y = bmi, fill = sex)) +
+  stat_halfeye(adjust = 0.6, width = 0.6, justification = -0.25,
+               .width = 0, point_colour = NA) +
+  geom_boxplot(width = 0.12, outlier.shape = NA) +
+  geom_jitter(width = 0.05, alpha = 0.4) +
+  coord_flip()
+```
+:::
+
+```{webr}
+#| exercise: gg_4
+#| check: true
+p <- .result
+res <- .check_plot(p, geoms = c("GeomBoxplot", "GeomPoint"), aes = "fill")
+if (isTRUE(res$correct)) {
+  if (!identical(rlang::as_label(p$mapping$y), "bmi")) res <- .no("Put `bmi` on the y-axis.")
+  else res <- .ok("Beautiful raincloud! Note how many more women than men took part: the box plot alone wouldn't tell you that.")
+}
+res
+```
+
+::: {.quiz id="gg-q4"}
+What is the main advantage of a raincloud plot over a box plot?
+
+- [ ] It is faster to draw
+- [x] It shows the distribution's shape and the raw data, not just summary statistics
+- [ ] It shows the mean and standard deviation
+
+::: {.explanation}
+Box plots summarise data with five numbers. Two very different distributions (e.g. one with two peaks) can produce the same box. Raincloud plots show the shape and every observation as well.
+:::
+:::
+
+## Line plots
+
+**Line plots** connect observations in order, usually over **time**. They're ideal for repeated measurements: heart rate during a test, force during a jump, performance over a season.
+
+To practise, here is a small **simulated** dataset, `hr_test`: three athletes completed an incremental treadmill test, and their heart rate (`hr`, bpm) was recorded every minute.
+
+```{webr}
+head(hr_test)
+```
+
+### Why you need `group`
+
+Let's try a line plot with just `x` and `y`:
+
+```{webr}
+ggplot(hr_test, aes(x = minute, y = hr)) +
+  geom_line()
+```
+
+That's a mess! ggplot2 doesn't know that the data belongs to three different athletes, so it draws **one** line that zig-zags between them. The **`group`** aesthetic tells ggplot2 which observations belong together:
+
+```{webr}
+ggplot(hr_test, aes(x = minute, y = hr, group = athlete)) +
+  geom_line()
+```
+
+Now there's one line per athlete, but we can't tell who is who. Mapping **`colour`** to `athlete` fixes that. Mapping a categorical variable to `colour` also groups the data automatically. Adding `geom_point()` marks the actual measurements:
+
+```{webr}
+ggplot(hr_test, aes(x = minute, y = hr, colour = athlete)) +
+  geom_line(linewidth = 1) +
+  geom_point()
+```
+
+::: {.task}
+Make a line plot of `hr_test` with `minute` on the x-axis and `hr` on the y-axis. Use **`group = athlete`** and **`colour = athlete`**, and add both `geom_line()` and `geom_point()`.
+:::
+
+```{webr}
+#| exercise: gg_5
+#| caption: "Exercise · Line plot"
+ggplot(hr_test, aes(x = ______, y = ______, group = ______, colour = ______)) +
+  ______ +
+  ______
+```
+
+::: {.hint exercise="gg_5"}
+`aes(x = minute, y = hr, group = athlete, colour = athlete)`, then `geom_line() + geom_point()`.
+:::
+
+::: {.solution exercise="gg_5"}
+```{webr}
+#| exercise: gg_5
+#| solution: true
+ggplot(hr_test, aes(x = minute, y = hr, group = athlete, colour = athlete)) +
+  geom_line() +
+  geom_point()
+```
+:::
+
+```{webr}
+#| exercise: gg_5
+#| check: true
+.check_plot(.result, geoms = c("GeomLine", "GeomPoint"), aes = c("group", "colour"),
+  ok = "Excellent! Athlete C reaches a plateau (maximum heart rate) around minute 9, earlier and at a lower value than the others.")
+```
+
+### Lines for group means
+
+Line plots are also used to show **summary values** across ordered categories. The data frame `best_by_age` (created for you) contains the **mean** Mini-BESTest score for each age band and sex:
+
+```{webr}
+best_by_age
+```
+
+::: {.task}
+Plot `best_by_age` with `age_band` on the x-axis, `minibest` on the y-axis and one coloured line per `sex`. Because `age_band` is categorical, you **must** set `group = sex` for the lines to be drawn. Add points too.
+:::
+
+```{webr}
+#| exercise: gg_6
+#| caption: "Exercise · Line plot of group means"
+ggplot(best_by_age, aes(x = age_band, y = minibest, group = ______, colour = ______)) +
+  geom_line() +
+  geom_point()
+```
+
+::: {.hint exercise="gg_6"}
+Both blanks are `sex`.
+:::
+
+::: {.solution exercise="gg_6"}
+```{webr}
+#| exercise: gg_6
+#| solution: true
+ggplot(best_by_age, aes(x = age_band, y = minibest, group = sex, colour = sex)) +
+  geom_line() +
+  geom_point()
+```
+:::
+
+```{webr}
+#| exercise: gg_6
+#| check: true
+.check_plot(.result, geoms = c("GeomLine", "GeomPoint"), aes = c("group", "colour"),
+  ok = "Well done! Scores are highest in the youngest age bands and lowest in the 80+ group. The bumpy middle reflects how few participants were aged 40-60: always check how many observations sit behind a mean!")
+```
+
+::: {.quiz id="gg-q5"}
+Your line plot shows a single zig-zag line instead of one line per participant. What's the most likely fix?
+
+- [ ] Add `fill = participant` to `aes()`
+- [x] Add `group = participant` (or `colour = participant`) to `aes()`
+- [ ] Replace `geom_line()` with `geom_point()`
+
+::: {.explanation}
+Lines connect observations **within a group**. Without a `group` (or a discrete `colour`), ggplot2 puts all observations in one group and connects them all.
+:::
+:::
+
+## Finishing touches: labels and themes
+
+Good figures have clear axis labels with **units**. Add them with `labs()`, and change the overall look with a `theme_...()` function:
+
+```{webr}
+ggplot(balance, aes(x = age, y = minibest, colour = age_group)) +
+  geom_point(size = 2, alpha = 0.7) +
+  labs(
+    title = "Dynamic balance declines with age",
+    x = "Age (years)",
+    y = "Mini-BESTest score (0-28)",
+    colour = "Age group"
+  ) +
+  theme_minimal()
+```
+
+Try other themes: `theme_classic()`, `theme_bw()`, `theme_light()`. Module 3 covers customising plots in much more detail.
+
+::: {.quiz id="gg-q6"}
+Match the question to the best plot: *"How is jump height related to body mass in my team?"*
+
+- [ ] Histogram
+- [x] Scatter plot
+- [ ] Line plot
+
+::: {.explanation}
+Two numeric variables measured on the same athletes → scatter plot. A histogram shows one variable's distribution; a line plot shows change over time or ordered categories.
+:::
+:::
+
+## Lesson summary
+
+| Plot | Geom | Typical use | Key aesthetics |
+|---|---|---|---|
+| Histogram | `geom_histogram()` | Distribution of one numeric variable | `x`, `fill` |
+| Scatter plot | `geom_point()` | Relationship between two numeric variables | `x`, `y`, `colour` |
+| Box plot | `geom_boxplot()` | Compare a numeric variable between groups | `x` (group), `y`, `fill` |
+| Raincloud | `stat_halfeye()` + `geom_boxplot()` + `geom_jitter()` | Distribution + summary + raw data per group | `x`, `y`, `fill` |
+| Line plot | `geom_line()` | Change over time / ordered categories | `x`, `y`, `group`, `colour` |
+
+- **Inside `aes()`** = depends on the data (and creates a legend); **outside** = one fixed value.
+- `fill` = inside of shapes, `colour` = outlines, points and lines.
+- `group` tells ggplot2 which observations belong together (essential for line plots).
+
+### Scratchpad
+
+`balance`, `hr_test` and `best_by_age` are loaded here. Try making your own plot, for example a histogram of `bmi` filled by `sex`, or a scatter plot of `tmt_a_s` against `tmt_b_s`.
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

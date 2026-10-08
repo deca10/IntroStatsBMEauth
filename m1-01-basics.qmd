@@ -1,0 +1,493 @@
+---
+title: "1.1 R basics"
+subtitle: "Arithmetic, variables and the basic data types"
+---
+
+{{< include _common.qmd >}}
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- use R as a calculator for everyday sport-science calculations,
+- store values in **variables**,
+- recognise R's basic **data types** and check them with `class()`.
+
+⏱️ About 30 minutes.
+:::
+
+## Why R?
+
+Sport and exercise scientists collect a lot of data: jump heights from force plates, heart rates from chest straps, GPS distances, questionnaire scores, lab test results. Spreadsheets are fine for small tasks, but they become slow and error-prone as data grows. **R** is a free programming language designed for data analysis and statistics. With R you write down every step of your analysis as code, so it is **reproducible**: you (or your supervisor) can re-run it at any time and get exactly the same result.
+
+## Arithmetic with R
+
+In its most basic form, R is a powerful calculator. These are the arithmetic operators:
+
+| Operator | Meaning | Example | Result |
+|:--:|---|---|---|
+| `+` | addition | `5 + 3` | `8` |
+| `-` | subtraction | `5 - 3` | `2` |
+| `*` | multiplication | `5 * 3` | `15` |
+| `/` | division | `6 / 4` | `1.5` |
+| `^` | exponentiation (power) | `2 ^ 3` | `8` |
+| `%%` | modulo (remainder of a division) | `7 %% 3` | `1` |
+
+R follows the usual order of operations: brackets first, then powers, then multiplication/division, then addition/subtraction. Run the code below, then change it and run it again. This box is your **console** for experimenting.
+
+```{webr}
+# A runner covers 10 km in 42.5 minutes. Average pace in minutes per km:
+42.5 / 10
+
+# Average speed in km/h (60 minutes in an hour):
+10 / (42.5 / 60)
+
+# Body mass index (BMI) of a 72 kg athlete who is 1.80 m tall:
+72 / 1.80 ^ 2
+
+# A 95-minute football match divided into 15-minute blocks: what's left over?
+95 %% 15
+```
+
+Each line produces its own output, shown below the code. Lines starting with `#` are **comments**: R ignores them, and you use them to explain your code to humans.
+
+::: {.task}
+An athlete completes **3 laps of 400 m** followed by **4 laps of 200 m**. Write a single line of R code that calculates the **total distance in metres**.
+:::
+
+```{webr}
+#| exercise: arith_1
+#| caption: "Exercise · Total distance"
+# Total distance in metres
+______
+```
+
+::: {.hint exercise="arith_1"}
+Multiply the number of laps by the lap length for each part, then add the two parts: `3 * ___ + 4 * ___`.
+:::
+
+::: {.solution exercise="arith_1"}
+```{webr}
+#| exercise: arith_1
+#| solution: true
+# Total distance in metres
+3 * 400 + 4 * 200
+```
+:::
+
+```{webr}
+#| exercise: arith_1
+#| check: true
+.check_result(.result, .checker_args$solution,
+  ok = "Correct! 1200 + 800 = 2000 m.",
+  no = "Not quite. The answer should be the total distance in metres (two parts added together).")
+```
+
+::: {.task}
+A 1RM (one-repetition maximum) test gives **140 kg**. Your athlete should train at **75 %** of their 1RM. Calculate the training load in kg.
+:::
+
+```{webr}
+#| exercise: arith_2
+#| caption: "Exercise · Training load"
+# 75 % of a 140 kg 1RM
+______
+```
+
+::: {.hint exercise="arith_2"}
+75 % is the same as `0.75`. Multiply it by `140`.
+:::
+
+::: {.solution exercise="arith_2"}
+```{webr}
+#| exercise: arith_2
+#| solution: true
+# 75 % of a 140 kg 1RM
+140 * 0.75
+```
+:::
+
+```{webr}
+#| exercise: arith_2
+#| check: true
+.check_result(.result, .checker_args$solution, ok = "Correct! The training load is 105 kg.",
+  no = "Not quite. Multiply 140 by 0.75 (or by 75 and then divide by 100).")
+```
+
+::: {.quiz id="arith-q1"}
+What does R return for `2 + 3 * 2`?
+
+- [ ] `10`
+- [x] `8`
+- [ ] `7`
+
+::: {.explanation}
+Multiplication is done before addition: `3 * 2 = 6`, and then `2 + 6 = 8`. If you wanted 10 you would need brackets: `(2 + 3) * 2`.
+:::
+:::
+
+::: {.quiz id="arith-q2"}
+What is the result of `17 %% 5`?
+
+- [ ] `3.4`
+- [ ] `3`
+- [x] `2`
+
+::: {.explanation}
+`%%` gives the **remainder** of a division. 5 goes into 17 three times (15), with **2** left over.
+:::
+:::
+
+## Variable assignment
+
+A basic concept in programming is the **variable**. A variable lets you store a value (e.g. `52`) or an object (e.g. a whole dataset) under a name, so you can use it later.
+
+In R you assign a value to a variable with the **assignment operator** `<-` (a "less than" sign followed by a minus). Read it as *"gets"*:
+
+```r
+vo2max <- 52     # "vo2max gets 52"
+```
+
+After that, typing the variable's name prints its value:
+
+```{webr}
+vo2max <- 52
+vo2max
+```
+
+::: {.callout-tip}
+## Naming rules
+Variable names can contain letters, numbers, `_` and `.`, but must start with a letter. They are **case sensitive**: `vo2max` and `VO2max` are two different variables. Choose names that describe the content, like `jump_height` or `resting_hr`.
+:::
+
+::: {.task}
+Create a variable called `resting_hr` and assign the value **58** (beats per minute) to it. Then print it by typing its name on a new line.
+:::
+
+```{webr}
+#| exercise: assign_1
+#| caption: "Exercise · Variable assignment (1)"
+# Assign the value 58 to resting_hr
+
+
+# Print out the value of resting_hr
+
+```
+
+::: {.hint exercise="assign_1"}
+Use `resting_hr <- 58` on the first line, and just `resting_hr` on the next line.
+:::
+
+::: {.solution exercise="assign_1"}
+```{webr}
+#| exercise: assign_1
+#| solution: true
+# Assign the value 58 to resting_hr
+resting_hr <- 58
+
+# Print out the value of resting_hr
+resting_hr
+```
+:::
+
+```{webr}
+#| exercise: assign_1
+#| check: true
+.check_vars("resting_hr", .envir_result, .checker_args$envir_solution,
+  ok = "Great! You've created your first variable.")
+```
+
+## Variable assignment (2)
+
+Variables become really useful when you combine them. Suppose an athlete's best lifts are stored in variables. You can calculate with the **names** instead of the numbers:
+
+```{webr}
+squat_kg <- 140
+deadlift_kg <- 170
+squat_kg + deadlift_kg
+```
+
+If the athlete improves, you only change the value once and every calculation that uses the variable updates automatically.
+
+::: {.task}
+A powerlifting total is the sum of the best **squat**, **bench press** and **deadlift**.
+
+1. Assign `150` to `squat_kg`, `95` to `bench_kg` and `180` to `deadlift_kg`.
+2. Create a variable `total_kg` that is the sum of the three lifts (use the variable names, not the numbers).
+3. Print `total_kg`.
+:::
+
+```{webr}
+#| exercise: assign_2
+#| caption: "Exercise · Variable assignment (2)"
+# Assign the three lifts
+squat_kg <- ______
+bench_kg <- ______
+deadlift_kg <- ______
+
+# Create total_kg using the three variables
+total_kg <- ______
+
+# Print total_kg
+
+```
+
+::: {.hint exercise="assign_2"}
+The total is `squat_kg + bench_kg + deadlift_kg`. Print it by writing `total_kg` on the last line.
+:::
+
+::: {.solution exercise="assign_2"}
+```{webr}
+#| exercise: assign_2
+#| solution: true
+# Assign the three lifts
+squat_kg <- 150
+bench_kg <- 95
+deadlift_kg <- 180
+
+# Create total_kg using the three variables
+total_kg <- squat_kg + bench_kg + deadlift_kg
+
+# Print total_kg
+total_kg
+```
+:::
+
+```{webr}
+#| exercise: assign_2
+#| check: true
+res <- .check_vars(c("squat_kg", "bench_kg", "deadlift_kg", "total_kg"), .envir_result, .checker_args$envir_solution)
+if (isTRUE(res$correct) && !grepl("squat_kg", paste(.user_code, collapse = ""), fixed = TRUE)) {
+  res <- .no("Right number, but calculate `total_kg` from the variable names, not by typing the numbers.")
+} else if (isTRUE(res$correct)) {
+  res <- .ok("Excellent! A 425 kg total.")
+}
+res
+```
+
+## Variable assignment (3)
+
+What happens if you try to add a number and a piece of text? Run this code and read the error message:
+
+```{webr}
+#| autorun: false
+sprint_time <- 11.2
+reaction_time <- "0.15"
+sprint_time + reaction_time
+```
+
+R complains: *"non-numeric argument to binary operator"*. The quotation marks around `"0.15"` make it **text**, not a number, and you can't do arithmetic with text. Error messages may look scary, but they are R's way of telling you exactly what went wrong. Reading them carefully is an important skill.
+
+::: {.task}
+Fix the code so that `total_time` is calculated correctly. Don't change the numbers, only the way one of them is written.
+:::
+
+```{webr}
+#| exercise: assign_3
+#| caption: "Exercise · Variable assignment (3)"
+sprint_time <- 11.2
+reaction_time <- "0.15"
+
+total_time <- sprint_time + reaction_time
+total_time
+```
+
+::: {.hint exercise="assign_3"}
+Remove the quotation marks around `0.15` so that R treats it as a number.
+:::
+
+::: {.solution exercise="assign_3"}
+```{webr}
+#| exercise: assign_3
+#| solution: true
+sprint_time <- 11.2
+reaction_time <- 0.15
+
+total_time <- sprint_time + reaction_time
+total_time
+```
+:::
+
+```{webr}
+#| exercise: assign_3
+#| check: true
+.check_vars(c("reaction_time", "total_time"), .envir_result, .checker_args$envir_solution,
+  ok = "Fixed! 11.2 + 0.15 = 11.35 s.")
+```
+
+::: {.quiz id="assign-q1"}
+After running `jump <- 35` and then `jump <- jump + 5`, what is the value of `jump`?
+
+- [ ] `35`
+- [x] `40`
+- [ ] An error, because `jump` already exists
+
+::: {.explanation}
+The right-hand side is calculated first using the *old* value (`35 + 5 = 40`), and the result is then stored in `jump`, overwriting the old value. Overwriting variables is allowed in R.
+:::
+:::
+
+## Basic data types in R
+
+R works with several **data types**. The four you will meet most often are:
+
+| Type | What it stores | Examples |
+|---|---|---|
+| **numeric** | Decimal numbers | `4.5`, `72`, `-0.3` |
+| **integer** | Whole numbers (written with an `L`) | `4L`, `12L` |
+| **character** | Text (also called *strings*), always in quotes | `"Maria"`, `"midfielder"` |
+| **logical** | `TRUE` or `FALSE` (no quotes!) | `TRUE`, `FALSE` |
+
+Note that numbers like `72` are *numeric* by default; R only makes them *integers* if you add an `L`. In practice, you rarely need to worry about that difference.
+
+```{webr}
+athlete_name <- "Maria"   # character
+jump_height  <- 0.42      # numeric (metres)
+reps         <- 12L       # integer
+is_injured   <- FALSE     # logical
+```
+
+::: {.task}
+Create the following variables describing a basketball player:
+
+- `player` with the text **Nikos**,
+- `height_m` with the number **1.98**,
+- `starter` with the logical value **TRUE**.
+:::
+
+```{webr}
+#| exercise: types_1
+#| caption: "Exercise · Basic data types"
+# Character: the player's name
+player <- ______
+
+# Numeric: height in metres
+height_m <- ______
+
+# Logical: is he in the starting five?
+starter <- ______
+```
+
+::: {.hint exercise="types_1"}
+Text needs quotation marks (`"Nikos"`), numbers don't (`1.98`), and logical values are written in capitals without quotes (`TRUE`).
+:::
+
+::: {.solution exercise="types_1"}
+```{webr}
+#| exercise: types_1
+#| solution: true
+# Character: the player's name
+player <- "Nikos"
+
+# Numeric: height in metres
+height_m <- 1.98
+
+# Logical: is he in the starting five?
+starter <- TRUE
+```
+:::
+
+```{webr}
+#| exercise: types_1
+#| check: true
+if (exists("starter", envir = .envir_result, inherits = FALSE) &&
+    identical(get("starter", envir = .envir_result), "TRUE")) {
+  .no('`starter` is text ("TRUE") rather than a logical value. Remove the quotation marks.')
+} else {
+  .check_vars(c("player", "height_m", "starter"), .envir_result, .checker_args$envir_solution,
+    ok = "Perfect! You've used three different data types.")
+}
+```
+
+## What's that data type?
+
+When R gives you an unexpected error, the reason is often that a value has a different type than you thought (like `"0.15"` earlier). You can ask R for the type of any value or variable with the function `class()`:
+
+```{webr}
+class(0.42)
+class("Maria")
+class(TRUE)
+class("TRUE")   # careful: in quotes it's text!
+```
+
+::: {.task}
+Three variables are created for you. Use `class()` to find the data type of `sport` (as the **last line** of your code).
+:::
+
+```{webr}
+#| exercise: types_2
+#| caption: "Exercise · What's that data type?"
+sport <- "rowing"
+distance_m <- 2000
+personal_best <- FALSE
+
+# Check the class of sport
+______
+```
+
+::: {.hint exercise="types_2"}
+Put the name of the variable inside the brackets: `class(sport)`.
+:::
+
+::: {.solution exercise="types_2"}
+```{webr}
+#| exercise: types_2
+#| solution: true
+sport <- "rowing"
+distance_m <- 2000
+personal_best <- FALSE
+
+# Check the class of sport
+class(sport)
+```
+:::
+
+```{webr}
+#| exercise: types_2
+#| check: true
+.check_result(.result, .checker_args$solution, ok = 'Correct! `sport` is of class "character". Try `class(distance_m)` and `class(personal_best)` too.',
+  no = "Not quite. The last line should be `class(sport)`.")
+```
+
+::: {.quiz id="types-q1"}
+What does `class("72")` return?
+
+- [ ] `"numeric"`
+- [ ] `"integer"`
+- [x] `"character"`
+- [ ] `"logical"`
+
+::: {.explanation}
+Anything inside quotation marks is text, so `"72"` is a **character** value even though it looks like a number.
+:::
+:::
+
+::: {.quiz id="types-q2"}
+Which of these values is a **logical**?
+
+- [ ] `"FALSE"`
+- [x] `FALSE`
+- [ ] `false`
+
+::: {.explanation}
+Logical values are written in capitals **without** quotes: `TRUE` and `FALSE`. `"FALSE"` is text, and `false` (lower case) is not recognised by R. It would look for a variable called `false`.
+:::
+:::
+
+## Lesson summary
+
+- R can be used as a calculator: `+ - * / ^ %%`, with the usual order of operations.
+- Store values with `<-`: `resting_hr <- 58`. Variable names are case sensitive.
+- The basic data types are **numeric**, **integer**, **character** (text, in quotes) and **logical** (`TRUE`/`FALSE`).
+- `class()` tells you the type of a value.
+
+### Scratchpad
+
+Use this console to experiment with anything from this lesson.
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

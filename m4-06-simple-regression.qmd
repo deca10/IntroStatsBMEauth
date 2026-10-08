@@ -1,0 +1,288 @@
+---
+title: "4.6 Simple linear regression"
+subtitle: "Fitting a line, interpreting it, predicting with it, and log-log models for scaling"
+webr:
+  packages: ['ggplot2']
+  resources:
+    - data/jump_squad.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+theme_set(theme_classic(base_size = 14))
+squad <- read.csv("data/jump_squad.csv")
+sport_cols <- c(Basketball = "#E69F00", Soccer = "#0072B2")
+```
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- fit a **simple linear regression** with `lm()` and interpret the **intercept** and **slope**,
+- read the `summary()` output: standard errors, *t*, *p*, ***R*²**, residual SE,
+- **predict** new values, with confidence and prediction intervals,
+- check **residuals**,
+- recognise "perfect" models built on **coupled variables**,
+- use a **log–log regression** to find how a variable scales with body mass (allometry).
+
+⏱️ About 50 minutes.
+:::
+
+## From correlation to regression
+
+Correlation tells you **how strongly** two variables are related. Regression describes **how** they're related: it fits the straight line that best predicts an **outcome** *y* from a **predictor** *x*:
+
+$$y = b_0 + b_1 x + \varepsilon$$
+
+- *b*₀, the **intercept**: predicted *y* when *x* = 0,
+- *b*₁, the **slope**: the change in *y* for a 1-unit increase in *x*,
+- ε, the **residual**: the part of *y* the line doesn't explain.
+
+"Best" means **least squares**: the line that minimises the sum of the squared residuals.
+
+```{webr}
+ggplot(squad, aes(x = peak_power_rel, y = jump_height_m)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x) +
+  labs(x = "Peak power (W/kg)", y = "Jump height (m)")
+```
+
+## Fitting a model with `lm()`
+
+```{webr}
+model <- lm(jump_height_m ~ peak_power_rel, data = squad)
+model
+```
+
+The formula reads "jump height **is modelled by** peak power". The coefficients:
+
+- **Intercept** = −0.018 m: the predicted jump height at 0 W/kg. That's a meaningless extrapolation far outside the data, and that's fine: the intercept just anchors the line.
+- **Slope** = 0.0076 m per W/kg: each extra **1 W/kg** of peak power goes with **0.76 cm** more jump height, on average.
+
+### The `summary()` output
+
+```{webr}
+summary(model)
+```
+
+- **Coefficients table**: each estimate with its standard error, *t* value (= estimate / SE) and *p*-value (H₀: coefficient = 0).
+- **Residual standard error** (0.031 m): the typical size of a residual, i.e. how far athletes are from the line, about ±3 cm.
+- **Multiple R-squared** (0.69): the proportion of variance in *y* explained by the model. In simple regression it equals *r*².
+- **F-statistic**: tests the model as a whole (in simple regression, same *p* as the slope).
+
+Useful extractor functions: `coef(model)`, `confint(model)` (95 % CIs of the coefficients), `summary(model)$r.squared`, `residuals(model)`, `fitted(model)`.
+
+::: {.task}
+Fit a regression predicting **jump height** from **countermovement depth** (`cmj_depth_m`). Store it in `model`, then extract the **slope** (`slope`, the second coefficient) and **R²** (`r2`).
+:::
+
+```{webr}
+#| exercise: sr_1
+#| caption: "Exercise · lm()"
+model <- lm(______ ~ ______, data = squad)
+summary(model)
+
+slope <- coef(model)[______]
+r2 <- summary(model)$______
+```
+
+::: {.hint exercise="sr_1"}
+`lm(jump_height_m ~ cmj_depth_m, data = squad)`, `coef(model)[2]`, `summary(model)$r.squared`.
+:::
+
+::: {.solution exercise="sr_1"}
+```{webr}
+#| exercise: sr_1
+#| solution: true
+model <- lm(jump_height_m ~ cmj_depth_m, data = squad)
+summary(model)
+
+slope <- coef(model)[2]
+r2 <- summary(model)$r.squared
+```
+:::
+
+```{webr}
+#| exercise: sr_1
+#| check: true
+s <- get("slope", envir = .checker_args$envir_solution)
+res <- .check_vars(c("slope", "r2"), .envir_result, .checker_args$envir_solution)
+if (isTRUE(res$correct)) res <- .ok(paste0("Correct! Slope = ", round(s, 2), " m per m of depth. Depth is negative (below standing height), so a NEGATIVE slope means deeper countermovements go with higher jumps: about ",
+  round(-s * 10, 1), " cm per 10 cm extra depth. R² = ", round(get("r2", envir = .checker_args$envir_solution), 2), "."))
+res
+```
+
+## Predicting
+
+`predict()` applies the model to new data. Supply a data frame with the predictor column:
+
+```{webr}
+model <- lm(jump_height_m ~ peak_power_rel, data = squad)
+new_athlete <- data.frame(peak_power_rel = 55)
+
+predict(model, new_athlete, interval = "confidence")
+predict(model, new_athlete, interval = "prediction")
+```
+
+The two intervals answer different questions:
+
+- **confidence interval** (39.1–40.4 cm): where is the **average** jump height of *all* athletes with 55 W/kg?
+- **prediction interval** (33.5–46.0 cm): where will a **single new** athlete with 55 W/kg probably land? It's much wider, because it includes the individual scatter around the line.
+
+::: {.quiz id="sr-q1"}
+A coach uses the model to predict the jump height of a 14-year-old with 30 W/kg peak power (the squad ranged from about 40 to 80 W/kg). What's the problem?
+
+- [ ] None: the model is significant
+- [x] The prediction is an extrapolation outside the range of the data, and the youth athlete belongs to a different population
+- [ ] The prediction interval will be too narrow because n is large
+
+::: {.explanation}
+Regression models are only trustworthy within the range (and the population) they were fitted on.
+:::
+:::
+
+## Checking the residuals
+
+Linear regression assumes that the residuals:
+
+1. show **no pattern** against the fitted values (the relationship is linear),
+2. have roughly **constant spread** (homoscedasticity),
+3. are roughly **normal**,
+4. are **independent** (one observation per athlete).
+
+The quickest check is a plot of **residuals against fitted values**: you want a shapeless cloud around 0.
+
+```{webr}
+model <- lm(jump_height_m ~ peak_power_rel, data = squad)
+diag_df <- data.frame(fitted = fitted(model), residual = residuals(model))
+
+ggplot(diag_df, aes(x = fitted, y = residual)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point() +
+  geom_smooth(method = "loess", formula = y ~ x, se = FALSE, colour = "firebrick") +
+  labs(x = "Fitted jump height (m)", y = "Residual (m)")
+```
+
+(`plot(model)` in RStudio shows four standard diagnostic plots at once.)
+
+## A "perfect" model that explains nothing
+
+Remember mathematical coupling from [lesson 4.5](m4-05-correlation.qmd)? Regression doesn't protect you from it:
+
+```{webr}
+squad$v_to <- sqrt(2 * 9.81 * squad$jump_height_m)
+summary(lm(jump_height_m ~ v_to, data = squad))$r.squared
+```
+
+*R*² = 0.997, a near-perfect model, and completely useless: **you can't "explain" jump height with a variable that was calculated from jump height.** A high *R*² only means something when the predictor is measured **independently** of the outcome.
+
+::: {.quiz id="sr-q2"}
+A student builds a model predicting jump height from RSI<sub>mod</sub> and is happy with *R*² = 0.43. What should they consider?
+
+- [ ] Nothing: 0.43 is a moderate R²
+- [x] RSI<sub>mod</sub> = jump height / contraction time contains the outcome itself, so part of that R² is built in
+- [ ] They should use a t-test instead
+
+::: {.explanation}
+The outcome appears inside the predictor. Part of the "explained" variance is the outcome explaining itself.
+:::
+:::
+
+## Log–log regression and allometric scaling
+
+Many quantities don't scale 1:1 with body size. Allometry describes this with a **power law**:
+
+$$Y = a \cdot M^{b}$$
+
+where *M* is body mass and *b* the **scaling exponent**. Taking logarithms turns it into a straight line:
+
+$$\log(Y) = \log(a) + b \cdot \log(M)$$
+
+So a regression of log(*Y*) on log(*M*) estimates *b* as its **slope**. Dividing by body mass ("per kg" values) silently assumes **b = 1**. If the true *b* is smaller, per-kg values will **penalise heavier athletes**, which is exactly the negative correlation between relative impulse and body mass you saw in lesson 4.5.
+
+::: {.task}
+1. Recover the **absolute** propulsive impulse (N·s) by multiplying `con_impulse_rel` by `body_mass_kg`, and store it in `squad$impulse`.
+2. Fit `allo_model`: `log(impulse)` on `log(body_mass_kg)`.
+3. Extract the scaling exponent `b` (the slope) and its 95 % CI `b_ci` with `confint()`. Does the CI include 1?
+:::
+
+```{webr}
+#| exercise: sr_2
+#| caption: "Exercise · Allometric scaling"
+# 1. Absolute impulse (N·s)
+squad$impulse <- ______
+
+# 2. Log-log model
+allo_model <- lm(log(______) ~ log(______), data = squad)
+
+# 3. Exponent and its CI
+b <- coef(allo_model)[2]
+b_ci <- confint(allo_model)[2, ]
+b
+b_ci
+```
+
+::: {.hint exercise="sr_2"}
+`squad$con_impulse_rel * squad$body_mass_kg`, then `lm(log(impulse) ~ log(body_mass_kg), data = squad)`.
+:::
+
+::: {.solution exercise="sr_2"}
+```{webr}
+#| exercise: sr_2
+#| solution: true
+# 1. Absolute impulse (N·s)
+squad$impulse <- squad$con_impulse_rel * squad$body_mass_kg
+
+# 2. Log-log model
+allo_model <- lm(log(impulse) ~ log(body_mass_kg), data = squad)
+
+# 3. Exponent and its CI
+b <- coef(allo_model)[2]
+b_ci <- confint(allo_model)[2, ]
+b
+b_ci
+```
+:::
+
+```{webr}
+#| exercise: sr_2
+#| check: true
+ci <- get("b_ci", envir = .checker_args$envir_solution)
+.check_vars(c("b", "b_ci"), .envir_result, .checker_args$envir_solution,
+  ok = paste0("Excellent! b = ", round(get("b", envir = .checker_args$envir_solution), 2), " (95 % CI ", round(ci[1], 2), " to ", round(ci[2], 2),
+              "). The CI excludes 1: impulse grows LESS than proportionally with mass, so 'per kg' impulse is biased against heavier athletes. Scaling by mass^", round(get("b", envir = .checker_args$envir_solution), 2),
+              " removes the bias (try: cor(squad$impulse / squad$body_mass_kg^0.81, squad$body_mass_kg)). For peak force, by contrast, b ≈ 1.03, so per-kg force is fine."))
+```
+
+::: {.quiz id="sr-q3"}
+In `lm(log(Y) ~ log(M))`, the slope is 0.67. What happens if you express *Y* per kg body mass (*Y*/*M*)?
+
+- [ ] Nothing: per-kg values are always size-independent
+- [x] Heavier athletes get systematically lower per-kg values, because *Y* grows less than proportionally with *M*
+- [ ] Lighter athletes get lower per-kg values
+
+::: {.explanation}
+*Y*/*M* ∝ *M*<sup>0.67−1</sup> = *M*<sup>−0.33</sup>, which falls with mass. Divide by *M*<sup>0.67</sup> instead.
+:::
+:::
+
+## Lesson summary
+
+- `lm(y ~ x, data = df)` fits a line; the slope is the change in *y* per unit of *x*.
+- `summary()` gives coefficients ± SE, *p*-values, residual SE and ***R*²** (= *r*² in simple regression).
+- `predict(model, newdata, interval = "confidence" / "prediction")`.
+- Check residuals vs. fitted values; don't extrapolate.
+- A high *R*² with a **coupled predictor** is meaningless.
+- **Log–log regression** estimates allometric exponents: per-kg values are only fair when *b* ≈ 1.
+
+### Scratchpad
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

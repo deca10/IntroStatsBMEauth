@@ -1,0 +1,329 @@
+---
+title: "3.4 Themes and publication-ready figures"
+subtitle: "Control every non-data element, build your own theme, and export figures properly"
+webr:
+  packages: ['ggplot2']
+  resources:
+    - data/jump_squad.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+squad <- read.csv("data/jump_squad.csv")
+sport_cols <- c(Basketball = "#E69F00", Soccer = "#0072B2")
+```
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- change the overall look with **complete themes** (`theme_classic()`, `theme_bw()`, …) and their `base_size`,
+- fine-tune any element with `theme()` and the `element_*()` functions,
+- save your settings as a **reusable theme** for all figures of a report or thesis,
+- export figures with `ggsave()` at the size and resolution journals require.
+
+⏱️ About 35 minutes.
+:::
+
+## Complete themes
+
+A **theme** controls everything that is *not* data: background, grid lines, fonts, legend position, axis lines. ggplot2's default is `theme_gray()`. Other complete themes:
+
+```{webr}
+#| fig-width: 9
+#| fig-height: 4
+p <- ggplot(squad, aes(x = body_mass_kg, y = jump_height_m, colour = sport)) +
+  geom_point(size = 2) +
+  scale_colour_manual(values = sport_cols) +
+  labs(x = "Body mass (kg)", y = "Jump height (m)", colour = NULL)
+
+p + theme_classic() + labs(title = "theme_classic()")
+p + theme_bw() + labs(title = "theme_bw()")
+p + theme_minimal() + labs(title = "theme_minimal()")
+```
+
+Notice that a plot can be **stored in a variable** (`p`) and extended later with `+`. That's very handy for trying out styles.
+
+`theme_classic()` (white background, axis lines, no grid) is the style most often seen in sport-science journals.
+
+All complete themes have a **`base_size`** argument that scales all text. The default (11 pt) is often too small, especially for slides:
+
+```{webr}
+#| fig-width: 9
+#| fig-height: 4
+p + theme_classic(base_size = 16)
+```
+
+## Fine-tuning with `theme()`
+
+Add `theme()` **after** the complete theme to change individual elements. Each element is set with a matching `element_*()` function:
+
+| Element type | Function | Examples |
+|---|---|---|
+| text | `element_text(size, face, colour, angle)` | `axis.title`, `axis.text`, `plot.title`, `legend.text` |
+| lines | `element_line(colour, linewidth, linetype)` | `axis.line`, `panel.grid.major` |
+| boxes | `element_rect(fill, colour)` | `panel.background`, `legend.background` |
+| remove | `element_blank()` | anything you want to hide |
+
+Plus some non-element settings, e.g. `legend.position = "top"` / `"bottom"` / `"none"` / `c(0.8, 0.9)` (inside the panel).
+
+```{webr}
+#| fig-width: 9
+#| fig-height: 4.5
+p + theme_classic(base_size = 14) +
+  theme(
+    legend.position = "top",
+    axis.title = element_text(face = "bold"),
+    axis.text = element_text(colour = "black"),
+    panel.grid.major.y = element_line(colour = "grey90")
+  )
+```
+
+::: {.task}
+Starting from `p` (given), add `theme_classic(base_size = 14)` and then a `theme()` call that:
+
+1. moves the legend to the **bottom**,
+2. makes the **axis titles bold** (`face = "bold"`).
+:::
+
+```{webr}
+#| exercise: m34_1
+#| caption: "Exercise · theme()"
+p <- ggplot(squad, aes(x = body_mass_kg, y = jump_height_m, colour = sport)) +
+  geom_point(size = 2) +
+  scale_colour_manual(values = sport_cols) +
+  labs(x = "Body mass (kg)", y = "Jump height (m)", colour = NULL)
+
+p + theme_classic(base_size = ______) +
+  theme(
+    legend.position = "______",
+    axis.title = element_text(face = "______")
+  )
+```
+
+::: {.hint exercise="m34_1"}
+`base_size = 14`, `legend.position = "bottom"`, `face = "bold"`.
+:::
+
+::: {.solution exercise="m34_1"}
+```{webr}
+#| exercise: m34_1
+#| solution: true
+p <- ggplot(squad, aes(x = body_mass_kg, y = jump_height_m, colour = sport)) +
+  geom_point(size = 2) +
+  scale_colour_manual(values = sport_cols) +
+  labs(x = "Body mass (kg)", y = "Jump height (m)", colour = NULL)
+
+p + theme_classic(base_size = 14) +
+  theme(
+    legend.position = "bottom",
+    axis.title = element_text(face = "bold")
+  )
+```
+:::
+
+```{webr}
+#| exercise: m34_1
+#| check: true
+p <- .result
+th <- p$theme
+lp <- th$legend.position
+at <- th$axis.title
+if (!inherits(p, "ggplot")) {
+  .no("Your code should produce a ggplot.")
+} else if (is.null(lp) || !identical(as.character(lp), "bottom")) {
+  .no("Set `legend.position = \"bottom\"` inside `theme()`.")
+} else if (is.null(at) || !identical(at$face, "bold")) {
+  .no("Make the axis titles bold: `axis.title = element_text(face = \"bold\")`.")
+} else if (!isTRUE(abs(th$text$size - 14) < 0.01)) {
+  .no("Use `theme_classic(base_size = 14)`.")
+} else {
+  .ok("Correct! Complete theme first, then your adjustments in theme().")
+}
+```
+
+::: {.quiz id="m34-q1"}
+You write `p + theme(legend.position = "none") + theme_classic()`. The legend is still there. Why?
+
+- [ ] `legend.position` doesn't exist
+- [x] A complete theme added *afterwards* overrides all earlier theme settings
+- [ ] You need `element_blank()` to remove a legend
+
+::: {.explanation}
+Order matters: complete themes reset everything. Always add the complete theme first, then your `theme()` tweaks.
+:::
+:::
+
+## Your own reusable theme
+
+For a report or thesis, all figures should look the same. Instead of copying the same `theme()` code into every plot, store it once:
+
+```{webr}
+theme_lab <- function(base_size = 14) {
+  theme_classic(base_size = base_size) +
+    theme(
+      axis.text = element_text(colour = "black"),
+      axis.title = element_text(face = "bold"),
+      legend.position = "top",
+      strip.background = element_blank(),         # facet labels without a box
+      strip.text = element_text(face = "bold"),
+      plot.title = element_text(face = "bold", hjust = 0)
+    )
+}
+```
+
+This creates a **function** `theme_lab()` that you can add to any plot:
+
+```{webr}
+#| fig-width: 9
+#| fig-height: 4.5
+ggplot(squad, aes(x = peak_power_rel, y = jump_height_m, colour = sport)) +
+  geom_point(size = 2) +
+  facet_wrap(~ sport) +
+  scale_colour_manual(values = sport_cols, guide = "none") +
+  labs(x = "Peak power (W/kg)", y = "Jump height (m)") +
+  theme_lab()
+```
+
+You can also make it the default for every plot in a script with `theme_set(theme_lab())`. (`guide = "none"` in a scale hides that legend.)
+
+## Exporting figures with `ggsave()`
+
+A figure for a journal or thesis must be saved at the **right size and resolution**. Don't copy it from the RStudio Viewer: use `ggsave()`.
+
+```r
+my_plot <- ggplot(...) + ...
+
+ggsave("figure1.png", plot = my_plot, width = 17, height = 10, units = "cm", dpi = 300)
+ggsave("figure1.pdf", plot = my_plot, width = 17, height = 10, units = "cm")
+ggsave("figure1.tiff", plot = my_plot, width = 8.5, height = 7, units = "cm", dpi = 600)
+```
+
+| Setting | Typical journal requirement |
+|---|---|
+| Width | single column ≈ 8–9 cm, double column ≈ 17–18 cm |
+| Resolution (`dpi`) | ≥ 300 dpi for photos/plots, 600–1000 for line art |
+| Format | **PDF/EPS/SVG** (vector, sharp at any zoom) or high-res **TIFF/PNG** |
+
+::: {.callout-tip}
+## Size first, then fonts
+Text in a figure saved at 8.5 cm wide will look much bigger than in the same figure saved at 30 cm, because `base_size` is in points and doesn't scale with the figure. Decide the final width first, save it, and check that the smallest text is still ≥ 7–8 pt at print size.
+:::
+
+`ggsave()` runs here in the browser too, but the file is stored in the browser's temporary file system, so you can't open it. Try it in RStudio, where the file appears in your project folder.
+
+::: {.quiz id="m34-q2"}
+Which format keeps a plot perfectly sharp at any zoom level?
+
+- [ ] PNG at 72 dpi
+- [ ] JPEG
+- [x] PDF or SVG (vector formats)
+
+::: {.explanation}
+Vector formats store shapes and text, not pixels, so they never get blurry. JPEG also adds compression artefacts around text and lines, so avoid it for plots.
+:::
+:::
+
+::: {.task}
+Write a theme function `theme_poster()` for a conference poster. It should:
+
+1. start from `theme_bw()` with a `base_size` of **20**,
+2. remove the **minor grid lines** (`panel.grid.minor = element_blank()`).
+
+Then apply it to the plot on the last line.
+:::
+
+```{webr}
+#| exercise: m34_2
+#| caption: "Exercise · A reusable theme"
+theme_poster <- function() {
+  theme_bw(base_size = ______) +
+    theme(panel.grid.minor = ______)
+}
+
+ggplot(squad, aes(x = sport, y = jump_height_m)) +
+  geom_boxplot() +
+  ______
+```
+
+::: {.hint exercise="m34_2"}
+`base_size = 20`, `panel.grid.minor = element_blank()`, and add `theme_poster()` to the plot.
+:::
+
+::: {.solution exercise="m34_2"}
+```{webr}
+#| exercise: m34_2
+#| solution: true
+theme_poster <- function() {
+  theme_bw(base_size = 20) +
+    theme(panel.grid.minor = element_blank())
+}
+
+ggplot(squad, aes(x = sport, y = jump_height_m)) +
+  geom_boxplot() +
+  theme_poster()
+```
+:::
+
+```{webr}
+#| exercise: m34_2
+#| check: true
+p <- .result
+th <- p$theme
+if (!inherits(p, "ggplot")) {
+  .no("Your code should produce a ggplot.")
+} else if (!exists("theme_poster", envir = .envir_result) || !is.function(get("theme_poster", envir = .envir_result))) {
+  .no("Define the function `theme_poster`.")
+} else if (!isTRUE(abs(th$text$size - 20) < 0.01)) {
+  .no("Use `theme_bw(base_size = 20)` and add `theme_poster()` to the plot.")
+} else if (!inherits(th$panel.grid.minor, "element_blank")) {
+  .no("Remove the minor grid lines with `panel.grid.minor = element_blank()`.")
+} else {
+  .ok("Great! Now every poster figure can use the same style with one line of code.")
+}
+```
+
+## A checklist for publication-quality figures
+
+Before you submit a figure, check that:
+
+1. ☐ every axis has a title with **units**,
+2. ☐ text is **large enough** at the final printed size,
+3. ☐ colours are **colour-blind friendly** and still distinguishable in grey-scale,
+4. ☐ the **raw data** are visible where possible, not just means,
+5. ☐ the caption says what error bars show (**SD, SE or CI**) and how many observations there are,
+6. ☐ **axis limits** don't exaggerate differences (bar charts must start at 0),
+7. ☐ there's no **chart junk**: unnecessary 3D effects, shading, heavy grids or redundant legends,
+8. ☐ all figures share a **consistent style** (same theme, same colour for the same group),
+9. ☐ it's saved with `ggsave()` at the required **size, resolution and format**.
+
+::: {.quiz id="m34-q3"}
+A bar chart of mean jump heights (38 vs. 41 cm) has a y-axis starting at 37 cm, making one bar look three times taller than the other. What's the problem?
+
+- [ ] Nothing: zooming makes differences visible
+- [x] Bars encode values by their length from zero, so a truncated axis exaggerates the difference
+- [ ] The bars should be horizontal
+
+::: {.explanation}
+For bar charts the length of the bar *is* the value, so the axis must start at 0. If you need to zoom, use points (e.g. mean ± SD with the raw data) instead of bars.
+:::
+:::
+
+## Lesson summary
+
+- Complete themes (`theme_classic()`, `theme_bw()`, …) set the overall look; `base_size` scales the text.
+- `theme()` + `element_text()` / `element_line()` / `element_rect()` / `element_blank()` fine-tune elements. Add it *after* the complete theme.
+- Store your style in a function (`theme_lab <- function() theme_classic() + theme(...)`) and reuse it.
+- Export with `ggsave(file, plot, width, height, units = "cm", dpi = 300)`; prefer vector formats.
+
+### Scratchpad
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

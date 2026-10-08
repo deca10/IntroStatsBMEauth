@@ -1,0 +1,262 @@
+---
+title: "4.8 Categorical data: chi-square tests"
+subtitle: "Testing proportions and associations between categorical variables"
+webr:
+  packages: ['ggplot2']
+  resources:
+    - data/balance.csv
+    - data/jump_squad.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+theme_set(theme_classic(base_size = 14))
+balance <- read.csv("data/balance.csv")
+balance$faller <- ifelse(balance$falls_12m >= 1, "Faller", "Non-faller")
+squad <- read.csv("data/jump_squad.csv")
+squad$mass_group <- cut(squad$body_mass_kg,
+                        breaks = quantile(squad$body_mass_kg, probs = c(0, 1/3, 2/3, 1)),
+                        include.lowest = TRUE, labels = c("Light", "Medium", "Heavy"))
+```
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- test whether observed category counts match expected proportions (**goodness-of-fit**),
+- test whether two categorical variables are **associated** (**chi-square test of independence**),
+- calculate and use **expected counts**, and know when to use **Fisher's exact test** instead,
+- report proportions and an effect size (**Cramér's V**).
+
+⏱️ About 35 minutes.
+:::
+
+## When the outcome is a category
+
+*t*-tests, ANOVA and regression need a **numeric** outcome. When both variables are **categorical** (faller yes/no, injured yes/no, sex, playing position…), you analyse **counts** in a **contingency table** instead:
+
+```{webr}
+tab <- table(balance$age_group, balance$faller)
+tab
+prop.table(tab, margin = 1)   # proportions within each row (age group)
+```
+
+`prop.table(tab, margin = 1)` divides each row by its total: 25 % of older and 26 % of younger participants reported a fall.
+
+## Goodness-of-fit: does the sample match expected proportions?
+
+Were men and women recruited equally? H₀: the population proportions are 50 % / 50 %.
+
+```{webr}
+table(balance$sex)
+chisq.test(table(balance$sex), p = c(0.5, 0.5))
+```
+
+The test compares **observed** counts (116 F, 47 M) with **expected** counts under H₀ (81.5 each):
+
+$$\chi^2 = \sum \frac{(\text{observed} - \text{expected})^2}{\text{expected}}$$
+
+χ² = 29.2, *p* < 0.001: women are clearly over-represented in this sample. That's worth knowing before generalising any result to men!
+
+## Test of independence
+
+Is falling **associated** with age group? H₀: the two variables are independent (the proportion of fallers is the same in both age groups).
+
+Under H₀, the expected count in each cell is
+
+$$E = \frac{\text{row total} \times \text{column total}}{\text{grand total}}$$
+
+and the χ² statistic sums the squared differences between observed and expected counts, as above.
+
+::: {.task}
+Test whether falling (`faller`) is associated with `age_group`.
+
+1. Make the contingency table `tab` with `table()`.
+2. Run `chisq.test()` on it and store the result in `res`.
+3. Look at the expected counts with `res$expected`.
+:::
+
+```{webr}
+#| exercise: cs_1
+#| caption: "Exercise · Chi-square test of independence"
+tab <- table(balance$______, balance$______)
+res <- chisq.test(______)
+res
+res$expected
+```
+
+::: {.hint exercise="cs_1"}
+`table(balance$age_group, balance$faller)` and `chisq.test(tab)`.
+:::
+
+::: {.solution exercise="cs_1"}
+```{webr}
+#| exercise: cs_1
+#| solution: true
+tab <- table(balance$age_group, balance$faller)
+res <- chisq.test(tab)
+res
+res$expected
+```
+:::
+
+```{webr}
+#| exercise: cs_1
+#| check: true
+r <- get("res", envir = .checker_args$envir_solution)
+e <- .envir_result
+if (!exists("res", envir = e, inherits = FALSE) || !inherits(get("res", envir = e), "htest")) {
+  .no("Store the result of `chisq.test(tab)` in `res`.")
+} else if (!isTRUE(all.equal(unname(get("res", envir = e)$statistic), unname(r$statistic)))) {
+  .no("Check the table: rows = age_group, columns = faller (the other way round also gives the same χ², so check the spelling of the columns).")
+} else {
+  .ok(paste0("Correct! χ² = ", signif(r$statistic, 2), ", p = ", round(r$p.value, 2),
+             ": no evidence of an association. The observed counts are almost exactly the expected ones. Surprised? In this sample, younger and older adults reported a fall equally often. Remember that a fall count alone says nothing about why or how someone fell."))
+}
+```
+
+::: {.callout-note}
+## Yates' continuity correction
+For 2 × 2 tables, R applies **Yates' correction** by default (it says so in the output), which makes the test slightly more conservative. With larger tables, no correction is applied.
+:::
+
+## A significant association, and its size
+
+In the squad, are body-mass groups associated with sport?
+
+```{webr}
+tab2 <- table(squad$mass_group, squad$sport)
+tab2
+chisq.test(tab2)
+```
+
+χ²(2) = 44.9, *p* < 0.001: a very strong association (we already know basketball players are heavier).
+
+With large samples, even weak associations become significant. **Cramér's V** measures the **strength** of the association on a 0–1 scale:
+
+$$V = \sqrt{\frac{\chi^2}{n \times (k - 1)}}$$
+
+where *n* is the total count and *k* the **smaller** of the number of rows and columns. Rough benchmarks for k = 2: 0.1 small, 0.3 medium, 0.5 large.
+
+::: {.task}
+Calculate Cramér's V for the association between `mass_group` and `sport`. The χ² value is in `res$statistic`.
+:::
+
+```{webr}
+#| exercise: cs_2
+#| caption: "Exercise · Cramér's V"
+tab2 <- table(squad$mass_group, squad$sport)
+res <- chisq.test(tab2)
+
+n <- sum(tab2)
+k <- min(nrow(tab2), ncol(tab2))
+V <- sqrt(______ / (______ * (______ - 1)))
+unname(V)
+```
+
+::: {.hint exercise="cs_2"}
+`V <- sqrt(res$statistic / (n * (k - 1)))`
+:::
+
+::: {.solution exercise="cs_2"}
+```{webr}
+#| exercise: cs_2
+#| solution: true
+tab2 <- table(squad$mass_group, squad$sport)
+res <- chisq.test(tab2)
+
+n <- sum(tab2)
+k <- min(nrow(tab2), ncol(tab2))
+V <- sqrt(res$statistic / (n * (k - 1)))
+unname(V)
+```
+:::
+
+```{webr}
+#| exercise: cs_2
+#| check: true
+.check_vars("V", .envir_result, .checker_args$envir_solution,
+  ok = paste0("Correct! V = ", round(get("V", envir = .checker_args$envir_solution), 2), ": a large association. Body mass and sport are strongly linked, which is why sport and body mass were confounded in lesson 4.7."))
+```
+
+## Small expected counts: Fisher's exact test
+
+The χ² test is an approximation that works well when **all expected counts are at least 5**. R warns you when they aren't. Then use **Fisher's exact test**, which calculates the *p*-value exactly:
+
+```{webr}
+tab3 <- table(balance$disability, balance$faller)
+tab3
+chisq.test(tab3)$expected   # one expected count is about 4.1: below 5
+fisher.test(tab3)
+```
+
+For 2 × 2 tables, `fisher.test()` also gives an **odds ratio** with its 95 % CI: the odds of being a faller in one group divided by the odds in the other.
+
+::: {.quiz id="cs-q1"}
+Which situation calls for **Fisher's exact test** instead of a χ² test?
+
+- [ ] A 2 × 2 table with 500 participants and all expected counts above 50
+- [x] A 2 × 2 table of injury (yes/no) by footwear (A/B) in 18 runners, with expected counts of 2 to 7
+- [ ] Comparing mean jump heights between two groups
+
+::: {.explanation}
+With small expected counts (< 5), the χ² approximation is unreliable. Means are compared with a *t*-test, not with a test for counts.
+:::
+:::
+
+::: {.quiz id="cs-q2"}
+`chisq.test(table(balance$fear_falling, balance$faller))` gives *p* = 0.58. The correct conclusion is:
+
+- [ ] Fear of falling protects against falls
+- [x] There is no evidence of an association between the fear-of-falling category and having fallen in this sample
+- [ ] Fallers have more fear of falling
+
+::: {.explanation}
+A non-significant result means the data are compatible with independence; it doesn't prove independence, and the test says nothing about direction.
+:::
+:::
+
+::: {.quiz id="cs-q3"}
+Why shouldn't you run a χ² test on a table of **percentages**?
+
+- [x] The test is based on counts; percentages hide the sample size, so χ² would be wrong
+- [ ] Percentages are always below 100
+- [ ] It's fine as long as they add up to 100 %
+
+::: {.explanation}
+χ² depends on the actual numbers: 10 % of 20 athletes and 10 % of 2000 athletes are very different amounts of evidence. Always use the raw counts.
+:::
+:::
+
+## Visualising categorical associations
+
+A **stacked proportional bar chart** (`position = "fill"`) shows the proportion of each category within each group:
+
+```{webr}
+ggplot(balance, aes(x = fear_falling, fill = faller)) +
+  geom_bar(position = "fill") +
+  scale_fill_manual(values = c(Faller = "#D55E00", `Non-faller` = "grey70")) +
+  scale_y_continuous(labels = function(x) paste0(x * 100, " %")) +
+  labs(x = "Fear of falling", y = "Proportion of participants", fill = NULL)
+```
+
+## Lesson summary
+
+- Count data → contingency table: `table(a, b)`; proportions with `prop.table(tab, margin = 1)`.
+- Goodness-of-fit: `chisq.test(table(x), p = c(...))`.
+- Independence: `chisq.test(table(a, b))`; inspect `$expected`.
+- Expected counts < 5 → `fisher.test()` (gives an odds ratio for 2 × 2 tables).
+- Effect size: **Cramér's V** = √(χ² / (n·(k − 1))).
+- Plot with `geom_bar(position = "fill")`.
+
+### Scratchpad
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

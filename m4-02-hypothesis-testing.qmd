@@ -1,0 +1,256 @@
+---
+title: "4.2 Hypothesis testing"
+subtitle: "Null hypotheses, p-values, errors, power, and statistical vs. practical significance"
+webr:
+  packages: ['ggplot2']
+  resources:
+    - data/jump_squad.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+theme_set(theme_classic(base_size = 14))
+squad <- read.csv("data/jump_squad.csv")
+```
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- formulate a **null** and an **alternative hypothesis**,
+- explain what a ***p*-value** is (and what it isn't),
+- run a **one-sample *t*-test** with `t.test()`,
+- describe **type I and type II errors** and **statistical power**,
+- distinguish **statistical** from **practical** significance.
+
+⏱️ About 40 minutes.
+:::
+
+## The logic of a hypothesis test
+
+A strength coach claims: *"Professional athletes in our league jump 40 cm on average."* Our squad of 84 athletes has a mean of:
+
+```{webr}
+mean(squad$jump_height_m)
+```
+
+That's 39.3 cm, not 40 cm. But samples always differ a bit from the population. Is this difference **larger than what sampling variability alone would produce**? A hypothesis test answers this in four steps:
+
+1. **State the hypotheses.**
+   - Null hypothesis **H₀**: nothing special is going on. *The population mean is 0.40 m.*
+   - Alternative hypothesis **H₁**: *the population mean is not 0.40 m.*
+2. **Calculate a test statistic** that measures how far the data are from H₀, in units of standard error. For a mean, that's the ***t*-statistic**:
+   $$t = \frac{\bar{x} - \mu_0}{SE}$$
+3. **Find the *p*-value**: the probability of getting a *t* at least this extreme **if H₀ were true**.
+4. **Decide**: if *p* is smaller than a pre-chosen **significance level α** (usually 0.05), reject H₀ ("statistically significant"). Otherwise, you *fail to reject* H₀.
+
+## The one-sample *t*-test
+
+`t.test(x, mu = value)` tests whether the mean of `x` differs from `value`:
+
+```{webr}
+t.test(squad$jump_height_m, mu = 0.40)
+```
+
+The output gives the *t*-statistic, the degrees of freedom (*n* − 1), the *p*-value, the 95 % CI and the sample mean. Here *p* ≈ 0.29 > 0.05, so we **cannot reject** the coach's claim. A 0.7 cm difference is easily explained by sampling variability.
+
+Notice that 0.40 m lies **inside** the 95 % CI. That's no coincidence: a two-sided test at α = 0.05 is significant exactly when the hypothesised value lies outside the 95 % CI.
+
+::: {.task}
+A physiotherapist states that the average **mean propulsive force** (`con_force_rel`) of professional athletes is **20 N/kg**. Test this claim with a one-sample *t*-test on the squad data. Store the result in `res`, then print the *p*-value with `res$p.value`.
+:::
+
+```{webr}
+#| exercise: ht_1
+#| caption: "Exercise · One-sample t-test"
+res <- t.test(______, mu = ______)
+res
+res$p.value
+```
+
+::: {.hint exercise="ht_1"}
+`t.test(squad$con_force_rel, mu = 20)`
+:::
+
+::: {.solution exercise="ht_1"}
+```{webr}
+#| exercise: ht_1
+#| solution: true
+res <- t.test(squad$con_force_rel, mu = 20)
+res
+res$p.value
+```
+:::
+
+```{webr}
+#| exercise: ht_1
+#| check: true
+r <- get("res", envir = .checker_args$envir_solution)
+.check_result(.result, .checker_args$solution,
+  ok = paste0("Correct! Mean = ", round(r$estimate, 2), " N/kg, t = ", round(r$statistic, 2), ", p = ", signif(r$p.value, 2),
+              ". ", if (r$p.value < 0.05) "p < 0.05, so we reject H₀." else "p > 0.05, so we can't reject H₀: the data are compatible with 20 N/kg."),
+  no = "Not quite. Use `t.test(squad$con_force_rel, mu = 20)` and end with `res$p.value`.")
+```
+
+## What a *p*-value is, and what it isn't
+
+The *p*-value is: **the probability of observing data at least as extreme as ours, assuming H₀ is true.**
+
+A small *p* means the data would be surprising if H₀ were true. Common **misinterpretations**:
+
+| ❌ Wrong | ✅ Why |
+|---|---|
+| "*p* = 0.03 means there's a 3 % chance H₀ is true." | *p* is calculated *assuming* H₀ is true; it can't be the probability of H₀. |
+| "*p* > 0.05 proves there's no effect." | Absence of evidence isn't evidence of absence. The study may simply be too small. |
+| "A smaller *p* means a bigger effect." | *p* depends on effect size **and** sample size. A tiny effect in a huge sample can give a tiny *p*. |
+| "*p* < 0.05 means the result is important." | Statistical significance ≠ practical importance (see below). |
+
+::: {.quiz id="ht-q1"}
+A study finds *p* = 0.20 for the difference in sprint time between two training groups. What can you conclude?
+
+- [ ] The two training methods are equally effective
+- [x] The data don't provide convincing evidence of a difference; a real difference could still exist
+- [ ] There is a 20 % chance that the training methods differ
+
+::: {.explanation}
+Failing to reject H₀ isn't proof of H₀. Look at the CI of the difference: if it's wide, the study is inconclusive.
+:::
+:::
+
+## Two kinds of errors
+
+Every decision can be wrong in two ways:
+
+| | H₀ is actually true | H₀ is actually false |
+|---|---|---|
+| **Reject H₀** | ❌ **Type I error** (false positive), probability α | ✅ correct (probability = **power**) |
+| **Don't reject H₀** | ✅ correct | ❌ **Type II error** (false negative), probability β |
+
+α is the risk you accept of declaring an effect that doesn't exist. With α = 0.05, **1 in 20 tests of a true null hypothesis will be "significant" by chance**. Let's check that with a simulation: two groups drawn from the **same** population, so H₀ is true:
+
+```{webr}
+set.seed(1)
+p_values <- replicate(1000, t.test(rnorm(20, mean = 40, sd = 5), rnorm(20, mean = 40, sd = 5))$p.value)
+mean(p_values < 0.05)
+```
+
+About 5 % false positives, as promised. Now imagine a study measuring **20 different variables**, each tested at α = 0.05: you'd expect one "significant" result even if nothing is going on. This is the **multiple comparisons problem**, and it's why fishing through many variables for *p* < 0.05 is bad practice.
+
+## Statistical power
+
+**Power** (1 − β) is the probability that a test detects an effect that really exists. It depends on:
+
+- the **effect size** (bigger effects are easier to detect),
+- the **sample size** (more athletes → more power),
+- the **variability** of the measurements (a more reliable test → more power),
+- α.
+
+Studies in sport science often have small samples and therefore low power: they may miss real effects, and the significant effects they *do* find tend to be overestimated.
+
+::: {.task}
+Estimate power by simulation. Suppose a training programme truly improves jump height by **3 cm** (from 40 to 43 cm, SD 5 cm). With **20 athletes per group**, how often would a *t*-test detect it?
+
+Complete the code: the second group's mean should be **43**. `power_20` is the proportion of the 1000 simulated studies with *p* < 0.05.
+:::
+
+```{webr}
+#| exercise: ht_2
+#| caption: "Exercise · Power by simulation"
+set.seed(42)
+p_values <- replicate(1000, t.test(rnorm(20, mean = 40, sd = 5),
+                                   rnorm(20, mean = ______, sd = 5))$p.value)
+power_20 <- mean(______ < 0.05)
+power_20
+```
+
+::: {.hint exercise="ht_2"}
+`mean = 43` and `power_20 <- mean(p_values < 0.05)`.
+:::
+
+::: {.solution exercise="ht_2"}
+```{webr}
+#| exercise: ht_2
+#| solution: true
+set.seed(42)
+p_values <- replicate(1000, t.test(rnorm(20, mean = 40, sd = 5),
+                                   rnorm(20, mean = 43, sd = 5))$p.value)
+power_20 <- mean(p_values < 0.05)
+power_20
+```
+:::
+
+```{webr}
+#| exercise: ht_2
+#| check: true
+pw <- if (exists("power_20", envir = .envir_result, inherits = FALSE)) get("power_20", envir = .envir_result) else NA
+if (is.na(pw)) {
+  .no("Create `power_20`.")
+} else if (pw < 0.3 || pw > 0.6) {
+  .no("That doesn't look right. The second group should have `mean = 43`, and `power_20 <- mean(p_values < 0.05)`.")
+} else {
+  .ok(paste0("Correct! Power ≈ ", round(100 * pw), " %: a real 3 cm improvement would be MISSED in more than half of such studies. Try 60 athletes per group: power rises to about 90 %."))
+}
+```
+
+::: {.quiz id="ht-q2"}
+A study with 8 athletes per group finds no significant effect of a supplement (*p* = 0.31). What's the most likely issue?
+
+- [ ] The supplement has no effect
+- [x] The study may have had too little power to detect a realistic effect
+- [ ] α was set too low
+
+::: {.explanation}
+With 8 per group, only large effects can be detected reliably. Report the effect size with its CI, and plan sample sizes with a power analysis before collecting data.
+:::
+:::
+
+## Statistical vs. practical significance
+
+With enough data, *any* tiny difference becomes "statistically significant". The question a coach cares about is: **is the difference big enough to matter?**
+
+Imagine 5,000 athletes per group with a true difference of 0.3 cm in jump height:
+
+```{webr}
+set.seed(7)
+group_a <- rnorm(5000, mean = 40.0, sd = 5)
+group_b <- rnorm(5000, mean = 40.3, sd = 5)
+t.test(group_a, group_b)$p.value
+```
+
+*p* is small, but 0.3 cm is less than the trial-to-trial variation of a single athlete. It's practically irrelevant. Always report and interpret:
+
+1. the **effect size** in meaningful units (cm, %, s) or as a standardised effect (Cohen's *d*, [lesson 4.3](m4-03-t-tests.qmd)),
+2. its **confidence interval**,
+3. whether it exceeds the **smallest worthwhile change** for your context ([lesson 4.9](m4-09-reliability.qmd)).
+
+::: {.quiz id="ht-q3"}
+A large study reports that a new shoe improves sprint time by 0.004 s over 30 m (*p* = 0.001). The best summary is:
+
+- [ ] The shoe makes athletes much faster
+- [x] The effect is statistically significant, but probably too small to matter in practice
+- [ ] The result must be a type I error
+
+::: {.explanation}
+A *p*-value says nothing about the size of the effect. 4 milliseconds over 30 m is smaller than the timing gates' precision.
+:::
+:::
+
+## Lesson summary
+
+- Hypothesis test: H₀ vs. H₁ → test statistic → *p*-value → compare with α.
+- `t.test(x, mu = value)`: one-sample *t*-test. Results: `$statistic`, `$p.value`, `$conf.int`, `$estimate`.
+- *p* = P(data this extreme | H₀ true). It's **not** the probability that H₀ is true, and not a measure of effect size.
+- Type I error = false positive (α); type II error = false negative (β); power = 1 − β.
+- Report **effect sizes with CIs** and judge practical relevance, not just *p* < 0.05.
+
+### Scratchpad
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

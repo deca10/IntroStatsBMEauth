@@ -1,0 +1,5 @@
+.quarto/
+.DS_Store
+Rplots.pdf
+*.Rhistory
+.Rproj.user/

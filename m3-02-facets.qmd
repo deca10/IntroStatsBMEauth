@@ -1,0 +1,312 @@
+---
+title: "3.2 Facets, reference lines and annotations"
+subtitle: "Small multiples, more variables in one plot, and labels that tell the story"
+webr:
+  packages: ['ggplot2', 'ggrepel']
+  resources:
+    - data/jump_squad.csv
+    - data/balance.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+library(ggrepel)
+theme_set(theme_gray(base_size = 14))
+squad <- read.csv("data/jump_squad.csv")
+balance <- read.csv("data/balance.csv")
+```
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- split a plot into **small multiples** with `facet_wrap()` and `facet_grid()`,
+- show more variables with the aesthetics `shape` and `size`,
+- add **reference lines** (`geom_hline()`, `geom_vline()`, `geom_abline()`), and use an identity line to catch a data error,
+- **annotate** plots with text, and label individual athletes with **ggrepel**.
+
+⏱️ About 40 minutes.
+:::
+
+## Small multiples with `facet_wrap()`
+
+A **facet** splits one plot into several panels, one per group, all with the same axes. This is often clearer than squeezing every group into one panel with different colours. `facet_wrap(~ variable)` creates one panel per value of `variable`:
+
+```{webr}
+#| fig-width: 9
+#| fig-height: 4
+ggplot(squad, aes(x = peak_power_rel, y = jump_height_m)) +
+  geom_point() +
+  facet_wrap(~ sport)
+```
+
+Useful arguments:
+
+- `ncol` / `nrow`: the layout of the panels,
+- `scales = "free_y"` (or `"free_x"`, `"free"`): let each panel have its own axis range. Use this with care, because readers naturally compare panels as if the axes were the same!
+
+::: {.task}
+Make histograms of `body_mass_kg` (`binwidth = 5`, `fill = "steelblue"`, `colour = "white"`), with **one panel per sport stacked vertically** (`ncol = 1`), so the two distributions are easy to compare on the same x-axis.
+:::
+
+```{webr}
+#| exercise: m32_1
+#| caption: "Exercise · facet_wrap"
+#| fig-width: 8
+#| fig-height: 5
+ggplot(squad, aes(x = body_mass_kg)) +
+  geom_histogram(binwidth = 5, fill = "steelblue", colour = "white") +
+  facet_wrap(______, ncol = ______)
+```
+
+::: {.hint exercise="m32_1"}
+`facet_wrap(~ sport, ncol = 1)`. Don't forget the tilde `~`.
+:::
+
+::: {.solution exercise="m32_1"}
+```{webr}
+#| exercise: m32_1
+#| solution: true
+#| fig-width: 8
+#| fig-height: 5
+ggplot(squad, aes(x = body_mass_kg)) +
+  geom_histogram(binwidth = 5, fill = "steelblue", colour = "white") +
+  facet_wrap(~ sport, ncol = 1)
+```
+:::
+
+```{webr}
+#| exercise: m32_1
+#| check: true
+p <- .result
+res <- .check_plot(p, geoms = "GeomBar")
+if (isTRUE(res$correct)) {
+  if (!inherits(p$facet, "FacetWrap")) res <- .no("Add `facet_wrap(~ sport, ncol = 1)`.")
+  else if (!identical(p$facet$params$ncol, 1) && !identical(p$facet$params$ncol, 1L)) res <- .no("Stack the panels with `ncol = 1`.")
+  else res <- .ok("Correct! With a shared x-axis you immediately see that basketball players are heavier, with only a partial overlap between the sports.")
+}
+res
+```
+
+## Two-way grids with `facet_grid()`
+
+`facet_grid(rows ~ cols)` makes a grid with one variable defining the rows and another the columns:
+
+```{webr}
+#| fig-width: 9
+#| fig-height: 6
+ggplot(balance, aes(x = age, y = minibest)) +
+  geom_point(alpha = 0.6) +
+  facet_grid(sex ~ activity)
+```
+
+Use `.` for "no variable": `facet_grid(. ~ sex)` gives one row of panels.
+
+::: {.quiz id="m32-q1"}
+You use `facet_wrap(~ sport, scales = "free_y")`. What's the risk?
+
+- [ ] The plot becomes slower
+- [x] Each panel gets its own y-range, so readers may misjudge differences between panels
+- [ ] Points are removed from the plot
+
+::: {.explanation}
+Free scales are useful when groups have very different ranges, but the same visual height then means different values in different panels. Mention it in the caption, or keep the scales fixed when comparing groups is the point of the figure.
+:::
+:::
+
+## More variables: `shape` and `size`
+
+Besides `x`, `y`, `colour` and `fill`, points have a **`shape`** (good for a categorical variable, especially in black-and-white print) and a **`size`** (for a numeric variable, a "bubble chart"):
+
+```{webr}
+ggplot(squad, aes(x = con_time_s, y = con_force_rel, colour = jump_height_m, shape = sport)) +
+  geom_point(size = 3)
+```
+
+This one plot shows four variables. Notice the pattern: **for the same jump height (colour), athletes with a shorter push-off (x) produce a larger force (y)**. Keep this in mind for the regression lesson in Module 4!
+
+::: {.callout-warning}
+Don't overdo it. Four variables in one plot is usually the maximum readers can digest. If it gets crowded, use facets instead.
+:::
+
+## Reference lines
+
+Reference lines give the reader a benchmark:
+
+- `geom_hline(yintercept = ...)`: a horizontal line, e.g. a target value or a group mean,
+- `geom_vline(xintercept = ...)`: a vertical line,
+- `geom_abline(intercept = ..., slope = ...)`: any straight line. With intercept 0 and slope 1 it's the **identity line** (y = x).
+
+```{webr}
+ggplot(squad, aes(x = sport, y = jump_height_m)) +
+  geom_jitter(width = 0.1) +
+  geom_hline(yintercept = mean(squad$jump_height_m), linetype = "dashed", colour = "firebrick")
+```
+
+### Catching a data error with an identity line
+
+The dataset contains the **peak** (`ecc_rfd_max`) and the **mean** (`ecc_rfd_mean`) eccentric rate of force development of every athlete. By definition, the peak of a signal can never be *smaller* than its mean. Plot them against each other with the identity line y = x: every point **must** lie on the side of the line where max > mean.
+
+::: {.task}
+Make a scatter plot of `ecc_rfd_mean` (x) against `ecc_rfd_max` (y) and add the identity line with `geom_abline(intercept = 0, slope = 1, linetype = "dashed")`. Then, on the last line of code, use `subset()` to find the athlete(s) whose max is **smaller** than their mean.
+:::
+
+```{webr}
+#| exercise: m32_2
+#| caption: "Exercise · Identity line"
+p <- ggplot(squad, aes(x = ecc_rfd_mean, y = ecc_rfd_max)) +
+  geom_point() +
+  geom_abline(intercept = ______, slope = ______, linetype = "dashed")
+print(p)
+
+# Which athlete(s) have max < mean?
+subset(squad, ______)[, c("id", "ecc_rfd_mean", "ecc_rfd_max")]
+```
+
+::: {.hint exercise="m32_2"}
+`intercept = 0, slope = 1`, and `subset(squad, ecc_rfd_max < ecc_rfd_mean)`.
+:::
+
+::: {.solution exercise="m32_2"}
+```{webr}
+#| exercise: m32_2
+#| solution: true
+p <- ggplot(squad, aes(x = ecc_rfd_mean, y = ecc_rfd_max)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed")
+print(p)
+
+# Which athlete(s) have max < mean?
+subset(squad, ecc_rfd_max < ecc_rfd_mean)[, c("id", "ecc_rfd_mean", "ecc_rfd_max")]
+```
+:::
+
+```{webr}
+#| exercise: m32_2
+#| check: true
+p <- get("p", envir = .envir_result)
+res <- .check_plot(p, geoms = c("GeomPoint", "GeomAbline"))
+if (isTRUE(res$correct)) res <- .check_result(.result, .checker_args$solution,
+  ok = "Well spotted! Athlete S08 lies *below* the identity line: a peak RFD of 2855 N/s with a mean of 5998 N/s is physically impossible. This is a processing or data-entry error, and that value should be checked in the raw force file before any analysis. A simple plot found what a table of 84 × 21 numbers would hide.",
+  no = "The plot is right. Now find the row(s) where `ecc_rfd_max < ecc_rfd_mean`.")
+res
+```
+
+## Annotations
+
+Use `annotate()` to add text, arrows or shaded areas at specific coordinates. These are not mapped from the data:
+
+```{webr}
+ggplot(squad, aes(x = body_mass_kg, y = jump_height_m, colour = sport)) +
+  geom_point() +
+  annotate("rect", xmin = 60, xmax = 80, ymin = 0.45, ymax = 0.56, alpha = 0.15, fill = "darkgreen") +
+  annotate("text", x = 70, y = 0.57, label = "Light, high jumpers", size = 4.5)
+```
+
+### Labelling individual points
+
+To label points with a value from the data (e.g. athlete IDs), use `geom_text()` with the `label` aesthetic. When labels overlap, the **ggrepel** package's `geom_text_repel()` pushes them apart. Labelling every point is cluttered, so pass a **subset of the data** to the label layer:
+
+```{webr}
+top <- subset(squad, jump_height_m > 0.48)
+
+ggplot(squad, aes(x = peak_power_rel, y = jump_height_m)) +
+  geom_point(colour = "grey50") +
+  geom_point(data = top, colour = "firebrick", size = 3) +
+  geom_text_repel(data = top, aes(label = id), colour = "firebrick")
+```
+
+Each layer can use **its own data** via the `data` argument, which is very handy for highlighting.
+
+::: {.task}
+Highlight and label the **five athletes with the shortest contraction time** (`contraction_time_s`) in a scatter plot of `contraction_time_s` (x) against `jump_height_m` (y).
+
+1. `fast` (the five fastest athletes) is created for you with `order()` and `head()`.
+2. Add a red point layer and a `geom_text_repel()` layer that both use `data = fast`.
+:::
+
+```{webr}
+#| exercise: m32_3
+#| caption: "Exercise · Highlight and label"
+fast <- head(squad[order(squad$contraction_time_s), ], 5)
+
+ggplot(squad, aes(x = contraction_time_s, y = jump_height_m)) +
+  geom_point(colour = "grey50") +
+  geom_point(data = ______, colour = "red", size = 3) +
+  geom_text_repel(data = ______, aes(label = ______), colour = "red")
+```
+
+::: {.hint exercise="m32_3"}
+Use `data = fast` in both layers and `aes(label = id)`.
+:::
+
+::: {.solution exercise="m32_3"}
+```{webr}
+#| exercise: m32_3
+#| solution: true
+fast <- head(squad[order(squad$contraction_time_s), ], 5)
+
+ggplot(squad, aes(x = contraction_time_s, y = jump_height_m)) +
+  geom_point(colour = "grey50") +
+  geom_point(data = fast, colour = "red", size = 3) +
+  geom_text_repel(data = fast, aes(label = id), colour = "red")
+```
+:::
+
+```{webr}
+#| exercise: m32_3
+#| check: true
+p <- .result
+res <- .check_plot(p, geoms = c("GeomPoint", "GeomTextRepel"), aes = "label")
+if (isTRUE(res$correct)) {
+  n_lab <- nrow(p$layers[[length(p$layers)]]$data)
+  if (is.null(n_lab) || n_lab != 5) res <- .no("The label layer should use `data = fast` (5 athletes).")
+  else res <- .ok("Nice! Fast doesn't automatically mean high: some of the quickest athletes jump only average heights.")
+}
+res
+```
+
+::: {.quiz id="m32-q2"}
+Which function draws the line **y = x**?
+
+- [ ] `geom_hline(yintercept = 1)`
+- [x] `geom_abline(intercept = 0, slope = 1)`
+- [ ] `geom_vline(xintercept = 0)`
+
+::: {.explanation}
+`geom_abline()` draws a line with a given intercept and slope. Intercept 0 and slope 1 is the identity line, ideal for comparing two measurements of the same quantity (e.g. two devices, or test vs. retest).
+:::
+:::
+
+::: {.quiz id="m32-q3"}
+In `geom_point(data = top, colour = "red")`, what does `data = top` do?
+
+- [ ] It replaces the data for the whole plot
+- [x] Only this layer uses the data frame `top`; the other layers keep the main data
+- [ ] It gives an error, because data can only be set in `ggplot()`
+
+::: {.explanation}
+Every layer can have its own data. This is how you highlight or label a subset of observations.
+:::
+:::
+
+## Lesson summary
+
+- `facet_wrap(~ var)` → panels per group; `facet_grid(rows ~ cols)` → a grid; `scales = "free"` with care.
+- `shape` (categorical) and `size` (numeric) add variables, but don't overload a plot.
+- Reference lines: `geom_hline()`, `geom_vline()`, `geom_abline()`; an identity line is great for spotting impossible values.
+- `annotate()` adds fixed text and shapes; `geom_text_repel(data = subset, aes(label = ...))` labels selected points.
+
+### Scratchpad
+
+`squad` and `balance` are loaded, along with ggrepel.
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

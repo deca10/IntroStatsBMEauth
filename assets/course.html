@@ -1,0 +1,266 @@
+<script>
+/*
+  Course runtime: interactive quizzes, lesson completion and progress tracking.
+  Progress is stored in the student's own browser (localStorage) only.
+*/
+(function () {
+  const LESSONS = [
+    { file: "m1-01-basics.html",               title: "1.1 R basics",                   module: "Module 1 · Introduction to R" },
+    { file: "m1-02-vectors.html",              title: "1.2 Vectors",                    module: "Module 1 · Introduction to R" },
+    { file: "m1-03-factors.html",              title: "1.3 Factors",                    module: "Module 1 · Introduction to R" },
+    { file: "m1-04-data-frames.html",          title: "1.4 Data frames",                module: "Module 1 · Introduction to R" },
+    { file: "m1-05-ggplot.html",               title: "1.5 Plotting with ggplot2",      module: "Module 1 · Introduction to R" },
+    { file: "m1-06-checkpoint.html",           title: "1.6 Module checkpoint",          module: "Module 1 · Introduction to R" },
+    { file: "m2-01-what-is-statistics.html",   title: "2.1 What is statistics?",        module: "Module 2 · Introduction to statistics" },
+    { file: "m2-02-center.html",               title: "2.2 Measures of center",         module: "Module 2 · Introduction to statistics" },
+    { file: "m2-03-spread.html",               title: "2.3 Measures of spread",         module: "Module 2 · Introduction to statistics" },
+    { file: "m2-04-normal-clt.html",           title: "2.4 Normal distribution & CLT",  module: "Module 2 · Introduction to statistics" },
+    { file: "m2-05-checkpoint.html",           title: "2.5 Module checkpoint",          module: "Module 2 · Introduction to statistics" },
+    { file: "m3-01-summaries.html", title: "3.1 Summaries and raw data", module: "Module 3 · Data visualisation in depth" },
+    { file: "m3-02-facets.html", title: "3.2 Facets and annotations", module: "Module 3 · Data visualisation in depth" },
+    { file: "m3-03-scales-colours.html", title: "3.3 Scales, colours and labels", module: "Module 3 · Data visualisation in depth" },
+    { file: "m3-04-themes.html", title: "3.4 Themes and exporting", module: "Module 3 · Data visualisation in depth" },
+    { file: "m3-05-timeseries-patchwork.html", title: "3.5 Force curves and multi-panel figures", module: "Module 3 · Data visualisation in depth" },
+    { file: "m3-06-checkpoint.html", title: "3.6 Module checkpoint", module: "Module 3 · Data visualisation in depth" },
+    { file: "m4-01-confidence-intervals.html", title: "4.1 Confidence intervals", module: "Module 4 · Inferential statistics" },
+    { file: "m4-02-hypothesis-testing.html", title: "4.2 Hypothesis testing", module: "Module 4 · Inferential statistics" },
+    { file: "m4-03-t-tests.html", title: "4.3 Comparing two groups", module: "Module 4 · Inferential statistics" },
+    { file: "m4-04-anova.html", title: "4.4 ANOVA", module: "Module 4 · Inferential statistics" },
+    { file: "m4-05-correlation.html", title: "4.5 Correlation", module: "Module 4 · Inferential statistics" },
+    { file: "m4-06-simple-regression.html", title: "4.6 Simple linear regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-07-multiple-regression.html", title: "4.7 Multiple regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-08-chi-square.html", title: "4.8 Chi-square tests", module: "Module 4 · Inferential statistics" },
+    { file: "m4-09-reliability.html", title: "4.9 Reliability", module: "Module 4 · Inferential statistics" },
+    { file: "m4-10-checkpoint.html", title: "4.10 Module checkpoint", module: "Module 4 · Inferential statistics" }
+  ];
+  const PREFIX = "r4ss:";
+  // Built from pieces so Quarto does not try to parse this as a document table
+  const TBL_OPEN = "<" + "table class=\"table table-sm\">";
+  const TBL_CLOSE = "</" + "table>";
+
+  const store = {
+    get(key, fallback) {
+      try { const v = localStorage.getItem(PREFIX + key); return v === null ? fallback : JSON.parse(v); }
+      catch (e) { return fallback; }
+    },
+    set(key, value) {
+      try { localStorage.setItem(PREFIX + key, JSON.stringify(value)); } catch (e) { /* storage blocked */ }
+    },
+    clear() {
+      try {
+        Object.keys(localStorage).filter(k => k.startsWith(PREFIX)).forEach(k => localStorage.removeItem(k));
+      } catch (e) { /* storage blocked */ }
+    }
+  };
+
+  function pageFile() {
+    let f = window.location.pathname.split("/").pop();
+    if (!f) f = "index.html";
+    if (!f.includes(".")) f += ".html";
+    return f;
+  }
+  const PAGE = pageFile();
+  const lessonIndex = LESSONS.findIndex(l => l.file === PAGE);
+
+  function quizScores(file) {
+    const q = store.get("quiz:" + file, {});
+    const ids = Object.keys(q);
+    return { total: ids.length, firstTry: ids.filter(id => q[id].firstTry).length, solved: ids.filter(id => q[id].solved).length };
+  }
+
+  /* ---------------- Quizzes ---------------- */
+  function buildQuizzes() {
+    const quizzes = document.querySelectorAll("div.quiz");
+    const record = store.get("quiz:" + PAGE, {});
+    quizzes.forEach((quiz, qi) => {
+      const id = quiz.id || ("q" + (qi + 1));
+      const list = quiz.querySelector("ul.task-list, ul");
+      if (!list) return;
+      const items = Array.from(list.querySelectorAll(":scope > li"));
+      const newList = document.createElement("ul");
+      newList.className = "quiz-options";
+      const feedback = document.createElement("div");
+      feedback.className = "quiz-feedback";
+      feedback.setAttribute("aria-live", "polite");
+      let attempts = 0;
+
+      items.forEach(li => {
+        const box = li.querySelector("input[type=checkbox]");
+        const isCorrect = !!(box && box.checked);
+        if (box) box.remove();
+        const label = li.querySelector("label");
+        const html = (label ? label.innerHTML : li.innerHTML).trim();
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "quiz-option";
+        btn.innerHTML = html;
+        btn.addEventListener("click", () => {
+          attempts += 1;
+          if (isCorrect) {
+            btn.classList.add("correct");
+            feedback.textContent = attempts === 1 ? "Correct! 🎉" : "Correct — you got there!";
+            feedback.className = "quiz-feedback correct";
+            quiz.classList.add("solved");
+            newList.querySelectorAll("button").forEach(b => (b.disabled = true));
+            const rec = store.get("quiz:" + PAGE, {});
+            const prev = rec[id];
+            rec[id] = { solved: true, firstTry: prev ? prev.firstTry : attempts === 1 };
+            store.set("quiz:" + PAGE, rec);
+            updateScoreLines();
+          } else {
+            btn.classList.add("wrong");
+            btn.disabled = true;
+            feedback.textContent = "Not quite — try another option.";
+            feedback.className = "quiz-feedback wrong";
+          }
+        });
+        const wrap = document.createElement("li");
+        wrap.appendChild(btn);
+        newList.appendChild(wrap);
+      });
+      list.replaceWith(newList);
+      newList.after(feedback);
+
+      // Restore a previously solved quiz
+      if (record[id] && record[id].solved) {
+        quiz.classList.add("solved");
+        newList.querySelectorAll("button").forEach(b => (b.disabled = true));
+        feedback.textContent = record[id].firstTry ? "Solved on first try ✓" : "Solved ✓";
+        feedback.className = "quiz-feedback correct";
+      }
+      quiz.dataset.quizId = id;
+    });
+    // Register quizzes so the score knows the total, even before they are answered
+    const all = Array.from(quizzes).map(q => q.dataset.quizId).filter(Boolean);
+    store.set("quizcount:" + PAGE, all.length);
+  }
+
+  /* ---------------- Lesson completion ---------------- */
+  function updateScoreLines() {
+    const total = store.get("quizcount:" + PAGE, 0);
+    const s = quizScores(PAGE);
+    document.querySelectorAll(".lesson-complete .score-line").forEach(el => {
+      el.textContent = total
+        ? `Quizzes on this page: ${s.solved}/${total} solved (${s.firstTry} on the first try).`
+        : "";
+    });
+  }
+
+  function buildCompletion() {
+    document.querySelectorAll("div.lesson-complete").forEach(box => {
+      box.innerHTML = "";
+      const score = document.createElement("div");
+      score.className = "score-line";
+      const btn = document.createElement("button");
+      btn.className = "btn-complete";
+      const render = () => {
+        const done = store.get("done:" + PAGE, false);
+        btn.textContent = done ? "✓ Lesson completed (click to undo)" : "Mark this lesson as complete";
+        btn.classList.toggle("done", done);
+      };
+      btn.addEventListener("click", () => {
+        store.set("done:" + PAGE, !store.get("done:" + PAGE, false));
+        render();
+        markSidebar();
+      });
+      box.appendChild(score);
+      box.appendChild(btn);
+      if (lessonIndex >= 0 && lessonIndex < LESSONS.length - 1) {
+        const next = LESSONS[lessonIndex + 1];
+        const p = document.createElement("p");
+        p.style.marginTop = "0.8rem";
+        p.innerHTML = `Next up: <a href="${next.file}">${next.title} →</a>`;
+        box.appendChild(p);
+      }
+      render();
+    });
+    updateScoreLines();
+  }
+
+  /* ---------------- Sequential guidance ---------------- */
+  function sequenceBanner() {
+    if (lessonIndex <= 0) return;
+    const firstUndone = LESSONS.slice(0, lessonIndex).find(l => !store.get("done:" + l.file, false));
+    if (!firstUndone) return;
+    const main = document.querySelector("main#quarto-document-content, main");
+    if (!main) return;
+    const header = main.querySelector("header#title-block-header");
+    const banner = document.createElement("div");
+    banner.className = "sequence-banner";
+    banner.innerHTML = `📌 This course is designed to be followed in order. You haven't marked
+      <a href="${firstUndone.file}">${firstUndone.title}</a> as complete yet — we recommend finishing it first.`;
+    if (header) header.after(banner); else main.prepend(banner);
+  }
+
+  function markSidebar() {
+    document.querySelectorAll("#quarto-sidebar a.sidebar-link, #quarto-sidebar a.sidebar-item-text").forEach(a => {
+      const href = (a.getAttribute("href") || "").split("/").pop().split("#")[0];
+      const lesson = LESSONS.find(l => l.file === href);
+      if (!lesson) return;
+      let mark = a.querySelector(".done-mark");
+      const done = store.get("done:" + lesson.file, false);
+      if (done && !mark) {
+        mark = document.createElement("span");
+        mark.className = "done-mark";
+        mark.textContent = "✓";
+        (a.querySelector(".menu-text") || a).appendChild(mark);
+      } else if (!done && mark) {
+        mark.remove();
+      }
+    });
+  }
+
+  /* ---------------- Progress overview (home page) ---------------- */
+  function buildOverview() {
+    document.querySelectorAll("div.progress-overview").forEach(box => {
+      const doneCount = LESSONS.filter(l => store.get("done:" + l.file, false)).length;
+      const pct = Math.round((100 * doneCount) / LESSONS.length);
+      let rows = "";
+      let currentModule = "";
+      LESSONS.forEach(l => {
+        if (l.module !== currentModule) {
+          currentModule = l.module;
+          const inMod = LESSONS.filter(m => m.module === currentModule);
+          const modDone = inMod.filter(m => store.get("done:" + m.file, false)).length;
+          rows += `<tr class="table-light"><th colspan="3">${currentModule} (${modDone}/${inMod.length})</th></tr>`;
+        }
+        const done = store.get("done:" + l.file, false);
+        const total = store.get("quizcount:" + l.file, 0);
+        const s = quizScores(l.file);
+        const quiz = total ? `${s.solved}/${total}` : "–";
+        rows += `<tr><td><a href="${l.file}">${l.title}</a></td><td>${done ? "✅ Complete" : "⬜ Not yet"}</td><td>${quiz}</td></tr>`;
+      });
+      const next = LESSONS.find(l => !store.get("done:" + l.file, false));
+      box.innerHTML = `
+        <p><strong>Your progress:</strong> ${doneCount} of ${LESSONS.length} lessons complete (${pct}%).</p>
+        <div class="bar"><span style="width:${pct}%"></span></div>
+        ${next ? `<p>👉 Continue with <a href="${next.file}"><strong>${next.title}</strong></a></p>` : "<p>🏆 You've completed every available lesson. Fantastic work!</p>"}
+        ${TBL_OPEN}<thead><tr><th>Lesson</th><th>Status</th><th>Quizzes solved</th></tr></thead><tbody>${rows}</tbody>${TBL_CLOSE}
+        <p style="font-size:0.85em;opacity:0.75">Progress is saved in this browser only. Using another device or a private window starts fresh.</p>`;
+    });
+    document.querySelectorAll("div.reset-progress").forEach(box => {
+      box.innerHTML = "";
+      const btn = document.createElement("button");
+      btn.className = "btn btn-outline-danger btn-sm";
+      btn.textContent = "Reset all my course progress";
+      btn.addEventListener("click", () => {
+        if (confirm("Reset all lesson and quiz progress stored in this browser?")) {
+          store.clear();
+          location.reload();
+        }
+      });
+      box.appendChild(btn);
+    });
+  }
+
+  function init() {
+    buildQuizzes();
+    buildCompletion();
+    sequenceBanner();
+    markSidebar();
+    buildOverview();
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
+</script>

@@ -1,0 +1,328 @@
+---
+title: "3.1 Showing summaries and the data behind them"
+subtitle: "Bar charts, error bars, and why you should always show the raw data"
+webr:
+  packages: ['ggplot2']
+  resources:
+    - data/jump_squad.csv
+    - data/balance.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+theme_set(theme_gray(base_size = 14))
+squad <- read.csv("data/jump_squad.csv")
+balance <- read.csv("data/balance.csv")
+```
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- plot **counts** with `geom_bar()` and **values** with `geom_col()`,
+- calculate group summaries with `aggregate()` and add **error bars** (mean ± SD),
+- explain why bar charts of means ("dynamite plots") can mislead, and
+- combine **raw data and summaries** in one figure with `stat_summary()`.
+
+⏱️ About 40 minutes. Module 3 builds on [lesson 1.5](m1-05-ggplot.qmd) and Module 2.
+:::
+
+## A new dataset: a jump-testing squad
+
+In this module you'll work with countermovement-jump (CMJ) results of **84 professional athletes: 42 basketball and 42 soccer players**, tested on a force platform. The data frame `squad` has one row per athlete:
+
+```{webr}
+head(squad)
+```
+
+| Column | Meaning | Unit |
+|---|---|---|
+| `id`, `sport` | Athlete code (B = basketball, S = soccer) and sport | |
+| `body_mass_kg`, `height_m` | Body mass and standing height | kg, m |
+| `jump_height_m` | Jump height | m |
+| `con_time_s`, `ecc_time_s`, `contraction_time_s` | Duration of the propulsion phase, the eccentric (unweighting + braking) phase, and both together | s |
+| `con_force_rel`, `peak_force_rel` | Mean propulsive force and peak force, per kg body mass | N/kg |
+| `con_impulse_rel`, `ecc_impulse_rel` | Propulsive and eccentric impulse per kg (force × time) | N·s/kg |
+| `peak_power_rel`, `mean_power_rel` | Peak and mean propulsive power per kg | W/kg |
+| `peak_velocity` | Peak centre-of-mass velocity | m/s |
+| `cmj_depth_m` | Lowest centre-of-mass position (countermovement depth, negative) | m |
+| `ecc_rfd_max`, `ecc_rfd_mean` | Peak and mean eccentric rate of force development | N/s |
+| `rsi_mod` | Modified reactive strength index = jump height / contraction time | m/s |
+| `k_vert` | Vertical stiffness | N/kg/m |
+
+## Counting: `geom_bar()`
+
+`geom_bar()` **counts** the rows in each category. You only give it an `x`:
+
+```{webr}
+ggplot(balance, aes(x = activity)) +
+  geom_bar()
+```
+
+With `fill` mapped to a second variable, the bars are **stacked**. `position = "dodge"` puts them side by side instead, which makes the groups easier to compare:
+
+```{webr}
+ggplot(balance, aes(x = activity, fill = age_group)) +
+  geom_bar(position = "dodge")
+```
+
+## Values: `geom_col()`
+
+If your data already contains the numbers you want as bar heights, use `geom_col()`, which needs both `x` and `y`. The typical case is a table of **group means** that you calculate first.
+
+`aggregate()` calculates a statistic per group. The formula `y ~ group` means "*y* split by *group*":
+
+```{webr}
+means <- aggregate(jump_height_m ~ sport, data = squad, FUN = mean)
+means
+
+ggplot(means, aes(x = sport, y = jump_height_m, fill = sport)) +
+  geom_col(width = 0.6, show.legend = FALSE)
+```
+
+::: {.quiz id="m31-q1"}
+You want a bar chart showing **how many athletes** play each sport in `squad`. Which geom?
+
+- [x] `geom_bar()` with `aes(x = sport)`
+- [ ] `geom_col()` with `aes(x = sport)`
+- [ ] `geom_histogram()` with `aes(x = sport)`
+
+::: {.explanation}
+`geom_bar()` counts rows per category for you. `geom_col()` needs a `y` value you have already calculated, and `geom_histogram()` is for continuous variables.
+:::
+:::
+
+## Error bars: mean ± SD
+
+A mean alone hides the variability. In sport science, group means are usually shown with **error bars** of ± 1 SD. Calculate the means and SDs first, then add `geom_errorbar()`, which needs the aesthetics `ymin` and `ymax`:
+
+```{webr}
+summary_df <- aggregate(jump_height_m ~ sport, data = squad, FUN = mean)
+summary_df$sd <- aggregate(jump_height_m ~ sport, data = squad, FUN = sd)$jump_height_m
+summary_df
+
+ggplot(summary_df, aes(x = sport, y = jump_height_m)) +
+  geom_col(fill = "grey70", width = 0.6) +
+  geom_errorbar(aes(ymin = jump_height_m - sd, ymax = jump_height_m + sd), width = 0.15)
+```
+
+The `width` of `geom_errorbar()` sets the width of the little horizontal caps.
+
+::: {.task}
+Make a bar chart of the **mean body mass** per sport, with error bars of ± 1 SD.
+
+1. `bm` (means) is calculated for you. Add a column `sd` with the SDs.
+2. Plot `bm` with `geom_col()` and `geom_errorbar()`.
+:::
+
+```{webr}
+#| exercise: m31_1
+#| caption: "Exercise · Mean ± SD bar chart"
+bm <- aggregate(body_mass_kg ~ sport, data = squad, FUN = mean)
+
+# 1. Add the SDs
+bm$sd <- aggregate(body_mass_kg ~ sport, data = squad, FUN = ______)$body_mass_kg
+
+# 2. Bars with error bars
+ggplot(bm, aes(x = sport, y = body_mass_kg)) +
+  geom_col(fill = "steelblue", width = 0.6) +
+  geom_errorbar(aes(ymin = ______, ymax = ______), width = 0.15)
+```
+
+::: {.hint exercise="m31_1"}
+Use `FUN = sd`, and `ymin = body_mass_kg - sd`, `ymax = body_mass_kg + sd`.
+:::
+
+::: {.solution exercise="m31_1"}
+```{webr}
+#| exercise: m31_1
+#| solution: true
+bm <- aggregate(body_mass_kg ~ sport, data = squad, FUN = mean)
+
+# 1. Add the SDs
+bm$sd <- aggregate(body_mass_kg ~ sport, data = squad, FUN = sd)$body_mass_kg
+
+# 2. Bars with error bars
+ggplot(bm, aes(x = sport, y = body_mass_kg)) +
+  geom_col(fill = "steelblue", width = 0.6) +
+  geom_errorbar(aes(ymin = body_mass_kg - sd, ymax = body_mass_kg + sd), width = 0.15)
+```
+:::
+
+```{webr}
+#| exercise: m31_1
+#| check: true
+res <- .check_vars("bm", .envir_result, .checker_args$envir_solution)
+if (isTRUE(res$correct)) res <- .check_plot(.result, geoms = c("GeomCol", "GeomErrorbar"), aes = c("ymin", "ymax"),
+  ok = "Correct! Basketball players are about 20 kg heavier (97 ± 10 kg vs. 77 ± 9 kg).")
+res
+```
+
+## The problem with bar charts of means
+
+Bar charts with error bars are so common that they have a nickname: **dynamite plots**. But for continuous data they are often a poor choice:
+
+- The bar suggests the data fill the whole area from 0 to the mean, which they don't.
+- Very different datasets (a few outliers, two clusters, 5 or 500 athletes) can produce exactly the same bars.
+- Readers can't see the sample size or the distribution.
+
+Many journals now ask authors to **show the individual data points**. With ggplot2 that's easy: draw the points, and add the summary on top with `stat_summary()`, which calculates the statistic for you.
+
+```{webr}
+ggplot(squad, aes(x = sport, y = jump_height_m)) +
+  geom_jitter(width = 0.1, alpha = 0.4) +
+  stat_summary(fun = mean, geom = "point", size = 4, colour = "firebrick") +
+  stat_summary(fun = mean,
+               fun.min = function(x) mean(x) - sd(x),
+               fun.max = function(x) mean(x) + sd(x),
+               geom = "errorbar", width = 0.15, colour = "firebrick", linewidth = 1)
+```
+
+The red point and bars are the same mean ± SD as before, but now you can also see every athlete. The basketball group has a few low jumpers, and the overlap between sports is large.
+
+`stat_summary()` arguments:
+
+- `fun`: the function for the center (here `mean`),
+- `fun.min` / `fun.max`: functions for the lower and upper ends of the bar; `function(x) mean(x) - sd(x)` is a tiny function written on the spot,
+- `geom`: how to draw the result (`"point"`, `"errorbar"`, `"pointrange"`, `"col"`…).
+
+::: {.task}
+Show the **peak power per kg** (`peak_power_rel`) for each sport: the raw data with `geom_jitter(width = 0.1, alpha = 0.4)`, and the **mean** of each sport on top as a large point with `stat_summary(fun = mean, geom = "point", size = 4, colour = "firebrick")`.
+:::
+
+```{webr}
+#| exercise: m31_2
+#| caption: "Exercise · Data + summary"
+ggplot(squad, aes(x = ______, y = ______)) +
+  ______ +
+  ______
+```
+
+::: {.hint exercise="m31_2"}
+`aes(x = sport, y = peak_power_rel)`, then `geom_jitter(width = 0.1, alpha = 0.4)` and `stat_summary(fun = mean, geom = "point", size = 4, colour = "firebrick")`.
+:::
+
+::: {.solution exercise="m31_2"}
+```{webr}
+#| exercise: m31_2
+#| solution: true
+ggplot(squad, aes(x = sport, y = peak_power_rel)) +
+  geom_jitter(width = 0.1, alpha = 0.4) +
+  stat_summary(fun = mean, geom = "point", size = 4, colour = "firebrick")
+```
+:::
+
+```{webr}
+#| exercise: m31_2
+#| check: true
+p <- .result
+res <- .check_plot(p, geoms = "GeomPoint")
+if (isTRUE(res$correct)) {
+  stats <- vapply(p$layers, function(l) class(l$stat)[1], "")
+  if (!identical(rlang::as_label(p$mapping$y), "peak_power_rel")) res <- .no("Put `peak_power_rel` on the y-axis.")
+  else if (length(p$layers) < 2 || !"StatSummary" %in% stats) res <- .no("Add the mean with `stat_summary(fun = mean, geom = \"point\", ...)`.")
+  else res <- .ok("Well done! A figure that shows both the data and the summary.")
+}
+res
+```
+
+::: {.quiz id="m31-q2"}
+Why do many journals discourage bar charts of means for continuous data?
+
+- [ ] Bar charts can't show error bars
+- [x] They hide the distribution and sample size; very different datasets can produce identical bars
+- [ ] ggplot2 can't draw them correctly
+
+::: {.explanation}
+A bar shows one number (and the error bar maybe two). Showing the individual observations, with the mean ± SD on top, is more honest and informative, especially for the small samples typical in sport science.
+:::
+:::
+
+## Raw data + summary for several groups
+
+`stat_summary()` respects all the aesthetics you've learned. With `colour` mapped to a second variable and `position_dodge()`, you can compare subgroups. Here are Mini-BESTest scores by activity level and age group:
+
+```{webr}
+balance$activity <- factor(balance$activity, levels = c("Low", "Moderate", "High"))
+
+ggplot(balance, aes(x = activity, y = minibest, colour = age_group)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.15, dodge.width = 0.6), alpha = 0.4) +
+  stat_summary(fun = mean, fun.min = function(x) mean(x) - sd(x), fun.max = function(x) mean(x) + sd(x),
+               geom = "pointrange", position = position_dodge(width = 0.6), size = 0.8, linewidth = 1)
+```
+
+- `position_jitterdodge()` both jitters and dodges the raw points,
+- `geom = "pointrange"` draws a point with a vertical line from `ymin` to `ymax`: a neat alternative to error bars.
+
+::: {.task}
+Make the same type of plot for the `squad` data: **jump height** by `sport`, with the raw data as jittered points and the **mean ± SD as a `pointrange`** in red. Use `geom_jitter(width = 0.1, alpha = 0.4)` for the raw data.
+:::
+
+```{webr}
+#| exercise: m31_3
+#| caption: "Exercise · Mean ± SD as pointrange"
+ggplot(squad, aes(x = sport, y = jump_height_m)) +
+  geom_jitter(width = 0.1, alpha = 0.4) +
+  stat_summary(fun = mean,
+               fun.min = function(x) ______,
+               fun.max = function(x) ______,
+               geom = "______", colour = "red", size = 0.8, linewidth = 1)
+```
+
+::: {.hint exercise="m31_3"}
+`fun.min = function(x) mean(x) - sd(x)`, `fun.max = function(x) mean(x) + sd(x)`, `geom = "pointrange"`.
+:::
+
+::: {.solution exercise="m31_3"}
+```{webr}
+#| exercise: m31_3
+#| solution: true
+ggplot(squad, aes(x = sport, y = jump_height_m)) +
+  geom_jitter(width = 0.1, alpha = 0.4) +
+  stat_summary(fun = mean,
+               fun.min = function(x) mean(x) - sd(x),
+               fun.max = function(x) mean(x) + sd(x),
+               geom = "pointrange", colour = "red", size = 0.8, linewidth = 1)
+```
+:::
+
+```{webr}
+#| exercise: m31_3
+#| check: true
+.check_plot(.result, geoms = c("GeomPoint", "GeomPointrange"),
+  ok = "Great! This is a clean, honest way to compare groups.")
+```
+
+::: {.quiz id="m31-q3"}
+What's the difference between error bars showing **± SD** and **± SE** (standard error)?
+
+- [x] SD shows how spread out the individual athletes are; SE shows how precisely the mean is estimated (SD / √n)
+- [ ] They are the same thing
+- [ ] SE is always larger than SD
+
+::: {.explanation}
+SD describes the data; SE describes the uncertainty of the mean ([lesson 2.4](m2-04-normal-clt.qmd)). SE error bars are √n times smaller, so always state in the caption which one you plotted!
+:::
+:::
+
+## Lesson summary
+
+- `geom_bar()` counts rows per category; `geom_col()` plots values you calculated (e.g. with `aggregate()`).
+- `position = "dodge"` places bars side by side.
+- Error bars: `geom_errorbar(aes(ymin = ..., ymax = ...))`.
+- Prefer **raw data + summary**: `geom_jitter()` + `stat_summary(fun = mean, fun.min = ..., fun.max = ..., geom = "pointrange")`.
+- Always state whether error bars show SD, SE or a confidence interval.
+
+### Scratchpad
+
+`squad` and `balance` are loaded.
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

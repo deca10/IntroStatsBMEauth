@@ -1,0 +1,414 @@
+---
+title: "2.2 Measures of center"
+subtitle: "Mean, median and mode, and when to use which"
+webr:
+  packages: ['ggplot2']
+  resources:
+    - data/balance.csv
+    - data/cmj.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+theme_set(theme_gray(base_size = 14))
+balance <- read.csv("data/balance.csv")
+cmj <- read.csv("data/cmj.csv")
+cmj3 <- subset(cmj, trial == "CMJ 3")
+```
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- describe the "typical" value of a variable with the **mean**, **median** and **mode**,
+- calculate them by hand and with R,
+- decide whether the **mean or the median** is the better summary, depending on the shape of the data,
+- deal with missing values (`NA`).
+
+⏱️ About 35 minutes.
+:::
+
+## Measures of center
+
+When you have many numbers, the first question is usually: *what is a typical value?* A **measure of center** (or *central tendency*) answers that with a single number. The three most common are:
+
+| Measure | Definition | In R |
+|---|---|---|
+| **Mean** | The sum of all values divided by how many there are (the "average") | `mean(x)` |
+| **Median** | The middle value once the data are sorted: half the values lie below it, half above | `median(x)` |
+| **Mode** | The most frequent value | no built-in function; use `table(x)` |
+
+The mode is mainly useful for **categorical** data ("the most common playing position"). For numerical data, the mean and median are what you'll use almost every time, so they're the focus of this lesson.
+
+## Mean and median
+
+### The mean
+
+The mean of *n* values $x_1, x_2, \dots, x_n$ is
+
+$$\bar{x} = \frac{x_1 + x_2 + \dots + x_n}{n} = \frac{\sum x_i}{n}$$
+
+You can calculate it step by step with `sum()` and `length()` (which counts the elements), or directly with `mean()`:
+
+```{webr}
+cmj_cm <- c(38, 45, 41, 36, 50)   # five players' jump heights
+sum(cmj_cm) / length(cmj_cm)
+mean(cmj_cm)
+```
+
+### The median
+
+To find the median, sort the values and take the middle one:
+
+```{webr}
+sort(cmj_cm)       # 36 38 41 45 50 -> the middle (3rd) value is 41
+median(cmj_cm)
+```
+
+With an **even** number of values there are two middle values, and the median is their average:
+
+```{webr}
+sort(c(38, 45, 41, 36))   # 36 38 41 45 -> (38 + 41) / 2
+median(c(38, 45, 41, 36))
+```
+
+::: {.task}
+A coach records the number of **repetitions to failure** at 80 % 1RM for seven players. Calculate the mean **by hand** with `sum()` and `length()` and store it in `mean_reps`. Then calculate the median with `median()` and store it in `median_reps`.
+:::
+
+```{webr}
+#| exercise: ce_1
+#| caption: "Exercise · Mean and median"
+reps <- c(8, 10, 7, 9, 12, 8, 9)
+
+# Mean by hand
+mean_reps <- ______
+
+# Median
+median_reps <- ______
+
+mean_reps
+median_reps
+```
+
+::: {.hint exercise="ce_1"}
+`sum(reps) / length(reps)` and `median(reps)`.
+:::
+
+::: {.solution exercise="ce_1"}
+```{webr}
+#| exercise: ce_1
+#| solution: true
+reps <- c(8, 10, 7, 9, 12, 8, 9)
+
+# Mean by hand
+mean_reps <- sum(reps) / length(reps)
+
+# Median
+median_reps <- median(reps)
+
+mean_reps
+median_reps
+```
+:::
+
+```{webr}
+#| exercise: ce_1
+#| check: true
+res <- .check_vars(c("mean_reps", "median_reps"), .envir_result, .checker_args$envir_solution)
+if (isTRUE(res$correct) && !grepl("sum(", paste(.user_code, collapse = ""), fixed = TRUE)) {
+  res <- .no("The values are right, but please calculate the mean by hand with `sum()` and `length()` this time.")
+} else if (isTRUE(res$correct)) {
+  res <- .ok("Correct! Mean = 63 / 7 = 9 reps; sorted: 7 8 8 9 9 10 12, so the median is also 9.")
+}
+res
+```
+
+### Real data: body weight from a force platform
+
+Here is a classic sport-science use of the mean. Before a CMJ the athlete stands still, and the force platform measures their **body weight**. But the signal is never perfectly flat: the person sways slightly and the sensors have a little noise. The solution is to take the **mean force during quiet standing**.
+
+The data frame `cmj3` (third jump of Athlete K) is loaded. Let's zoom in on the first 1.5 seconds:
+
+```{webr}
+#| fig-width: 9
+#| fig-height: 4
+quiet <- subset(cmj3, time_s <= 1.5)
+ggplot(quiet, aes(x = time_s, y = force_total)) +
+  geom_line() +
+  labs(x = "Time (s)", y = "Vertical force (N)", title = "Quiet standing before CMJ 3")
+```
+
+The force wobbles by a few newtons around a central value. That central value is the body weight.
+
+::: {.task}
+1. Create `quiet`: the rows of `cmj3` where `time_s` is **1.5 s or less**.
+2. Calculate the athlete's **body weight** in newtons as the mean of `quiet$force_total`. Store it in `body_weight`.
+3. Convert body weight to **body mass** in kg by dividing by gravity, 9.81 m/s². Store it in `body_mass`.
+:::
+
+```{webr}
+#| exercise: ce_2
+#| caption: "Exercise · Body weight from force data"
+# 1. Quiet-standing phase
+quiet <- subset(cmj3, ______)
+
+# 2. Body weight (N)
+body_weight <- ______
+
+# 3. Body mass (kg)
+body_mass <- ______
+
+body_weight
+body_mass
+```
+
+::: {.hint exercise="ce_2"}
+1. `subset(cmj3, time_s <= 1.5)`
+2. `mean(quiet$force_total)`
+3. `body_weight / 9.81`
+:::
+
+::: {.solution exercise="ce_2"}
+```{webr}
+#| exercise: ce_2
+#| solution: true
+# 1. Quiet-standing phase
+quiet <- subset(cmj3, time_s <= 1.5)
+
+# 2. Body weight (N)
+body_weight <- mean(quiet$force_total)
+
+# 3. Body mass (kg)
+body_mass <- body_weight / 9.81
+
+body_weight
+body_mass
+```
+:::
+
+```{webr}
+#| exercise: ce_2
+#| check: true
+.check_vars(c("quiet", "body_weight", "body_mass"), .envir_result, .checker_args$envir_solution,
+  ok = "Correct! Body weight ≈ 726 N, so Athlete K's mass is ≈ 74 kg. Averaging 750 samples removes the small wobbles.")
+```
+
+### Missing values
+
+Real datasets have gaps. In R a missing value is written `NA` (*not available*). By default, `mean()` and `median()` return `NA` if **any** value is missing, which is R's way of saying "I can't be sure". Add `na.rm = TRUE` (*remove NAs*) to ignore them:
+
+```{webr}
+mean(balance$foot_cm)                 # NA: some foot lengths weren't recorded
+mean(balance$foot_cm, na.rm = TRUE)
+sum(is.na(balance$foot_cm))           # how many are missing?
+```
+
+::: {.quiz id="ce-q1"}
+What is the median of `c(4, 1, 9, 6)`?
+
+- [ ] `6`
+- [x] `5`
+- [ ] `5.5`
+
+::: {.explanation}
+Sorted: 1 4 6 9. With an even number of values, the median is the mean of the two middle values: (4 + 6) / 2 = 5. (The mean would be 20 / 4 = 5 too, but that's a coincidence!)
+:::
+:::
+
+::: {.quiz id="ce-q2"}
+What is the most appropriate "center" for **playing position** (guard, forward, center)?
+
+- [ ] The mean
+- [ ] The median
+- [x] The mode
+
+::: {.explanation}
+Playing position is nominal, so it has no numbers to average and no order to find a middle. The only measure that makes sense is the most frequent category, the **mode**.
+:::
+:::
+
+## Mean vs. median
+
+For a **symmetric** distribution, the mean and median are almost the same. They differ when the data are **skewed** or contain **extreme values**, because:
+
+- the **mean** uses the actual size of every value, so a single extreme value pulls it towards itself,
+- the **median** only uses the order of the values, so it is **robust**: extreme values barely affect it.
+
+```{webr}
+heights <- c(38, 40, 39, 41, 40)
+mean(heights); median(heights)
+
+# The athlete slips on the 5th jump: 12 cm
+heights_slip <- c(38, 40, 39, 41, 12)
+mean(heights_slip); median(heights_slip)
+```
+
+One bad trial drops the mean by 5.6 cm, while the median changes by only 1 cm.
+
+### Skewed data
+
+A distribution is **right-skewed** (positively skewed) when most values are low but a long *tail* stretches to the right, and **left-skewed** when the tail is on the left. In a skewed distribution the mean is pulled towards the tail:
+
+| Shape | Order |
+|---|---|
+| Symmetric | mean ≈ median |
+| Right-skewed (tail to the right) | mean **>** median |
+| Left-skewed (tail to the left) | mean **<** median |
+
+The **Trail Making Test B** time is strongly right-skewed: most participants finished within about 2 minutes, but some needed far longer (the test stops at 300 s). The histogram shows the mean (red) and median (blue):
+
+```{webr}
+#| fig-width: 9
+#| fig-height: 4.5
+ggplot(balance, aes(x = tmt_b_s)) +
+  geom_histogram(binwidth = 15, fill = "grey70", colour = "white") +
+  geom_vline(xintercept = mean(balance$tmt_b_s), colour = "red", linewidth = 1.2) +
+  geom_vline(xintercept = median(balance$tmt_b_s), colour = "blue", linewidth = 1.2) +
+  labs(x = "Trail Making Test B (s)", y = "Number of participants")
+```
+
+`geom_vline()` draws a vertical line at the value given by `xintercept`.
+
+::: {.task}
+Calculate the **mean** and **median** of `balance$tmt_b_s` and store them in `tmt_mean` and `tmt_median`. On the last line, calculate how many seconds the mean is **larger** than the median (`tmt_mean - tmt_median`).
+:::
+
+```{webr}
+#| exercise: ce_3
+#| caption: "Exercise · Mean vs. median"
+tmt_mean <- ______
+tmt_median <- ______
+
+# How much larger is the mean?
+______
+```
+
+::: {.hint exercise="ce_3"}
+`mean(balance$tmt_b_s)`, `median(balance$tmt_b_s)`, then `tmt_mean - tmt_median`.
+:::
+
+::: {.solution exercise="ce_3"}
+```{webr}
+#| exercise: ce_3
+#| solution: true
+tmt_mean <- mean(balance$tmt_b_s)
+tmt_median <- median(balance$tmt_b_s)
+
+# How much larger is the mean?
+tmt_mean - tmt_median
+```
+:::
+
+```{webr}
+#| exercise: ce_3
+#| check: true
+res <- .check_vars(c("tmt_mean", "tmt_median"), .envir_result, .checker_args$envir_solution)
+if (isTRUE(res$correct)) res <- .check_result(.result, .checker_args$solution,
+  ok = "Correct! The mean (110 s) is about 42 s larger than the median (68 s), dragged up by the slow participants in the right tail. The median is the better 'typical' value here.",
+  no = "Both values are right. The last line should be `tmt_mean - tmt_median`.")
+res
+```
+
+### A surprise in the force data
+
+Now let's compare the mean and median of the **whole** force recording of CMJ 3, from quiet standing through the jump and landing:
+
+```{webr}
+mean(cmj3$force_total)
+median(cmj3$force_total)
+```
+
+The **mean force over the whole trial (≈727 N) equals body weight**, even though the force went from 0 N (flight) up to more than 5700 N (landing)! This is no coincidence. The athlete starts and ends standing still, so (by Newton's laws, the *impulse–momentum* relationship) the force above body weight and the force below body weight must exactly balance out over the trial. The mean "sees" the size of every value, so it finds that balance point.
+
+The median just reports the middle value of all the samples (≈725 N). In other jumps, where the athlete spent more or less time at different force levels, the median can be far from body weight. Try `median(subset(cmj, trial == "CMJ 2")$force_total)`.
+
+::: {.task}
+Use `tapply()` to calculate the **median Mini-BESTest score** for each `age_group`. `tapply(values, groups, function)` applies a function to the values of each group.
+:::
+
+```{webr}
+#| exercise: ce_4
+#| caption: "Exercise · Center by group"
+# Median minibest for each age group
+tapply(______, ______, ______)
+```
+
+::: {.hint exercise="ce_4"}
+`tapply(balance$minibest, balance$age_group, median)`. Note that the function name is given *without* brackets.
+:::
+
+::: {.solution exercise="ce_4"}
+```{webr}
+#| exercise: ce_4
+#| solution: true
+# Median minibest for each age group
+tapply(balance$minibest, balance$age_group, median)
+```
+:::
+
+```{webr}
+#| exercise: ce_4
+#| check: true
+.check_result(.result, .checker_args$solution,
+  ok = "Correct! Median 18 for the old group vs. 24 for the young group. Try replacing `median` with `mean` and compare.",
+  no = "Not quite. Use `tapply(balance$minibest, balance$age_group, median)`.")
+```
+
+::: {.quiz id="ce-q3"}
+The annual salaries in a basketball team are: eleven players around €40,000 and one star player at €1,500,000. Which value best describes the *typical* salary?
+
+- [ ] The mean
+- [x] The median
+- [ ] Both are equally good
+
+::: {.explanation}
+The star's salary is an extreme value that drags the mean up to about €160,000, a salary nobody on the team actually earns. The median (≈€40,000) represents the typical player.
+:::
+:::
+
+::: {.quiz id="ce-q4"}
+A histogram of reaction times has a long tail to the right. Which statement is most likely true?
+
+- [x] mean > median
+- [ ] mean < median
+- [ ] mean = median
+
+::: {.explanation}
+In a right-skewed distribution, the few large values pull the mean towards the tail, above the median.
+:::
+:::
+
+::: {.quiz id="ce-q5"}
+When should you prefer the **mean** over the median?
+
+- [ ] When the data contain extreme outliers
+- [x] When the distribution is roughly symmetric without extreme values, because the mean then uses all the information in the data
+- [ ] Never: the median is always better
+
+::: {.explanation}
+For symmetric data, the mean and median are similar, but the mean has useful mathematical properties (it's the basis for SD, t-tests, ANOVA…). Use the median for skewed data or data with outliers, or report both.
+:::
+:::
+
+## Lesson summary
+
+- **Mean** = sum / n (`mean()`); **median** = middle value of the sorted data (`median()`); **mode** = most frequent value (`table()`), mostly for categorical data.
+- Use `na.rm = TRUE` when data contain `NA`.
+- The mean is sensitive to extreme values; the median is **robust**.
+- Symmetric data: mean ≈ median. Right-skewed: mean > median. Left-skewed: mean < median.
+- `tapply(values, groups, function)` calculates a statistic per group.
+
+### Scratchpad
+
+`cmj`, `cmj3` and `balance` are loaded.
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

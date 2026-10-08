@@ -1,0 +1,356 @@
+---
+title: "2.5 Module checkpoint"
+subtitle: "Analyse Athlete K's countermovement jumps from raw force data"
+webr:
+  packages: ['ggplot2']
+  resources:
+    - data/balance.csv
+    - data/cmj.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+theme_set(theme_gray(base_size = 14))
+balance <- read.csv("data/balance.csv")
+cmj <- read.csv("data/cmj.csv")
+```
+
+::: {.callout-note appearance="simple"}
+## How this checkpoint works
+Part A is a quiz covering all of Module 2. In Part B you'll do a complete, realistic analysis: from the raw force signal of three jumps to the numbers a coach would receive. Links point back to the lessons if you need a refresher.
+
+⏱️ About 40 minutes.
+:::
+
+## Part A · Quick quiz
+
+::: {.quiz id="cp2-q1"}
+A study reports *"Mean age 24.3 ± 3.1 years (mean ± SD) of the 18 participants"*. This is…
+
+- [x] descriptive statistics
+- [ ] inferential statistics
+
+::: {.explanation}
+It summarises the sample without generalising to a population. See [lesson 2.1](m2-01-what-is-statistics.qmd).
+:::
+:::
+
+::: {.quiz id="cp2-q2"}
+**Training load measured as session-RPE (RPE × duration in minutes)**, e.g. 420 AU, is best treated as…
+
+- [x] numerical (continuous)
+- [ ] nominal
+- [ ] ordinal
+
+::: {.explanation}
+Although RPE itself is a rating, session-RPE is a product with many possible values and is analysed as a numerical variable in practice.
+:::
+:::
+
+::: {.quiz id="cp2-q3"}
+Ground contact times of a sprinter (ms): `98, 101, 97, 99, 180`. The 180 ms value came from a stumble. Which summary describes the *typical* contact time best?
+
+- [ ] Mean
+- [x] Median
+- [ ] Range
+
+::: {.explanation}
+The median (99 ms) ignores the extreme value; the mean (115 ms) is pulled up by the stumble. See [lesson 2.2](m2-02-center.qmd).
+:::
+:::
+
+::: {.quiz id="cp2-q4"}
+Squad A has a mean CMJ of 40 cm (SD 2 cm), squad B 40 cm (SD 6 cm). Which statement is correct?
+
+- [ ] Squad B jumps higher
+- [x] Jump heights vary much more between players in squad B
+- [ ] Squad A has more outliers
+
+::: {.explanation}
+Same center, different spread. See [lesson 2.3](m2-03-spread.qmd).
+:::
+:::
+
+::: {.quiz id="cp2-q5"}
+For a variable, Q1 = 12 and Q3 = 18. Is a value of 26 an outlier according to the IQR rule?
+
+- [ ] Yes
+- [x] No
+
+::: {.explanation}
+IQR = 18 − 12 = 6, so the upper fence is 18 + 1.5 × 6 = 27. A value of 26 is below the fence, so it is not flagged (although it is close). See [lesson 2.3](m2-03-spread.qmd).
+:::
+:::
+
+::: {.quiz id="cp2-q6"}
+According to the central limit theorem, the standard error of a mean based on 9 trials is…
+
+- [ ] the SD of single trials divided by 9
+- [x] the SD of single trials divided by 3
+- [ ] the same as the SD of single trials
+
+::: {.explanation}
+SE = SD / √n = SD / √9 = SD / 3. See [lesson 2.4](m2-04-normal-clt.qmd).
+:::
+:::
+
+## Part B · From raw force to jump height
+
+Athlete K's three CMJs are loaded in `cmj` (columns `trial`, `time_s`, `force_left`, `force_right`, `force_total`; 500 samples per second). Here are all three:
+
+```{webr}
+#| fig-width: 9
+#| fig-height: 6
+ggplot(cmj, aes(x = time_s, y = force_total)) +
+  geom_line() +
+  facet_wrap(~ trial, ncol = 1) +
+  labs(x = "Time (s)", y = "Vertical force (N)")
+```
+
+(`facet_wrap(~ trial)` draws one panel per trial. You'll learn more about facets in Module 3.)
+
+### Step 1 · Body weight and data quality
+
+Before analysing a jump you need the athlete's body weight, from a stable quiet-standing phase. Look at the plot: CMJ 1 and CMJ 3 start with a long, flat phase, but **CMJ 2** starts while the athlete is still settling on the plate.
+
+::: {.task}
+1. Create `quiet1`: rows of `cmj` for **CMJ 1** with `time_s <= 2`.
+2. Create `quiet2`: rows of `cmj` for **CMJ 2** with `time_s <= 1` (its only "quiet" part).
+3. Calculate the **SD** of `force_total` for each, and store them in `sd1` and `sd2`.
+4. On the last line, calculate how many times larger `sd2` is than `sd1`.
+:::
+
+```{webr}
+#| exercise: cp2_1
+#| caption: "Mini-project · Step 1"
+# 1 and 2. Quiet-standing phases
+quiet1 <- subset(cmj, trial == "CMJ 1" & ______)
+quiet2 <- subset(cmj, ______ & ______)
+
+# 3. SD of the force during quiet standing
+sd1 <- ______
+sd2 <- ______
+
+# 4. How many times noisier is CMJ 2?
+______
+```
+
+::: {.hint exercise="cp2_1"}
+Combine conditions with `&`: `subset(cmj, trial == "CMJ 2" & time_s <= 1)`. Then `sd(quiet1$force_total)` and `sd2 / sd1`.
+:::
+
+::: {.solution exercise="cp2_1"}
+```{webr}
+#| exercise: cp2_1
+#| solution: true
+# 1 and 2. Quiet-standing phases
+quiet1 <- subset(cmj, trial == "CMJ 1" & time_s <= 2)
+quiet2 <- subset(cmj, trial == "CMJ 2" & time_s <= 1)
+
+# 3. SD of the force during quiet standing
+sd1 <- sd(quiet1$force_total)
+sd2 <- sd(quiet2$force_total)
+
+# 4. How many times noisier is CMJ 2?
+sd2 / sd1
+```
+:::
+
+```{webr}
+#| exercise: cp2_1
+#| check: true
+res <- .check_vars(c("quiet1", "quiet2", "sd1", "sd2"), .envir_result, .checker_args$envir_solution)
+if (isTRUE(res$correct)) res <- .check_result(.result, .checker_args$solution,
+  ok = paste0("Correct! The 'quiet' phase of CMJ 2 is about ", round(.checker_args$solution),
+              " times more variable than that of CMJ 1. Its body weight estimate would be unreliable, so a good analyst uses the body weight from a clean trial (CMJ 1 or 3) instead."),
+  no = "The SDs are right. The last line should be `sd2 / sd1`.")
+res
+```
+
+### Step 2 · Flight time and jump height
+
+During flight the force is (almost) zero. The **flight time** is the number of samples below a small threshold (we'll use **20 N**) multiplied by the time between samples (**0.002 s**). From the flight time *t*, physics gives the jump height:
+
+$$h = \frac{g \, t^2}{8}, \qquad g = 9.81 \text{ m/s}^2$$
+
+::: {.task}
+For **CMJ 1**:
+
+1. Create `cmj1`, the rows of `cmj` for CMJ 1.
+2. Calculate `flight_time` (s): the number of samples with `force_total < 20`, times 0.002. Tip: `sum()` of a logical vector counts the `TRUE`s.
+3. Calculate `height_cm`, the jump height in **cm** (the formula gives metres, so multiply by 100).
+:::
+
+```{webr}
+#| exercise: cp2_2
+#| caption: "Mini-project · Step 2"
+# 1. Data of CMJ 1
+cmj1 <- subset(cmj, ______)
+
+# 2. Flight time (s)
+flight_time <- sum(______) * 0.002
+
+# 3. Jump height (cm)
+height_cm <- ______
+
+flight_time
+height_cm
+```
+
+::: {.hint exercise="cp2_2"}
+2. `sum(cmj1$force_total < 20) * 0.002`
+3. `9.81 * flight_time^2 / 8 * 100`
+:::
+
+::: {.solution exercise="cp2_2"}
+```{webr}
+#| exercise: cp2_2
+#| solution: true
+# 1. Data of CMJ 1
+cmj1 <- subset(cmj, trial == "CMJ 1")
+
+# 2. Flight time (s)
+flight_time <- sum(cmj1$force_total < 20) * 0.002
+
+# 3. Jump height (cm)
+height_cm <- 9.81 * flight_time^2 / 8 * 100
+
+flight_time
+height_cm
+```
+:::
+
+```{webr}
+#| exercise: cp2_2
+#| check: true
+.check_vars(c("flight_time", "height_cm"), .envir_result, .checker_args$envir_solution,
+  ok = "Correct! A flight time of 0.574 s gives a jump height of 40.4 cm, a strong jump for a basketball player.")
+```
+
+### Step 3 · Summarise the three jumps
+
+Now do it for all three trials at once. `tapply()` (from [lesson 2.2](m2-02-center.qmd)) applies a function per trial.
+
+::: {.task}
+1. `flight` is calculated for you for each trial. Calculate the jump `heights` (cm) for all three trials, using the vector `flight`.
+2. Calculate the mean (`mean_h`), standard deviation (`sd_h`) and coefficient of variation in % (`cv_h`) of the three heights.
+:::
+
+```{webr}
+#| exercise: cp2_3
+#| caption: "Mini-project · Step 3"
+# Flight time per trial (s)
+flight <- tapply(cmj$force_total < 20, cmj$trial, sum) * 0.002
+flight
+
+# 1. Jump heights (cm)
+heights <- ______
+
+# 2. Mean, SD and CV
+mean_h <- ______
+sd_h <- ______
+cv_h <- ______
+
+round(heights, 1)
+c(mean = mean_h, sd = sd_h, cv = cv_h)
+```
+
+::: {.hint exercise="cp2_3"}
+1. Arithmetic works on whole vectors: `9.81 * flight^2 / 8 * 100`
+2. `mean(heights)`, `sd(heights)`, `sd_h / mean_h * 100`
+:::
+
+::: {.solution exercise="cp2_3"}
+```{webr}
+#| exercise: cp2_3
+#| solution: true
+# Flight time per trial (s)
+flight <- tapply(cmj$force_total < 20, cmj$trial, sum) * 0.002
+flight
+
+# 1. Jump heights (cm)
+heights <- 9.81 * flight^2 / 8 * 100
+
+# 2. Mean, SD and CV
+mean_h <- mean(heights)
+sd_h <- sd(heights)
+cv_h <- sd_h / mean_h * 100
+
+round(heights, 1)
+c(mean = mean_h, sd = sd_h, cv = cv_h)
+```
+:::
+
+```{webr}
+#| exercise: cp2_3
+#| check: true
+.check_vars(c("heights", "mean_h", "sd_h", "cv_h"), .envir_result, .checker_args$envir_solution,
+  ok = "Excellent! Athlete K: 40.4 ± 0.9 cm (mean ± SD), CV ≈ 2.1 %. That's the kind of summary a coach receives after a testing session.")
+```
+
+### Step 4 · Left vs. right
+
+A dual force platform also lets you compare the legs. During quiet standing, a healthy athlete usually carries roughly half their weight on each leg.
+
+::: {.task}
+Using `quiet1` (quiet standing in CMJ 1, given), calculate the **median** force under the left and the right foot (`left_med`, `right_med`). Then calculate the **percentage of body weight on the left leg**: `left_med / (left_med + right_med) * 100`.
+:::
+
+```{webr}
+#| exercise: cp2_4
+#| caption: "Mini-project · Step 4"
+quiet1 <- subset(cmj, trial == "CMJ 1" & time_s <= 2)
+
+left_med <- ______
+right_med <- ______
+
+# Percentage of weight on the left leg
+______
+```
+
+::: {.hint exercise="cp2_4"}
+`median(quiet1$force_left)`, `median(quiet1$force_right)`, then `left_med / (left_med + right_med) * 100`.
+:::
+
+::: {.solution exercise="cp2_4"}
+```{webr}
+#| exercise: cp2_4
+#| solution: true
+quiet1 <- subset(cmj, trial == "CMJ 1" & time_s <= 2)
+
+left_med <- median(quiet1$force_left)
+right_med <- median(quiet1$force_right)
+
+# Percentage of weight on the left leg
+left_med / (left_med + right_med) * 100
+```
+:::
+
+```{webr}
+#| exercise: cp2_4
+#| check: true
+res <- .check_vars(c("left_med", "right_med"), .envir_result, .checker_args$envir_solution)
+if (isTRUE(res$correct)) res <- .check_result(.result, .checker_args$solution,
+  ok = paste0("Correct! In CMJ 1, Athlete K stood with about ", round(.checker_args$solution),
+              " % of his weight on the left leg. Check CMJ 3 in the scratchpad: is it a consistent habit or just how he stood that time?"),
+  no = "The medians are right. The last line should calculate the percentage on the left leg.")
+res
+```
+
+## Well done!
+
+You've completed **Module 2 · Introduction to statistics**. You can now describe data with measures of center and spread, recognise normal data, and explain the central limit theorem: everything you need to start with inferential statistics.
+
+### Scratchpad
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

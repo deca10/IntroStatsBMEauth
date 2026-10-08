@@ -1,0 +1,340 @@
+---
+title: "2.1 What is statistics?"
+subtitle: "Variability, descriptive vs. inferential statistics, and types of data"
+webr:
+  packages: ['ggplot2']
+  resources:
+    - data/balance.csv
+    - data/cmj.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+theme_set(theme_gray(base_size = 14))
+balance <- read.csv("data/balance.csv")
+cmj <- read.csv("data/cmj.csv")
+# Jump outcomes calculated from the force data (you'll calculate them yourself in lesson 2.5)
+jumps <- data.frame(
+  trial        = c("CMJ 1", "CMJ 2", "CMJ 3"),
+  flight_s     = c(0.574, 0.568, 0.580),
+  height_cm    = c(40.4, 39.6, 41.3),
+  peak_force_N = c(1961.1, 1717.3, 1888.2)
+)
+```
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- explain what statistics is and why sport scientists need it,
+- tell **descriptive** from **inferential** statistics, and a **sample** from a **population**,
+- classify variables as **continuous**, **discrete**, **nominal** or **ordinal**, and store them correctly in R.
+
+⏱️ About 30 minutes. Module 2 assumes you've completed Module 1.
+:::
+
+## Meet the new dataset: countermovement jumps
+
+The countermovement jump (CMJ) is one of the most common tests in sport science. The athlete stands still, dips down quickly and jumps as high as possible. In this module you'll work with real data from **Athlete K, a professional basketball player** who performed **three CMJs** on a **dual force platform**: one plate under each foot.
+
+A force platform measures the **ground reaction force** (GRF), in newtons (N), **500 times per second** (500 Hz). The data frame `cmj` has been loaded for you:
+
+```{webr}
+head(cmj)
+nrow(cmj)
+```
+
+| Column | Meaning |
+|---|---|
+| `trial` | `CMJ 1`, `CMJ 2` or `CMJ 3` |
+| `time_s` | Time since the start of the recording (s); a new value every 0.002 s |
+| `force_left`, `force_right` | Vertical force under the left and right foot (N) |
+| `force_total` | Left + right (N) |
+
+Let's plot one jump. You know how to make a line plot from [lesson 1.5](m1-05-ggplot.qmd):
+
+```{webr}
+#| fig-width: 9
+#| fig-height: 4.5
+cmj3 <- subset(cmj, trial == "CMJ 3")
+ggplot(cmj3, aes(x = time_s, y = force_total)) +
+  geom_line() +
+  labs(x = "Time (s)", y = "Vertical force (N)", title = "CMJ 3, Athlete K")
+```
+
+Reading the curve from left to right:
+
+1. **Quiet standing** (0–1.5 s): the force equals the athlete's **body weight** (about 726 N).
+2. **Unweighting**: the athlete starts to dip, and the force drops below body weight.
+3. **Braking and propulsion** (≈2.0–2.6 s): the athlete stops the dip and pushes off, with force rising to about 2.5 × body weight.
+4. **Flight**: no contact, so the force is 0 N.
+5. **Landing** (≈3.2 s): a large impact peak, then the athlete settles back to body weight.
+
+Each jump produces **thousands of numbers**. Statistics helps us turn them into a few meaningful ones.
+
+## What is statistics?
+
+**Statistics** is the science of **collecting, organising, summarising and interpreting data** in order to answer questions and make decisions under **uncertainty**.
+
+Why is there uncertainty? Because of **variability**. Measure the same thing twice and you get two different answers. Here are Athlete K's three jumps, performed one minute apart:
+
+```{webr}
+jumps
+```
+
+The jump heights are 40.4, 39.6 and 41.3 cm. So what is Athlete K's "real" jump height? If he jumps 42 cm next month, has he improved, or is that just normal variation? Questions like these are what statistics is for. Other examples from sport and exercise science:
+
+- Does a 6-week plyometric programme improve jump height more than regular training?
+- Is the left leg producing more force than the right (asymmetry)?
+- Do older adults with a history of falls have worse balance?
+- What is a "normal" Mini-BESTest score for a 70-year-old?
+
+::: {.quiz id="st-q1"}
+Athlete K's three jump heights differ (40.4, 39.6 and 41.3 cm). What is the best explanation?
+
+- [ ] The force platform is broken
+- [x] Variability: no person performs exactly the same movement twice, and measurements contain small errors
+- [ ] One of the jumps must be a mistake and should be deleted
+
+::: {.explanation}
+Variability is normal and everywhere: biological variation (fatigue, technique, motivation) plus measurement error. Statistics gives us tools to describe it and to decide whether a difference is bigger than this normal variation.
+:::
+:::
+
+## Descriptive and inferential statistics
+
+Statistics has two main branches.
+
+**Descriptive statistics** summarise the data **you actually have**: averages, ranges, tables and plots. *"Athlete K's mean jump height over these three trials was 40.4 cm."* *"The 163 participants in the balance study were aged 18 to 86 years."* No conclusions beyond the data are drawn.
+
+**Inferential statistics** use a **sample** to draw conclusions about a larger **population**, and say how certain those conclusions are. *"Older adults score lower on the Mini-BESTest than younger adults (p < 0.001)."* This is a claim about **all** older and younger adults, based on only 163 of them.
+
+Two pairs of terms go with this distinction:
+
+| Term | Meaning | Example |
+|---|---|---|
+| **Population** | Everyone (or everything) you want to draw conclusions about | All community-dwelling adults; every jump Athlete K could ever make |
+| **Sample** | The part of the population you actually measured | The 163 participants in the balance study; Athlete K's 3 jumps |
+| **Parameter** | A number describing the population (usually unknown) | The true mean Mini-BESTest score of all older adults |
+| **Statistic** | A number calculated from the sample, used to *estimate* the parameter | The mean Mini-BESTest score of the 76 older participants |
+
+This module focuses on **descriptive** statistics, plus two key ideas (the normal distribution and the central limit theorem) that form the bridge to inferential statistics in Module 4.
+
+::: {.task}
+Calculate a descriptive statistic: Athlete K's **mean jump height** across the three trials. Use the `height_cm` column of `jumps`.
+:::
+
+```{webr}
+#| exercise: st_1
+#| caption: "Exercise · A descriptive statistic"
+# Mean jump height of Athlete K
+______
+```
+
+::: {.hint exercise="st_1"}
+Select the column with `$` and use `mean()`: `mean(jumps$height_cm)`.
+:::
+
+::: {.solution exercise="st_1"}
+```{webr}
+#| exercise: st_1
+#| solution: true
+# Mean jump height of Athlete K
+mean(jumps$height_cm)
+```
+:::
+
+```{webr}
+#| exercise: st_1
+#| check: true
+.check_result(.result, .checker_args$solution,
+  ok = "Correct! 40.4 cm. That's a descriptive statistic: it summarises these three jumps.",
+  no = "Not quite. Use `mean()` on the column `jumps$height_cm`.")
+```
+
+::: {.quiz id="st-q2"}
+*"Based on our sample of 40 players, U18 basketball players in Greece jump on average 38 cm (95 % CI 36–40 cm)."* Which type of statistics is this?
+
+- [ ] Descriptive
+- [x] Inferential
+
+::: {.explanation}
+The statement draws a conclusion about **all** U18 players in Greece (the population) from 40 players (a sample), and expresses the uncertainty with a confidence interval. That's inference.
+:::
+:::
+
+::: {.quiz id="st-q3"}
+*"In our study, 42 of the 163 participants reported at least one fall in the past year."* Which type of statistics is this?
+
+- [x] Descriptive
+- [ ] Inferential
+
+::: {.explanation}
+It simply reports what happened in the sample, with no generalisation to a population.
+:::
+:::
+
+::: {.quiz id="st-q4"}
+A researcher measures the VO₂max of 25 university rowers to learn about the fitness of university rowers in general. What are the **population** and the **sample**?
+
+- [ ] Population = the 25 rowers; sample = all university rowers
+- [x] Population = all university rowers; sample = the 25 rowers measured
+- [ ] Both are the 25 rowers
+
+::: {.explanation}
+The population is the whole group you want to know about; the sample is the subset you actually measured.
+:::
+:::
+
+## Data type classification
+
+Before you summarise or analyse a variable, you must know what **type** of data it is, because that determines which statistics and plots make sense. For example, a mean is meaningful for jump height but not for playing position.
+
+| Type | Sub-type | Description | Sport-science examples | Store in R as |
+|---|---|---|---|---|
+| **Numerical** (quantitative) | **Continuous** | Measured; any value in a range (decimals possible) | jump height, force, body mass, sprint time, VO₂max | `numeric` |
+| | **Discrete** | Counted; whole numbers only | number of falls, goals, repetitions, injuries per season | `numeric` / `integer` |
+| **Categorical** (qualitative) | **Nominal** | Categories with **no** natural order | sex, sport, playing position, left/right leg | `factor` |
+| | **Ordinal** | Categories **with** a natural order | activity level (low < moderate < high), RPE category, injury severity | ordered `factor` |
+
+::: {.callout-tip}
+## Watch out for numbers that are really categories
+A participant ID (`1, 2, 3, …`) or a shirt number is stored as a number, but it's really a **nominal** label: an "average shirt number" means nothing. Similarly, scale scores like the **Mini-BESTest (0–28)** or a **Likert item** (1–5) are technically ordinal, although sum scores like the Mini-BESTest are often treated as numerical in practice.
+:::
+
+Let's look at the `balance` dataset with this lens:
+
+```{webr}
+str(balance)
+```
+
+| Column | Type |
+|---|---|
+| `age`, `height_cm`, `mass_kg`, `bmi`, `tmt_a_s`, `tmt_b_s` | continuous |
+| `falls_12m` | discrete (a count) |
+| `sex`, `nationality`, `illness`, `age_group` | nominal |
+| `activity`, `fear_falling` | ordinal |
+| `subject` | an ID label (nominal), not a quantity |
+
+Notice that R reads `activity` as `chr` (character). R doesn't know it's ordinal: **you** have to tell it, as you learned in [lesson 1.3](m1-03-factors.qmd).
+
+::: {.task}
+1. Convert `balance$sex` into a (nominal) factor and store it in `sex_f`.
+2. Convert `balance$activity` into an **ordered** factor `activity_f` with the levels Low < Moderate < High.
+3. On the last line, use `table()` to count the participants in each activity level.
+:::
+
+```{webr}
+#| exercise: st_2
+#| caption: "Exercise · Store data types correctly"
+# 1. Nominal
+sex_f <- ______
+
+# 2. Ordinal
+activity_f <- factor(balance$activity, ordered = ______, levels = ______)
+
+# 3. Count per activity level
+______
+```
+
+::: {.hint exercise="st_2"}
+1. `factor(balance$sex)`
+2. `ordered = TRUE`, `levels = c("Low", "Moderate", "High")`
+3. `table(activity_f)`
+:::
+
+::: {.solution exercise="st_2"}
+```{webr}
+#| exercise: st_2
+#| solution: true
+# 1. Nominal
+sex_f <- factor(balance$sex)
+
+# 2. Ordinal
+activity_f <- factor(balance$activity, ordered = TRUE, levels = c("Low", "Moderate", "High"))
+
+# 3. Count per activity level
+table(activity_f)
+```
+:::
+
+```{webr}
+#| exercise: st_2
+#| check: true
+res <- .check_vars(c("sex_f", "activity_f"), .envir_result, .checker_args$envir_solution)
+if (isTRUE(res$correct)) res <- .check_result(.result, .checker_args$solution,
+  ok = "Correct! 32 low, 75 moderate and 56 highly active participants, now in a sensible order.",
+  no = "Both factors are right. The last line should be `table(activity_f)`.")
+res
+```
+
+Now classify some variables yourself.
+
+::: {.quiz id="st-q5"}
+The **peak force** during a CMJ (in N) is…
+
+- [x] continuous
+- [ ] discrete
+- [ ] ordinal
+
+::: {.explanation}
+Force is measured on a continuous scale and can take any value, e.g. 1888.2 N.
+:::
+:::
+
+::: {.quiz id="st-q6"}
+The **number of successful free throws out of 10** is…
+
+- [ ] continuous
+- [x] discrete
+- [ ] nominal
+
+::: {.explanation}
+It's a count, so it can only be a whole number from 0 to 10.
+:::
+:::
+
+::: {.quiz id="st-q7"}
+**Rating of perceived exertion** recorded as *very light / light / moderate / hard / very hard* is…
+
+- [ ] nominal
+- [x] ordinal
+- [ ] continuous
+
+::: {.explanation}
+These are categories with a clear order, but the "distance" between them is not necessarily equal. That's the hallmark of ordinal data.
+:::
+:::
+
+::: {.quiz id="st-q8"}
+The **trial** column of `cmj` (`CMJ 1`, `CMJ 2`, `CMJ 3`) is best treated as…
+
+- [ ] continuous, because it contains numbers
+- [x] nominal: it's a label identifying the trial
+- [ ] discrete, because you can count trials
+
+::: {.explanation}
+"CMJ 1/2/3" is a label. You might argue for ordinal (trials happened in order), but you wouldn't calculate an average trial. It identifies groups of measurements.
+:::
+:::
+
+## Lesson summary
+
+- **Statistics** turns data into answers while accounting for **variability**.
+- **Descriptive** statistics summarise the data you have; **inferential** statistics generalise from a **sample** to a **population**.
+- Numerical data is **continuous** (measured) or **discrete** (counted); categorical data is **nominal** (no order) or **ordinal** (ordered).
+- In R: numbers → `numeric`, nominal → `factor()`, ordinal → `factor(..., ordered = TRUE, levels = ...)`.
+
+### Scratchpad
+
+`cmj`, `jumps` and `balance` are loaded. Try plotting `force_left` and `force_right` of CMJ 1 to see the two legs separately.
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

@@ -1,0 +1,597 @@
+---
+title: "1.4 Data frames"
+subtitle: "Exploring, creating, selecting and sorting a real balance dataset"
+webr:
+  resources:
+    - data/balance.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+balance <- read.csv("data/balance.csv")
+```
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- explain what a **data frame** is,
+- get a quick overview of a dataset with `head()`, `str()` and `summary()`,
+- create your own data frame,
+- **select** rows and columns, and **filter** participants with conditions,
+- **sort** a data frame.
+
+⏱️ About 45 minutes.
+:::
+
+## What's a data frame?
+
+So far you have stored one variable at a time in a vector. Real datasets contain **many variables measured on the same participants**: age, sex, body mass, test scores… These variables have different types (numeric, character, logical), so a single vector can't hold them.
+
+A **data frame** is R's version of a spreadsheet table:
+
+- each **row** is one observation (e.g. one participant or one trial),
+- each **column** is one variable,
+- each column is a vector, so all values in a column have the same type, but different columns can have different types.
+
+In this lesson you'll work with the **`balance`** dataset: 163 adults aged 18–86 who completed a balance assessment ([Santos & Duarte, 2016](https://doi.org/10.7717/peerj.2648)). It has been loaded for you with:
+
+```r
+balance <- read.csv("data/balance.csv")
+```
+
+`read.csv()` reads a comma-separated file, the most common way to bring data into R. See [How this course works](how-to-use.qmd#the-datasets) for a description of all columns.
+
+## Quick, have a look at your dataset
+
+Printing a whole dataset fills the screen. Usually you just want a quick look at the first or last rows. The function `head()` shows the first 6 rows and `tail()` the last 6:
+
+```{webr}
+head(balance)
+```
+
+You can ask for a different number of rows with a second argument: `head(balance, n = 3)`. Other helpful functions are `dim()` (number of rows and columns), `nrow()`, `ncol()` and `names()` (the column names).
+
+::: {.task}
+Show the **last 4 rows** of `balance` using `tail()`.
+:::
+
+```{webr}
+#| exercise: df_1
+#| caption: "Exercise · Have a look at your dataset"
+# Show the last 4 rows of balance
+______
+```
+
+::: {.hint exercise="df_1"}
+`tail()` works just like `head()`: `tail(balance, n = 4)`.
+:::
+
+::: {.solution exercise="df_1"}
+```{webr}
+#| exercise: df_1
+#| solution: true
+# Show the last 4 rows of balance
+tail(balance, n = 4)
+```
+:::
+
+```{webr}
+#| exercise: df_1
+#| check: true
+.check_result(.result, .checker_args$solution,
+  ok = "Correct! The last participant (ID 163) is 25.4 years old.",
+  no = "Not quite. Use `tail()` with the dataset and `n = 4`.")
+```
+
+::: {.quiz id="df-q1"}
+`dim(balance)` returns `163 18`. What does this mean?
+
+- [ ] 163 columns and 18 rows
+- [x] 163 rows (participants) and 18 columns (variables)
+- [ ] 163 participants aged 18 or older
+
+::: {.explanation}
+`dim()` always gives **rows first, then columns**. Each row is one participant, each column a variable.
+:::
+:::
+
+## Have a look at the structure
+
+The function `str()` (*structure*) is the best first look at a new dataset. It shows:
+
+- the number of observations (rows) and variables (columns),
+- each column's **name** and **type** (`num`, `int`, `chr`, `logi`),
+- the first few values of every column.
+
+```{webr}
+str(balance)
+```
+
+`summary()` goes one step further and gives descriptive statistics for every numeric column (minimum, quartiles, median, mean, maximum, and the number of missing values, `NA`):
+
+```{webr}
+summary(balance[, c("age", "bmi", "minibest")])
+```
+
+::: {.task}
+Use `summary()` on the `tmt_b_s` column (Trail Making Test B time, in seconds) to find its **median**. Use the `$` sign to select the column: `balance$tmt_b_s`.
+:::
+
+```{webr}
+#| exercise: df_2
+#| caption: "Exercise · Have a look at the structure"
+# Summarise the tmt_b_s column
+______
+```
+
+::: {.hint exercise="df_2"}
+Write `summary(balance$tmt_b_s)`.
+:::
+
+::: {.solution exercise="df_2"}
+```{webr}
+#| exercise: df_2
+#| solution: true
+# Summarise the tmt_b_s column
+summary(balance$tmt_b_s)
+```
+:::
+
+```{webr}
+#| exercise: df_2
+#| check: true
+.check_result(.result, .checker_args$solution,
+  ok = "Correct! The median is 68 s, but the mean is 110 s. Some participants needed much longer (up to the 300 s limit), which pulls the mean up.",
+  no = "Not quite. Use `summary(balance$tmt_b_s)`.")
+```
+
+::: {.quiz id="df-q2"}
+In the output of `str(balance)`, the column `sex` is shown as `chr`. What does that tell you?
+
+- [ ] It contains numbers
+- [x] It contains text (character values)
+- [ ] It is a factor
+
+::: {.explanation}
+`chr` stands for character. Since R 4.0, `read.csv()` keeps text columns as character by default. Convert them with `factor()` when you need categories (for example for statistics or plots).
+:::
+:::
+
+## Creating a data frame
+
+You can also build a data frame yourself from vectors of equal length, with the function `data.frame()`. Each argument becomes a column: `column_name = vector`.
+
+```{webr}
+name     <- c("Anna", "Ben", "Chloe")
+position <- c("Setter", "Libero", "Opposite")
+jump_cm  <- c(48, 41, 55)
+
+volley <- data.frame(name, position, jump_cm)
+volley
+```
+
+## Creating a data frame (example)
+
+::: {.task}
+You tested five sprinters. Create a data frame called `sprinters` from the vectors below, with the columns in this order: `athlete`, `sex`, `sprint_30m` and `injured`. Then look at its structure with `str()`.
+:::
+
+```{webr}
+#| exercise: df_3
+#| caption: "Exercise · Creating a data frame"
+athlete    <- c("Eleni", "Marco", "Sofia", "Jonas", "Lea")
+sex        <- c("F", "M", "F", "M", "F")
+sprint_30m <- c(4.31, 3.98, 4.12, 4.05, 4.45)   # seconds
+injured    <- c(FALSE, FALSE, TRUE, FALSE, FALSE)
+
+# Create the data frame
+sprinters <- ______
+
+# Check its structure
+______
+```
+
+::: {.hint exercise="df_3"}
+`data.frame(athlete, sex, sprint_30m, injured)`, then `str(sprinters)`.
+:::
+
+::: {.solution exercise="df_3"}
+```{webr}
+#| exercise: df_3
+#| solution: true
+athlete    <- c("Eleni", "Marco", "Sofia", "Jonas", "Lea")
+sex        <- c("F", "M", "F", "M", "F")
+sprint_30m <- c(4.31, 3.98, 4.12, 4.05, 4.45)   # seconds
+injured    <- c(FALSE, FALSE, TRUE, FALSE, FALSE)
+
+# Create the data frame
+sprinters <- data.frame(athlete, sex, sprint_30m, injured)
+
+# Check its structure
+str(sprinters)
+```
+:::
+
+```{webr}
+#| exercise: df_3
+#| check: true
+res <- .check_vars("sprinters", .envir_result, .checker_args$envir_solution,
+  ok = "Great! 5 observations of 4 variables: chr, chr, num and logi.")
+if (isTRUE(res$correct)) res <- .check_code(.user_code, "str(", ok = res$message)
+res
+```
+
+## Selection of data frame elements
+
+Like vectors, you select from data frames with square brackets, but now you give **two** positions: `[rows, columns]`.
+
+```r
+my_df[1, 2]      # row 1, column 2
+my_df[1:3, 2:4]  # rows 1-3, columns 2-4
+my_df[1, ]       # all columns of row 1 (leave the column part empty)
+my_df[, 2]       # all rows of column 2 (leave the row part empty)
+```
+
+Instead of column numbers you can use **column names**, which makes your code much easier to read:
+
+```{webr}
+balance[1:5, c("subject", "age", "minibest")]
+```
+
+::: {.task}
+Select the values of the columns `age`, `sex` and `minibest` for the **first 10 participants** (rows 1 to 10). Store the result in `first10`.
+:::
+
+```{webr}
+#| exercise: df_4
+#| caption: "Exercise · Selection of data frame elements"
+# Rows 1 to 10, columns age, sex and minibest
+first10 <- balance[______, ______]
+
+first10
+```
+
+::: {.hint exercise="df_4"}
+Rows: `1:10`. Columns: `c("age", "sex", "minibest")`. Don't forget the comma between them.
+:::
+
+::: {.solution exercise="df_4"}
+```{webr}
+#| exercise: df_4
+#| solution: true
+# Rows 1 to 10, columns age, sex and minibest
+first10 <- balance[1:10, c("age", "sex", "minibest")]
+
+first10
+```
+:::
+
+```{webr}
+#| exercise: df_4
+#| check: true
+.check_vars("first10", .envir_result, .checker_args$envir_solution,
+  ok = "Correct! A 10 × 3 selection.")
+```
+
+## Selection of data frame elements (2)
+
+To select a **whole column** you'll most often use the dollar sign: `data$column`. This returns the column as a **vector**, so everything from the vectors lesson works:
+
+```{webr}
+mean(balance$age)
+max(balance$minibest)
+```
+
+Now combine it with **selection by comparison**. A logical vector in the **row** position keeps only the rows where it is `TRUE`:
+
+```{webr}
+# Which participants reported at least one fall in the last 12 months?
+fallers <- balance$falls_12m > 0
+
+# Keep only those rows (and all columns)
+balance_fallers <- balance[fallers, ]
+nrow(balance_fallers)
+```
+
+The function `subset()` does the same with less typing: you can use the column names directly.
+
+```{webr}
+balance_fallers <- subset(balance, falls_12m > 0)
+nrow(balance_fallers)
+```
+
+::: {.task}
+Select all participants with a **Mini-BESTest score below 15** (a sign of poor balance). Store them in `poor_balance`, using either `subset()` or square brackets. Then print only their `age`, `sex`, `minibest` and `falls_12m`.
+:::
+
+```{webr}
+#| exercise: df_5
+#| caption: "Exercise · Selection of data frame elements (2)"
+# Participants with minibest below 15
+poor_balance <- ______
+
+# Show age, sex, minibest and falls_12m
+poor_balance[, c("age", "sex", "minibest", "falls_12m")]
+```
+
+::: {.hint exercise="df_5"}
+`subset(balance, minibest < 15)` or `balance[balance$minibest < 15, ]`.
+:::
+
+::: {.solution exercise="df_5"}
+```{webr}
+#| exercise: df_5
+#| solution: true
+# Participants with minibest below 15
+poor_balance <- subset(balance, minibest < 15)
+
+# Show age, sex, minibest and falls_12m
+poor_balance[, c("age", "sex", "minibest", "falls_12m")]
+```
+:::
+
+```{webr}
+#| exercise: df_5
+#| check: true
+res <- .check_result(nrow(get("poor_balance", envir = .envir_result)), nrow(get("poor_balance", envir = .checker_args$envir_solution)))
+if (isTRUE(res$correct)) .ok("Correct! 11 participants scored below 15. Most of them are over 60, but not all: look at the ages.") else .no("Not quite. Keep only rows where `minibest < 15`. Make sure you didn't use `<=`.")
+```
+
+::: {.quiz id="df-q3"}
+What is the difference between `balance$age` and `balance[1, ]`?
+
+- [x] `balance$age` is the whole `age` column; `balance[1, ]` is all variables of the first participant
+- [ ] Both return the age of the first participant
+- [ ] `balance$age` is the first row; `balance[1, ]` is the first column
+
+::: {.explanation}
+`$` selects a **column** by name (a vector of 163 ages). `[1, ]` selects **row** 1 with all columns (one participant).
+:::
+:::
+
+## Exercise with datasets (1)
+
+Time to answer some real research-style questions with what you've learned. You'll often combine selection with `mean()`, `nrow()` or `table()`.
+
+```{webr}
+# Example: average Mini-BESTest score of the young participants
+young <- subset(balance, age_group == "Young")
+mean(young$minibest)
+```
+
+::: {.task}
+1. Create `old`, a data frame with only the participants whose `age_group` is `"Old"`.
+2. Calculate their mean Mini-BESTest score and store it in `old_mean`.
+3. On the last line, calculate the **difference** between the young and old group means (`young_mean - old_mean`).
+:::
+
+```{webr}
+#| exercise: df_6
+#| caption: "Exercise · Working with the dataset (1)"
+young <- subset(balance, age_group == "Young")
+young_mean <- mean(young$minibest)
+
+# 1. Older participants
+old <- ______
+
+# 2. Their mean Mini-BESTest score
+old_mean <- ______
+
+# 3. Difference between the groups
+______
+```
+
+::: {.hint exercise="df_6"}
+Copy the pattern of the `young` lines: `subset(balance, age_group == "Old")` and `mean(old$minibest)`. Finally `young_mean - old_mean`.
+:::
+
+::: {.solution exercise="df_6"}
+```{webr}
+#| exercise: df_6
+#| solution: true
+young <- subset(balance, age_group == "Young")
+young_mean <- mean(young$minibest)
+
+# 1. Older participants
+old <- subset(balance, age_group == "Old")
+
+# 2. Their mean Mini-BESTest score
+old_mean <- mean(old$minibest)
+
+# 3. Difference between the groups
+young_mean - old_mean
+```
+:::
+
+```{webr}
+#| exercise: df_6
+#| check: true
+res <- .check_vars(c("old", "old_mean"), .envir_result, .checker_args$envir_solution)
+if (isTRUE(res$correct)) res <- .check_result(.result, .checker_args$solution,
+  ok = "Correct! Younger adults score about 5 points higher on the Mini-BESTest. In Module 2 you'll learn how to test whether such a difference is statistically significant.",
+  no = "`old` and `old_mean` are right. The last line should be `young_mean - old_mean`.")
+res
+```
+
+## Exercise with datasets (2)
+
+Often you need to **create a new column** from existing ones. Assign to a new name with `$`, and R calculates it for every row at once (vectorisation!):
+
+```{webr}
+# Height in metres
+balance$height_m <- balance$height_cm / 100
+head(balance[, c("height_cm", "height_m")])
+```
+
+::: {.task}
+The difference between Trail Making Test part B and part A (B − A) is often used as a measure of executive function.
+
+1. Create a new column `tmt_diff` in `balance` equal to `tmt_b_s - tmt_a_s`.
+2. Create `faller` as a new column that is `TRUE` if the participant had **at least one fall** in the past 12 months.
+3. On the last line, make a table of `faller` by `age_group` with `table()`.
+:::
+
+```{webr}
+#| exercise: df_7
+#| caption: "Exercise · Working with the dataset (2)"
+# 1. TMT difference (B - A)
+balance$tmt_diff <- ______
+
+# 2. Did the participant fall at least once?
+balance$faller <- ______
+
+# 3. Cross-table of faller and age group
+table(______, ______)
+```
+
+::: {.hint exercise="df_7"}
+1. `balance$tmt_b_s - balance$tmt_a_s`
+2. `balance$falls_12m >= 1` (or `> 0`)
+3. `table(balance$faller, balance$age_group)`
+:::
+
+::: {.solution exercise="df_7"}
+```{webr}
+#| exercise: df_7
+#| solution: true
+# 1. TMT difference (B - A)
+balance$tmt_diff <- balance$tmt_b_s - balance$tmt_a_s
+
+# 2. Did the participant fall at least once?
+balance$faller <- balance$falls_12m >= 1
+
+# 3. Cross-table of faller and age group
+table(balance$faller, balance$age_group)
+```
+:::
+
+```{webr}
+#| exercise: df_7
+#| check: true
+b <- get("balance", envir = .envir_result)
+s <- get("balance", envir = .checker_args$envir_solution)
+if (!"tmt_diff" %in% names(b)) {
+  .no("I can't find the column `tmt_diff` in `balance`.")
+} else if (!isTRUE(all.equal(b$tmt_diff, s$tmt_diff))) {
+  .no("`tmt_diff` should be `tmt_b_s - tmt_a_s` (B minus A).")
+} else if (!"faller" %in% names(b) || !isTRUE(all.equal(b$faller, s$faller))) {
+  .no("Check the `faller` column: it should be TRUE when `falls_12m` is 1 or more.")
+} else {
+  .check_result(.result, .checker_args$solution,
+    ok = "Excellent! 19 of 76 older and 23 of 87 younger participants reported a fall.",
+    no = "Both columns are right. The table should be `table(balance$faller, balance$age_group)`.")
+}
+```
+
+## Sorting
+
+To sort data you use the function `order()`. It doesn't return the sorted values, but the **positions** of the elements in sorted order:
+
+```{webr}
+cmj_cm <- c(38, 45, 31, 50)
+order(cmj_cm)
+```
+
+The smallest value (31) is at position 3, then 38 at position 1, and so on. Putting those positions inside square brackets gives the sorted vector:
+
+```{webr}
+cmj_cm[order(cmj_cm)]
+cmj_cm[order(cmj_cm, decreasing = TRUE)]   # largest first
+```
+
+(For a single vector, `sort(cmj_cm)` is a shortcut, but `order()` is what you need for data frames.)
+
+::: {.quiz id="df-q4"}
+`x <- c(12, 7, 20)`. What does `order(x)` return?
+
+- [ ] `7 12 20`
+- [x] `2 1 3`
+- [ ] `3 1 2`
+
+::: {.explanation}
+`order()` returns **positions**: the smallest value (7) is element 2, then 12 (element 1), then 20 (element 3). `sort(x)` would return the values `7 12 20`.
+:::
+:::
+
+## Sorting your data frame
+
+To sort a data frame by one column, use `order()` on that column in the **row** position:
+
+```{webr}
+# Youngest participants first
+by_age <- balance[order(balance$age), ]
+head(by_age[, c("subject", "age", "minibest")])
+```
+
+::: {.task}
+Sort `balance` by Mini-BESTest score from **highest to lowest** and store the result in `ranked`. Then show the first 5 rows of the columns `subject`, `age` and `minibest`.
+:::
+
+```{webr}
+#| exercise: df_8
+#| caption: "Exercise · Sorting your data frame"
+# Sort by minibest, highest first
+ranked <- balance[order(______, decreasing = ______), ]
+
+# Top 5 participants
+head(ranked[, c("subject", "age", "minibest")], n = 5)
+```
+
+::: {.hint exercise="df_8"}
+Order by `balance$minibest` with `decreasing = TRUE`.
+:::
+
+::: {.solution exercise="df_8"}
+```{webr}
+#| exercise: df_8
+#| solution: true
+# Sort by minibest, highest first
+ranked <- balance[order(balance$minibest, decreasing = TRUE), ]
+
+# Top 5 participants
+head(ranked[, c("subject", "age", "minibest")], n = 5)
+```
+:::
+
+```{webr}
+#| exercise: df_8
+#| check: true
+.check_vars("ranked", .envir_result, .checker_args$envir_solution,
+  ok = "Correct! The top scorers (28/28) are all young adults.")
+```
+
+::: {.quiz id="df-q5"}
+Which code returns the **10 oldest** participants?
+
+- [ ] `head(balance[order(balance$age), ], 10)`
+- [x] `head(balance[order(balance$age, decreasing = TRUE), ], 10)`
+- [ ] `balance[order(balance$age), 10]`
+
+::: {.explanation}
+Sort from oldest to youngest (`decreasing = TRUE`) and take the first 10 rows. The first option gives the 10 youngest, and the third selects column 10, not 10 rows.
+:::
+:::
+
+## Lesson summary
+
+- A **data frame** stores variables (columns) of different types for the same observations (rows).
+- Explore data with `head()`, `tail()`, `dim()`, `str()` and `summary()`.
+- Create a data frame with `data.frame(col1, col2, ...)`.
+- Select with `df[rows, columns]` (positions or names), or a single column with `df$col`.
+- Filter rows with a logical condition (`df[df$x > 5, ]`) or `subset(df, x > 5)`.
+- Create new columns with `df$new <- ...`.
+- Sort with `df[order(df$col), ]`, and add `decreasing = TRUE` for largest first.
+
+### Scratchpad
+
+The `balance` dataset is loaded here. Try answering your own questions: who has the highest fear-of-falling score? What is the average BMI of men and women?
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

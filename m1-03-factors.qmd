@@ -1,0 +1,461 @@
+---
+title: "1.3 Factors"
+subtitle: "Categorical variables: sex, age group, test conditions and activity levels"
+webr:
+  resources:
+    - data/balance.csv
+    - data/bds_trials.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+balance <- read.csv("data/balance.csv")
+trials <- read.csv("data/bds_trials.csv")
+```
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- explain what a **factor** is and why categorical data needs one,
+- inspect and rename **factor levels**,
+- count categories with `summary()`,
+- create **ordered factors** and compare their values.
+
+⏱️ About 30 minutes.
+:::
+
+## What's a factor and why would you use it?
+
+Many variables in sport science are **categorical**: they put each observation into one of a limited number of groups.
+
+- sex: `F`, `M`
+- playing position: goalkeeper, defender, midfielder, forward
+- test condition: eyes **open** / **closed**, **firm** surface / **foam**
+- age group: young, old
+
+In R, categorical variables are stored as **factors**. A factor looks like a character vector, but R knows that the values are *categories* (called **levels**). That matters because statistical tests and plots treat categories differently from free text: they count them, compare groups, colour them and put them in a sensible order.
+
+You create a factor with the function `factor()`:
+
+```{webr}
+sex_vector <- c("M", "F", "F", "M", "M")
+factor_sex <- factor(sex_vector)
+factor_sex
+```
+
+Notice the extra line `Levels: F M` in the output: R has found the two categories.
+
+::: {.task}
+Eight balance trials were performed under these vision conditions. Convert `vision_vector` into a factor called `factor_vision` and print it.
+:::
+
+```{webr}
+#| exercise: fac_1
+#| caption: "Exercise · Create a factor"
+vision_vector <- c("Open", "Closed", "Open", "Open", "Closed", "Closed", "Open", "Closed")
+
+# Convert vision_vector to a factor
+factor_vision <- ______
+
+# Print out factor_vision
+
+```
+
+::: {.hint exercise="fac_1"}
+Use `factor(vision_vector)`, then write `factor_vision` on the last line.
+:::
+
+::: {.solution exercise="fac_1"}
+```{webr}
+#| exercise: fac_1
+#| solution: true
+vision_vector <- c("Open", "Closed", "Open", "Open", "Closed", "Closed", "Open", "Closed")
+
+# Convert vision_vector to a factor
+factor_vision <- factor(vision_vector)
+
+# Print out factor_vision
+factor_vision
+```
+:::
+
+```{webr}
+#| exercise: fac_1
+#| check: true
+.check_vars("factor_vision", .envir_result, .checker_args$envir_solution,
+  ok = "Great! Notice the levels: Closed Open (R sorts them alphabetically by default).")
+```
+
+::: {.quiz id="fac-q1"}
+Which of these variables should be stored as a factor?
+
+- [ ] Countermovement jump height (cm)
+- [x] Type of footwear (barefoot, running shoe, minimalist)
+- [ ] Heart rate (bpm)
+
+::: {.explanation}
+Footwear type is **categorical**: each trial belongs to one of a few groups. Jump height and heart rate are continuous measurements and should be numeric.
+:::
+:::
+
+## Factor levels
+
+Data files often use short codes, like `"F"` and `"M"`. The function `levels()` shows the categories of a factor, and you can also use it to **rename** them, which is useful for tables and plots:
+
+```{webr}
+factor_sex <- factor(c("M", "F", "F", "M", "M"))
+levels(factor_sex)
+
+levels(factor_sex) <- c("Female", "Male")
+factor_sex
+```
+
+::: {.callout-warning}
+## Order matters!
+When renaming, the new names are matched to the existing levels **in order**. Always check the current order with `levels()` first: here it is `"F" "M"` (alphabetical), so `"Female"` must come first.
+:::
+
+You can also choose the order of the levels yourself when you create the factor, with the `levels` argument:
+
+```{webr}
+surface <- factor(c("Foam", "Firm", "Firm", "Foam"), levels = c("Firm", "Foam"))
+levels(surface)
+```
+
+::: {.task}
+The vector `group_vector` codes participants as `"Y"` (young) or `"O"` (old).
+
+1. Convert it to a factor `factor_group`.
+2. Rename the levels to `"Old"` and `"Young"` (check the order!).
+:::
+
+```{webr}
+#| exercise: fac_2
+#| caption: "Exercise · Factor levels"
+group_vector <- c("Y", "O", "O", "Y", "Y", "O")
+
+# Convert group_vector to a factor
+factor_group <- ______
+
+# Rename the levels
+levels(factor_group) <- c("______", "______")
+
+factor_group
+```
+
+::: {.hint exercise="fac_2"}
+`levels(factor(group_vector))` is `"O" "Y"` (alphabetical), so the new names must be `c("Old", "Young")`.
+:::
+
+::: {.solution exercise="fac_2"}
+```{webr}
+#| exercise: fac_2
+#| solution: true
+group_vector <- c("Y", "O", "O", "Y", "Y", "O")
+
+# Convert group_vector to a factor
+factor_group <- factor(group_vector)
+
+# Rename the levels
+levels(factor_group) <- c("Old", "Young")
+
+factor_group
+```
+:::
+
+```{webr}
+#| exercise: fac_2
+#| check: true
+.check_vars("factor_group", .envir_result, .checker_args$envir_solution,
+  ok = "Correct! The first participant is Young, the second Old, and so on.")
+```
+
+## Summarizing a factor
+
+How many observations fall into each category? `summary()` gives a different answer for a character vector and a factor:
+
+```{webr}
+sex_vector <- c("M", "F", "F", "M", "M")
+summary(sex_vector)           # not very helpful
+summary(factor(sex_vector))   # counts per category
+```
+
+Now let's use **real data**. The `trials` dataset contains all 1,930 standing-balance trials from the [balance study](how-to-use.qmd#the-datasets). It has been loaded for you. Each trial was done with eyes **Open** or **Closed** on a **Firm** surface or **Foam**. The `$` sign picks out one column (more on that in the next lesson):
+
+```{webr}
+head(trials)
+summary(factor(trials$Vision))
+```
+
+The function `table()` gives the same counts, and can also **cross-tabulate** two factors:
+
+```{webr}
+table(trials$Vision, trials$Surface)
+```
+
+::: {.task}
+Convert the `Surface` column of `trials` into a factor called `surface_factor` and summarise it with `summary()` on the last line.
+:::
+
+```{webr}
+#| exercise: fac_3
+#| caption: "Exercise · Summarizing a factor"
+# Convert the Surface column to a factor
+surface_factor <- factor(______)
+
+# Summarise surface_factor
+
+```
+
+::: {.hint exercise="fac_3"}
+The column is `trials$Surface`. Then use `summary(surface_factor)`.
+:::
+
+::: {.solution exercise="fac_3"}
+```{webr}
+#| exercise: fac_3
+#| solution: true
+# Convert the Surface column to a factor
+surface_factor <- factor(trials$Surface)
+
+# Summarise surface_factor
+summary(surface_factor)
+```
+:::
+
+```{webr}
+#| exercise: fac_3
+#| check: true
+res <- .check_vars("surface_factor", .envir_result, .checker_args$envir_solution)
+if (isTRUE(res$correct)) res <- .check_result(.result, .checker_args$solution,
+  ok = "Correct! 976 trials on a firm surface and 954 on foam: a nicely balanced design.",
+  no = "`surface_factor` is right. Now end with `summary(surface_factor)`.")
+res
+```
+
+::: {.quiz id="fac-q2"}
+In the output of `table(trials$Vision, trials$Surface)`, how many trials were done with eyes **closed on foam**?
+
+- [x] 474
+- [ ] 487
+- [ ] 480
+
+::: {.explanation}
+Find the row *Closed* and the column *Foam*: 474 trials. Run the code above again if you need to check.
+:::
+:::
+
+## Ordered factors
+
+Sex, vision and surface are **nominal** variables: there is no natural order between the categories. Other categorical variables **do** have an order. These are called **ordinal** variables:
+
+- physical activity level: Low < Moderate < High
+- fear of falling: Low < Moderate < High
+- injury severity: minor < moderate < severe
+
+For ordinal variables you create an **ordered factor** by adding `ordered = TRUE` and listing the levels from lowest to highest:
+
+```{webr}
+effort <- c("Hard", "Easy", "Moderate", "Hard", "Easy")
+effort_factor <- factor(effort, ordered = TRUE, levels = c("Easy", "Moderate", "Hard"))
+effort_factor
+```
+
+The levels are now printed with `<` signs between them, showing the order.
+
+::: {.task}
+The physical-activity levels of six participants are given in `activity_vector`. Create an **ordered** factor `activity_factor` with the order **Low < Moderate < High**.
+:::
+
+```{webr}
+#| exercise: fac_4
+#| caption: "Exercise · Ordered factors"
+activity_vector <- c("High", "Low", "Moderate", "Moderate", "High", "Low")
+
+# Create an ordered factor
+activity_factor <- factor(activity_vector,
+                          ordered = ______,
+                          levels = c(______))
+
+activity_factor
+```
+
+::: {.hint exercise="fac_4"}
+Use `ordered = TRUE` and `levels = c("Low", "Moderate", "High")`.
+:::
+
+::: {.solution exercise="fac_4"}
+```{webr}
+#| exercise: fac_4
+#| solution: true
+activity_vector <- c("High", "Low", "Moderate", "Moderate", "High", "Low")
+
+# Create an ordered factor
+activity_factor <- factor(activity_vector,
+                          ordered = TRUE,
+                          levels = c("Low", "Moderate", "High"))
+
+activity_factor
+```
+:::
+
+```{webr}
+#| exercise: fac_4
+#| check: true
+.check_vars("activity_factor", .envir_result, .checker_args$envir_solution,
+  ok = "Well done! Levels: Low < Moderate < High.")
+```
+
+## Ordered factors (example)
+
+Let's apply this to the real data. The `balance` dataset (one row per participant) has a column `activity` with each participant's activity level. By default R would order the levels alphabetically (`High`, `Low`, `Moderate`), which makes no sense in a table or plot:
+
+```{webr}
+summary(factor(balance$activity))
+```
+
+::: {.task}
+Create an ordered factor `fear_factor` from the column `balance$fear_falling` (fear of falling), with the levels **Low < Moderate < High**. Then summarise it.
+:::
+
+```{webr}
+#| exercise: fac_5
+#| caption: "Exercise · Ordered factors (example)"
+# Ordered factor of fear of falling
+fear_factor <- factor(______,
+                      ordered = TRUE,
+                      levels = ______)
+
+# Summarise fear_factor
+summary(fear_factor)
+```
+
+::: {.hint exercise="fac_5"}
+The first argument is `balance$fear_falling`. The levels are `c("Low", "Moderate", "High")`.
+:::
+
+::: {.solution exercise="fac_5"}
+```{webr}
+#| exercise: fac_5
+#| solution: true
+# Ordered factor of fear of falling
+fear_factor <- factor(balance$fear_falling,
+                      ordered = TRUE,
+                      levels = c("Low", "Moderate", "High"))
+
+# Summarise fear_factor
+summary(fear_factor)
+```
+:::
+
+```{webr}
+#| exercise: fac_5
+#| check: true
+.check_vars("fear_factor", .envir_result, .checker_args$envir_solution,
+  ok = "Correct! 53 participants reported low, 77 moderate and 33 high concern about falling.")
+```
+
+## Comparing ordered factors
+
+Because an ordered factor knows the order of its levels, you can **compare** its elements with `<`, `>`, `==` and so on. This doesn't work for unordered factors (try it and R will give a warning).
+
+```{webr}
+effort_factor <- factor(c("Hard", "Easy", "Moderate"), ordered = TRUE,
+                        levels = c("Easy", "Moderate", "Hard"))
+effort_factor[1] > effort_factor[2]   # is "Hard" greater than "Easy"?
+effort_factor > "Easy"                # which sessions were more than easy?
+```
+
+::: {.task}
+1. Store the activity level of the **first** participant in `participant1` and that of the **third** participant in `participant3`.
+2. On the last line, check whether participant 1 is **more active** than participant 3.
+:::
+
+```{webr}
+#| exercise: fac_6
+#| caption: "Exercise · Comparing ordered factors"
+activity_factor <- factor(c("High", "Low", "Moderate", "Moderate", "High", "Low"),
+                          ordered = TRUE, levels = c("Low", "Moderate", "High"))
+
+# Select participants 1 and 3
+participant1 <- ______
+participant3 <- ______
+
+# Is participant 1 more active than participant 3?
+______
+```
+
+::: {.hint exercise="fac_6"}
+Select with square brackets: `activity_factor[1]` and `activity_factor[3]`. Then compare with `participant1 > participant3`.
+:::
+
+::: {.solution exercise="fac_6"}
+```{webr}
+#| exercise: fac_6
+#| solution: true
+activity_factor <- factor(c("High", "Low", "Moderate", "Moderate", "High", "Low"),
+                          ordered = TRUE, levels = c("Low", "Moderate", "High"))
+
+# Select participants 1 and 3
+participant1 <- activity_factor[1]
+participant3 <- activity_factor[3]
+
+# Is participant 1 more active than participant 3?
+participant1 > participant3
+```
+:::
+
+```{webr}
+#| exercise: fac_6
+#| check: true
+res <- .check_vars(c("participant1", "participant3"), .envir_result, .checker_args$envir_solution)
+if (isTRUE(res$correct)) res <- .check_result(.result, .checker_args$solution,
+  ok = "Correct! High > Moderate, so the answer is TRUE.",
+  no = "The selections are right. Now compare them on the last line with `>`.")
+res
+```
+
+::: {.quiz id="fac-q3"}
+You compare two elements of an **unordered** factor, e.g. `factor_sex[1] > factor_sex[2]`. What happens?
+
+- [ ] R compares them alphabetically
+- [x] R returns `NA` with a warning that `>` is not meaningful for factors
+- [ ] R returns `TRUE`
+
+::: {.explanation}
+For nominal factors there is no order, so "greater than" has no meaning. R warns you and returns `NA`. Use `ordered = TRUE` when the categories have a natural order.
+:::
+:::
+
+::: {.quiz id="fac-q4"}
+You create `factor(c("Low", "High", "Moderate"))` **without** setting the levels. In what order are the levels?
+
+- [ ] Low, Moderate, High
+- [ ] In the order they appear: Low, High, Moderate
+- [x] Alphabetical: High, Low, Moderate
+
+::: {.explanation}
+By default, R sorts the levels alphabetically. That's why you should specify `levels = ...` for ordinal variables.
+:::
+:::
+
+## Lesson summary
+
+- Categorical variables are stored as **factors**: `factor(x)`.
+- `levels()` shows (and renames) the categories; set your own order with `factor(x, levels = ...)`.
+- `summary()` and `table()` count observations per category; `table(a, b)` cross-tabulates.
+- Ordinal variables become **ordered factors** with `ordered = TRUE`, and their elements can be compared with `<` and `>`.
+
+### Scratchpad
+
+The `balance` and `trials` datasets are loaded here too.
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

@@ -1,0 +1,96 @@
+/* ---------- Quizzes ---------- */
+.quiz {
+  border: 1px solid rgba(31, 111, 139, 0.35);
+  border-left: 5px solid #1f6f8b;
+  border-radius: 8px;
+  padding: 1rem 1.2rem 0.8rem;
+  margin: 1.6rem 0;
+  background: rgba(31, 111, 139, 0.05);
+}
+.quiz::before {
+  content: "Quiz";
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  background: #1f6f8b;
+  border-radius: 4px;
+  padding: 0.1rem 0.5rem;
+  margin-bottom: 0.6rem;
+}
+.quiz > p:first-of-type { font-weight: 600; }
+.quiz-options { list-style: none; padding: 0; margin: 0.6rem 0; }
+.quiz-options li { margin: 0.4rem 0; }
+.quiz-option {
+  width: 100%;
+  text-align: left;
+  border: 1px solid rgba(127, 127, 127, 0.4);
+  background: var(--bs-body-bg, #fff);
+  color: inherit;
+  border-radius: 6px;
+  padding: 0.5rem 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.quiz-option:hover:not(:disabled) { border-color: #1f6f8b; }
+.quiz-option:disabled { cursor: default; }
+.quiz-option code { font-size: 0.9em; }
+.quiz-option.correct { border-color: #2e8540; background: rgba(46, 133, 64, 0.14); }
+.quiz-option.wrong { border-color: #c0392b; background: rgba(192, 57, 43, 0.12); }
+.quiz-feedback { font-weight: 600; margin: 0.3rem 0; }
+.quiz-feedback.correct { color: #2e8540; }
+.quiz-feedback.wrong { color: #c0392b; }
+.quiz .explanation { display: none; margin-top: 0.4rem; font-size: 0.95em; }
+.quiz.solved .explanation { display: block; }
+.quiz .explanation::before { content: "Why? "; font-weight: 700; }
+
+/* ---------- Lesson completion + progress ---------- */
+.lesson-complete {
+  margin: 2.5rem 0 1rem;
+  padding: 1.2rem;
+  border-radius: 10px;
+  text-align: center;
+  background: rgba(31, 111, 139, 0.07);
+}
+.lesson-complete .score-line { margin-bottom: 0.8rem; }
+.btn-complete {
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.55rem 1.3rem;
+  border: none;
+  background: #1f6f8b;
+  color: #fff;
+  cursor: pointer;
+}
+.btn-complete.done { background: #2e8540; }
+.sequence-banner {
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  margin-bottom: 1.2rem;
+  background: rgba(230, 160, 20, 0.14);
+  border: 1px solid rgba(230, 160, 20, 0.5);
+}
+.sidebar-item .done-mark { color: #2e8540; font-weight: 700; margin-left: 0.3rem; }
+
+.progress-overview .bar {
+  height: 14px; border-radius: 7px; background: rgba(127,127,127,0.2); overflow: hidden; margin: 0.4rem 0 1rem;
+}
+.progress-overview .bar > span { display: block; height: 100%; background: #2e8540; }
+.progress-overview table { width: 100%; }
+.progress-overview td, .progress-overview th { padding: 0.35rem 0.5rem; }
+
+/* ---------- Exercise blocks: give them some breathing room ---------- */
+.exercise-editor, .card.exercise-editor { margin-bottom: 0.4rem; }
+.callout.callout-style-default .callout-title-container { font-weight: 600; }
+
+.task {
+  border-left: 4px solid #e6a014;
+  padding: 0.5rem 1rem;
+  margin: 1rem 0 0.6rem;
+  background: rgba(230, 160, 20, 0.07);
+  border-radius: 0 6px 6px 0;
+}
+.task::before { content: "Your turn"; display: block; font-weight: 700; color: #b57a00; margin-bottom: 0.2rem; }
+.task > :last-child { margin-bottom: 0; }

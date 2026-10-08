@@ -1,0 +1,159 @@
+---
+title: "How this course works"
+subtitle: "Five minutes that will make the rest of the course much smoother"
+webr:
+  resources:
+    - data/balance.csv
+---
+
+{{< include _common.qmd >}}
+
+## R runs inside your browser
+
+This website uses [webR](https://docs.r-wasm.org/webr/latest/), a version of R that runs entirely in your web browser. Nothing is installed on your computer and nothing you type is sent anywhere.
+
+When you open a page, R needs a few seconds to start (you'll see a small *"Downloading webR"* message in the bottom-right corner). Pages with plots also download the **ggplot2** package the first time, which can take up to a minute on a slow connection. After that it is cached by your browser.
+
+::: {.callout-tip}
+Use a recent version of **Chrome, Edge, Firefox or Safari** on a laptop or desktop. Phones work, but typing code on them is painful.
+:::
+
+## Code boxes: your R console
+
+A grey box labelled **R Code** is a live R console. You can edit the code and press **Run Code** (or `Ctrl/Cmd + Enter` inside the box). Try it now: change the numbers and run it again.
+
+```{webr}
+# Anything after a # is a comment: R ignores it
+5 + 3
+```
+
+Press **Start Over** to restore the original code.
+
+## Exercises
+
+An **Exercise** box gives you a task to complete. When you press **Run Code**, your answer is checked automatically:
+
+- 🟢 a **green** message means you got it right,
+- 🔴 a **red** message tells you what to look at,
+- **Show Hint** gives you a nudge, and after that **Show Solution** shows the model answer.
+
+Try to solve each exercise yourself *before* looking at the solution. Making (and fixing!) mistakes is how you learn to code. Try this one:
+
+::: {.task}
+Replace the blanks `______` so that the code calculates `10 + 20`.
+:::
+
+```{webr}
+#| exercise: demo
+#| caption: "Exercise · Your first answer"
+10 + ______
+```
+
+::: {.hint exercise="demo"}
+Replace the six underscores with the number `20`.
+:::
+
+::: {.solution exercise="demo"}
+```{webr}
+#| exercise: demo
+#| solution: true
+10 + 20
+```
+:::
+
+```{webr}
+#| exercise: demo
+#| check: true
+.check_result(.result, .checker_args$solution, ok = "That's it! You are ready to start.")
+```
+
+::: {.callout-note}
+## Each exercise starts fresh
+Each exercise runs in its own clean workspace. Variables you created in one exercise are **not** available in the next. If a task needs a variable from earlier, it is either created for you or you create it again inside that exercise.
+:::
+
+## Quizzes
+
+Quizzes check your understanding of the concepts. Click an answer: if it is wrong, try another one. An explanation appears once you find the right answer.
+
+::: {.quiz id="demo-quiz"}
+In this course, where does your R code run?
+
+- [ ] On a university server
+- [x] Inside your own web browser
+- [ ] In RStudio on your computer
+
+::: {.explanation}
+The course uses webR, which runs R directly in your browser. Later in your studies you will also install R and RStudio on your computer for bigger projects. Everything you learn here works there too.
+:::
+:::
+
+## Your progress
+
+At the end of each lesson there is a **Mark this lesson as complete** button. Your progress and quiz results are shown on the [home page](index.qmd) and as ✓ marks in the sidebar.
+
+The lessons are designed to be completed **in order**: each one builds on the last. If you skip ahead, a reminder will point you back to the lesson you haven't completed.
+
+Your progress is stored **only in this browser** (not on a server). If you switch device or use a private window, you will start fresh. You can reset it here:
+
+::: {.reset-progress}
+:::
+
+## The datasets
+
+### Balance dataset (`balance`)
+
+A real, open dataset from a study of standing balance in **163 adults aged 18 to 86** ([Santos & Duarte, 2016, *PeerJ*, 4:e2648](https://doi.org/10.7717/peerj.2648)). Each row is one participant. The variables you will use most:
+
+| Column | Meaning |
+|--------|---------|
+| `subject` | Participant ID |
+| `age`, `age_group` | Age in years; `Young` (< 60) or `Old` (≥ 60) |
+| `sex` | `F` or `M` |
+| `height_cm`, `mass_kg`, `bmi`, `foot_cm` | Anthropometry |
+| `falls_12m` | Number of falls in the past 12 months |
+| `fes_total`, `fear_falling` | Short Falls Efficacy Scale (7–28, higher = more concern) and its category (`Low`, `Moderate`, `High`) |
+| `activity` | Physical-activity level from the IPAQ questionnaire (`Low`, `Moderate`, `High`) |
+| `tmt_a_s`, `tmt_b_s` | Trail Making Test parts A and B, in seconds (cognitive function) |
+| `minibest` | Mini-BESTest total score, 0–28 (higher = better dynamic balance) |
+
+Here is a peek. Press **Run Code**:
+
+```{webr}
+balance <- read.csv("data/balance.csv")
+head(balance)
+```
+
+### Balance trials (`trials`)
+
+Every participant performed several 60-second standing trials with **eyes open or closed**, on a **firm surface or foam**. The `trials` data has one row per trial (1,930 trials) with the columns `Trial`, `Subject`, `Vision`, `Surface`, `AgeGroup` and `Gender`. You'll use it when learning about factors.
+
+### Countermovement jumps (`cmj`)
+
+Raw ground-reaction-force data from **three countermovement jumps** by a professional basketball player (anonymised as *Athlete K*), recorded on a dual force platform (one plate per foot) at **500 Hz**. Used in Module 2.
+
+| Column | Meaning |
+|--------|---------|
+| `trial` | `CMJ 1`, `CMJ 2` or `CMJ 3` |
+| `time_s` | Time (s), one sample every 0.002 s |
+| `force_left`, `force_right` | Vertical force under the left and right foot (N) |
+| `force_total` | Left + right (N) |
+
+### Jump-testing squad (`squad`)
+
+CMJ force-platform variables of **84 professional athletes (42 basketball, 42 soccer players)**, one row per athlete, with names replaced by codes (B01–B42, S01–S42). It includes body mass and height, jump height, phase durations, mean and peak force, impulse, power and velocity (mostly per kg body mass), countermovement depth, eccentric RFD, RSI<sub>mod</sub> and vertical stiffness. A full description is in [lesson 3.1](m3-01-summaries.qmd). Used in Modules 3 and 4.
+
+### Repeated jumps (`trials`)
+
+Three consecutive CMJs of **56 professional basketball and soccer players** (codes A01–A56): `athlete`, `sport`, `trial` (1–3), the body mass estimated by the force platform in that trial (`body_mass_kg`), and `jump_height_cm`. Used for reliability analysis in [lesson 4.9](m4-09-reliability.qmd).
+
+## Working in RStudio later
+
+Everything in this course also works in **R + RStudio** on your own computer. When you are ready:
+
+1. Install R from [cran.r-project.org](https://cran.r-project.org/).
+2. Install RStudio Desktop from [posit.co](https://posit.co/download/rstudio-desktop/).
+3. Download the course data: [balance.csv](data/balance.csv), [bds_trials.csv](data/bds_trials.csv), [cmj.csv](data/cmj.csv), [jump_squad.csv](data/jump_squad.csv) and [cmj_trials.csv](data/cmj_trials.csv).
+4. In RStudio, install the plotting packages once with `install.packages(c("ggplot2", "ggdist", "ggrepel", "patchwork"))`.
+
+Ready? Start with [**1.1 R basics →**](m1-01-basics.qmd)

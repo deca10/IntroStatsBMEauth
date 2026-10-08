@@ -1,0 +1,393 @@
+---
+title: "4.7 Multiple regression"
+subtitle: "Several predictors at once: adjusting for confounders, uncovering trade-offs, and choosing models"
+webr:
+  packages: ['ggplot2']
+  resources:
+    - data/jump_squad.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+theme_set(theme_classic(base_size = 14))
+squad <- read.csv("data/jump_squad.csv")
+sport_cols <- c(Basketball = "#E69F00", Soccer = "#0072B2")
+```
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- fit and interpret a **multiple regression** model: each coefficient is an effect **holding the other predictors constant**,
+- include a **categorical predictor** (dummy coding),
+- use multiple regression to **adjust for a confounder**,
+- see how two weak predictors can be strong **together** (a force–time trade-off), and model an **interaction**,
+- compare models with **adjusted *R*²**, **AIC** and `anova()`,
+- detect **multicollinearity** with the VIF, and avoid coupled predictors.
+
+⏱️ About 60 minutes. This is the longest lesson of the module. Take a break halfway if you need to!
+:::
+
+## The model
+
+Multiple regression extends the straight line to several predictors:
+
+$$y = b_0 + b_1 x_1 + b_2 x_2 + \dots + b_k x_k + \varepsilon$$
+
+In R, you simply add predictors to the formula with `+`:
+
+```r
+lm(y ~ x1 + x2 + x3, data = df)
+```
+
+The crucial change in interpretation: ***b*₁ is the expected change in *y* for a 1-unit increase in *x*₁, while all other predictors are held constant.** This is called the **adjusted** (or partial) effect.
+
+## Part 1 · Adjusting for a confounder
+
+In [lesson 4.3](m4-03-t-tests.qmd), soccer players jumped 2.5 cm higher than basketball players (*p* = 0.044). But they're also 20 kg lighter, and lighter athletes jump higher. **Body mass is a potential confounder**: it's related to both the "exposure" (sport) and the outcome (jump height).
+
+```{webr}
+ggplot(squad, aes(x = body_mass_kg, y = jump_height_m, colour = sport)) +
+  geom_point(size = 2) +
+  scale_colour_manual(values = sport_cols) +
+  labs(x = "Body mass (kg)", y = "Jump height (m)", colour = NULL)
+```
+
+### A categorical predictor
+
+First, the sport-only model:
+
+```{webr}
+summary(lm(jump_height_m ~ sport, data = squad))$coefficients
+```
+
+R turns the factor `sport` into a **dummy variable**: `sportSoccer` is 1 for soccer players and 0 for basketball players. The first level alphabetically (Basketball) is the **reference**. So:
+
+- Intercept (0.381 m) = mean jump height of the **reference group** (basketball),
+- `sportSoccer` (0.025 m) = **difference** soccer − basketball. That's the same 2.5 cm and the same *p* as the *t*-test!
+
+(A *t*-test is just a regression with one binary predictor.)
+
+::: {.task}
+Fit a model with **both** `sport` and `body_mass_kg` as predictors of jump height. Store it in `model_adj` and extract the coefficient table `coefs` with `summary(model_adj)$coefficients`.
+:::
+
+```{webr}
+#| exercise: mr_1
+#| caption: "Exercise · Adjusting for body mass"
+model_adj <- lm(jump_height_m ~ ______ + ______, data = squad)
+coefs <- summary(model_adj)$coefficients
+round(coefs, 4)
+```
+
+::: {.hint exercise="mr_1"}
+`lm(jump_height_m ~ sport + body_mass_kg, data = squad)`
+:::
+
+::: {.solution exercise="mr_1"}
+```{webr}
+#| exercise: mr_1
+#| solution: true
+model_adj <- lm(jump_height_m ~ sport + body_mass_kg, data = squad)
+coefs <- summary(model_adj)$coefficients
+round(coefs, 4)
+```
+:::
+
+```{webr}
+#| exercise: mr_1
+#| check: true
+cf <- get("coefs", envir = .checker_args$envir_solution)
+res <- .check_vars("coefs", .envir_result, .checker_args$envir_solution)
+if (isTRUE(res$correct)) res <- .ok(paste0("Correct! After adjusting for body mass, the sport difference shrinks to ",
+  round(100 * cf["sportSoccer", 1], 1), " cm (p = ", round(cf["sportSoccer", 4], 2), "): it even changes sign and is no longer significant. Body mass remains a significant predictor: ",
+  round(100 * cf["body_mass_kg", 1], 2), " cm per kg, or about ", round(-1000 * cf["body_mass_kg", 1], 1), " cm less per 10 kg, for athletes of the SAME sport."))
+res
+```
+
+**Interpretation:** "Soccer players jump higher" was largely explained by them being lighter. Comparing a basketball and a soccer player **of the same body mass**, the model predicts almost no difference. The sport effect was **confounded** by body mass.
+
+You can visualise the adjusted model: it's two **parallel lines**, one per sport, with the same slope for body mass:
+
+```{webr}
+model_adj <- lm(jump_height_m ~ sport + body_mass_kg, data = squad)
+squad$pred <- predict(model_adj)
+
+ggplot(squad, aes(x = body_mass_kg, colour = sport)) +
+  geom_point(aes(y = jump_height_m), size = 2, alpha = 0.6) +
+  geom_line(aes(y = pred), linewidth = 1.2) +
+  scale_colour_manual(values = sport_cols) +
+  labs(x = "Body mass (kg)", y = "Jump height (m)", colour = NULL)
+```
+
+::: {.callout-warning}
+## Adjustment is not magic
+Regression can only adjust for confounders you **measured**, and only as well as the model fits. There's also an overlap problem here: almost no basketball players are as light as most soccer players ([lesson 4.4](m4-04-anova.qmd)), so "the same body mass" is partly an extrapolation. Observational data can suggest, but rarely prove, causal effects.
+:::
+
+::: {.quiz id="mr-q1"}
+In `lm(jump_height_m ~ sport + body_mass_kg)`, how do you interpret the body-mass coefficient of −0.0017 m/kg?
+
+- [ ] Every kg of body mass reduces jump height by 0.17 cm in every athlete
+- [x] Among athletes of the same sport, each additional kg goes with 0.17 cm lower jump height on average
+- [ ] Body mass explains 17 % of jump height
+
+::: {.explanation}
+It's an average, adjusted (partial) association, holding sport constant. It isn't a causal effect for an individual, and not a proportion of variance.
+:::
+:::
+
+## Part 2 · Two weak predictors, one strong model
+
+Here's a puzzle. Physics says that take-off velocity comes from the **net impulse**, i.e. the average net force multiplied by the time it acts ([lesson 4.5](m4-05-correlation.qmd)). So both **mean propulsive force** and **propulsion time** should matter. But look at them one by one:
+
+```{webr}
+summary(lm(jump_height_m ~ con_force_rel, data = squad))$r.squared
+summary(lm(jump_height_m ~ con_time_s, data = squad))$r.squared
+```
+
+Only 10 % and 5 % of the variance explained! Now look at how the two predictors relate to **each other**:
+
+```{webr}
+cor(squad$con_force_rel, squad$con_time_s)
+
+ggplot(squad, aes(x = con_time_s, y = con_force_rel, colour = jump_height_m)) +
+  geom_point(size = 3) +
+  scale_colour_viridis_c() +
+  labs(x = "Propulsion time (s)", y = "Mean propulsive force (N/kg)", colour = "Jump\nheight (m)")
+```
+
+*r* = −0.83: a strong **trade-off**. Athletes who push off quickly produce high forces; athletes with long push-offs produce lower forces. Each strategy can lead to a high jump. That's why each variable *alone* says little about jump height: a high force usually comes with a short time, and vice versa. Only by knowing **both** can you tell how big the impulse was.
+
+::: {.task}
+Fit `model_ft`, predicting jump height from **both** `con_force_rel` and `con_time_s`, and extract its *R*² (`r2_ft`).
+:::
+
+```{webr}
+#| exercise: mr_2
+#| caption: "Exercise · Force + time"
+model_ft <- lm(jump_height_m ~ ______ + ______, data = squad)
+summary(model_ft)
+
+r2_ft <- summary(model_ft)$r.squared
+r2_ft
+```
+
+::: {.hint exercise="mr_2"}
+`lm(jump_height_m ~ con_force_rel + con_time_s, data = squad)`
+:::
+
+::: {.solution exercise="mr_2"}
+```{webr}
+#| exercise: mr_2
+#| solution: true
+model_ft <- lm(jump_height_m ~ con_force_rel + con_time_s, data = squad)
+summary(model_ft)
+
+r2_ft <- summary(model_ft)$r.squared
+r2_ft
+```
+:::
+
+```{webr}
+#| exercise: mr_2
+#| check: true
+.check_vars("r2_ft", .envir_result, .checker_args$envir_solution,
+  ok = paste0("Wow: R² jumps to ", round(get("r2_ft", envir = .checker_args$envir_solution), 2),
+              ". Two predictors that are weak alone become very strong together, because each one 'corrects' the other. And both slopes are now much larger and positive: at the SAME propulsion time, more force means a higher jump, and at the SAME force, a longer push-off does too."))
+```
+
+This phenomenon, where adding a predictor **increases** the importance of another, is called **suppression**. It happens when predictors are correlated with each other in the opposite direction to their effects on the outcome. It's a powerful reminder that **simple correlations can be misleading when predictors are related**.
+
+### Interactions: when effects multiply
+
+Physics says velocity = (force − g) × time: the effects **multiply** rather than add. A model with `+` assumes the force effect is the same at every propulsion time. An **interaction** term lets the effect of one predictor depend on the other. In R, `x1 * x2` means `x1 + x2 + x1:x2` (both main effects plus their product):
+
+```{webr}
+model_int <- lm(jump_height_m ~ con_force_rel * con_time_s, data = squad)
+summary(model_int)$r.squared
+```
+
+*R*² rises from 0.87 to 0.95. And what's left over (5 %) is mostly measurement and processing noise, plus the fact that *h* depends on *v*² rather than *v*.
+
+::: {.callout-important}
+## Remember mathematical coupling
+Why can force and time explain 95 % of jump height? Because jump height is **calculated** from the same force–time curve: force × time *is* impulse, and impulse *is* take-off velocity. This model is a nice demonstration of physics and of a force–time **strategy** trade-off, but it's not a discovery that "force and time determine jumping ability". They define it.
+
+The informative questions are about the **strategy**: which athletes rely on force, which on time, and does that relate to sport, injury or training? Avoid putting variables like take-off velocity, net impulse or power into a model predicting jump height: you'd just be predicting jump height from itself.
+:::
+
+::: {.quiz id="mr-q2"}
+Mean propulsive force alone explains 10 % of jump height, propulsion time alone 5 %, and both together 87 %. What's the best explanation?
+
+- [ ] A calculation error
+- [x] Force and time are strongly negatively correlated (a trade-off); together they reconstruct the impulse that determines take-off velocity
+- [ ] Adding predictors always increases R² by a lot
+
+::: {.explanation}
+This is suppression. Adding *any* predictor increases R² a little, but a jump from 0.10 to 0.87 only happens because the second predictor corrects the first.
+:::
+:::
+
+## Part 3 · Choosing between models
+
+Adding predictors **always** increases *R*² a little, even if the new predictor is pure noise. To compare models fairly:
+
+- **Adjusted *R*²** penalises for the number of predictors; it only increases if a new predictor helps more than chance would.
+- **AIC** (Akaike information criterion): lower is better; also balances fit and complexity.
+- **`anova(model_small, model_big)`**: an *F*-test of whether the extra predictors in a **nested** model (the big one contains all predictors of the small one) significantly improve the fit.
+
+::: {.task}
+Does **countermovement depth** (`cmj_depth_m`) add information beyond force and time?
+
+1. Fit `m1` (force + time) and `m2` (force + time + depth).
+2. Compare them with `anova(m1, m2)` and store the result in `comparison`.
+3. Get the adjusted *R*² of both (`adj1`, `adj2`).
+:::
+
+```{webr}
+#| exercise: mr_3
+#| caption: "Exercise · Comparing nested models"
+m1 <- lm(jump_height_m ~ con_force_rel + con_time_s, data = squad)
+m2 <- lm(jump_height_m ~ con_force_rel + con_time_s + ______, data = squad)
+
+comparison <- anova(______, ______)
+comparison
+
+adj1 <- summary(m1)$adj.r.squared
+adj2 <- summary(______)$adj.r.squared
+c(adj1 = adj1, adj2 = adj2)
+```
+
+::: {.hint exercise="mr_3"}
+Add `cmj_depth_m` to `m2`, then `anova(m1, m2)` and `summary(m2)$adj.r.squared`.
+:::
+
+::: {.solution exercise="mr_3"}
+```{webr}
+#| exercise: mr_3
+#| solution: true
+m1 <- lm(jump_height_m ~ con_force_rel + con_time_s, data = squad)
+m2 <- lm(jump_height_m ~ con_force_rel + con_time_s + cmj_depth_m, data = squad)
+
+comparison <- anova(m1, m2)
+comparison
+
+adj1 <- summary(m1)$adj.r.squared
+adj2 <- summary(m2)$adj.r.squared
+c(adj1 = adj1, adj2 = adj2)
+```
+:::
+
+```{webr}
+#| exercise: mr_3
+#| check: true
+cmp <- get("comparison", envir = .checker_args$envir_solution)
+.check_vars(c("comparison", "adj1", "adj2"), .envir_result, .checker_args$envir_solution,
+  ok = paste0("Correct! Depth significantly improves the model (F = ", round(cmp$F[2], 1), ", p = ", signif(cmp[2, "Pr(>F)"], 2),
+              "), and adjusted R² rises from ", round(get("adj1", envir = .checker_args$envir_solution), 3), " to ",
+              round(get("adj2", envir = .checker_args$envir_solution), 3), ". A small but real gain: at the same force and time, a deeper countermovement helps."))
+```
+
+::: {.callout-tip}
+## How many predictors can I use?
+A common rule of thumb is at least **10–20 observations per predictor**. With 84 athletes, a model with 4–8 predictors is reasonable; with 20 athletes, 1–2. Too many predictors **overfit**: the model describes the noise of your sample and predicts new athletes badly. Choose predictors based on **theory**, not by trying everything (remember the multiple-comparisons problem).
+:::
+
+## Part 4 · Multicollinearity
+
+When predictors are **strongly correlated with each other**, the model struggles to separate their effects: coefficients become unstable and their standard errors inflate. Taller athletes are heavier (*r* = 0.84):
+
+```{webr}
+round(summary(lm(jump_height_m ~ body_mass_kg, data = squad))$coefficients, 5)
+round(summary(lm(jump_height_m ~ body_mass_kg + height_m, data = squad))$coefficients, 5)
+```
+
+Adding height almost **doubles** the standard error of the body-mass coefficient, and its *p*-value goes from 0.0005 to 0.056, although body mass is just as relevant as before. Height itself adds nothing.
+
+The **variance inflation factor (VIF)** quantifies this. For predictor *j*:
+
+$$VIF_j = \frac{1}{1 - R^2_j}$$
+
+where *R*²<sub>j</sub> comes from regressing predictor *j* on all the **other** predictors. VIF = 1 means no collinearity; VIF > 5 (some say > 10) is a warning sign. (The **car** package's `vif()` calculates it for all predictors at once.)
+
+::: {.task}
+Calculate the VIF of `body_mass_kg` in the model with `height_m`:
+
+1. Regress `body_mass_kg` on `height_m` and get its *R*² (`r2_j`).
+2. Calculate `vif_mass`.
+:::
+
+```{webr}
+#| exercise: mr_4
+#| caption: "Exercise · VIF by hand"
+r2_j <- summary(lm(______ ~ ______, data = squad))$r.squared
+vif_mass <- ______
+vif_mass
+```
+
+::: {.hint exercise="mr_4"}
+`lm(body_mass_kg ~ height_m, data = squad)`, then `vif_mass <- 1 / (1 - r2_j)`.
+:::
+
+::: {.solution exercise="mr_4"}
+```{webr}
+#| exercise: mr_4
+#| solution: true
+r2_j <- summary(lm(body_mass_kg ~ height_m, data = squad))$r.squared
+vif_mass <- 1 / (1 - r2_j)
+vif_mass
+```
+:::
+
+```{webr}
+#| exercise: mr_4
+#| check: true
+.check_vars(c("r2_j", "vif_mass"), .envir_result, .checker_args$envir_solution,
+  ok = paste0("Correct! VIF = ", round(get("vif_mass", envir = .checker_args$envir_solution), 2),
+              ": the variance of the body-mass coefficient is inflated ", round(get("vif_mass", envir = .checker_args$envir_solution), 1),
+              "-fold (its SE by √VIF ≈ ", round(sqrt(get("vif_mass", envir = .checker_args$envir_solution)), 1), "×). Not extreme, but enough to blur the result in a sample of 84."))
+```
+
+::: {.quiz id="mr-q3"}
+You include both **peak power** and **mean power** (*r* = 0.83 with each other) as predictors of jump height. Mean power becomes non-significant. Should you conclude that mean power is unrelated to jump height?
+
+- [ ] Yes
+- [x] No: mean power correlates r = 0.73 with jump height on its own; it just adds little *beyond* peak power, because the two predictors carry overlapping information
+- [ ] Yes, because peak power is more reliable
+
+::: {.explanation}
+A non-significant coefficient in a multiple regression means "no unique contribution given the other predictors", not "no relationship".
+:::
+:::
+
+## Checklist for multiple regression
+
+1. **Choose predictors from theory**, and avoid predictors that are mathematically coupled to the outcome.
+2. **Plot** the data first; check predictor correlations (collinearity) and VIFs.
+3. Interpret each coefficient **holding the others constant**, with its 95 % CI (`confint(model)`).
+4. Check **residuals** (`plot(model)` in RStudio).
+5. Compare models with **adjusted *R*²**, **AIC** or `anova()` for nested models.
+6. Respect the **sample size** (10–20 observations per predictor).
+7. Remember: adjusted associations in observational data are **not** proof of causation.
+
+## Lesson summary
+
+- `lm(y ~ x1 + x2, data = df)`; each *b* is an effect **holding other predictors constant**.
+- Factors become **dummy variables** compared with a reference level.
+- Adjusting for **confounders** can change conclusions (sport effect → body-mass effect).
+- Correlated predictors can create **suppression** (force + time) or **multicollinearity** (mass + height, VIF).
+- `x1 * x2` adds an **interaction**.
+- Compare models with adjusted *R*², AIC, `anova(m1, m2)`.
+
+### Scratchpad
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

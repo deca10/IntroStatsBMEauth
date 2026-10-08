@@ -1,0 +1,260 @@
+---
+title: "4.4 Comparing more than two groups"
+subtitle: "One-way ANOVA, post-hoc tests and eta squared"
+webr:
+  packages: ['ggplot2']
+  resources:
+    - data/jump_squad.csv
+    - data/balance.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+theme_set(theme_classic(base_size = 14))
+squad <- read.csv("data/jump_squad.csv")
+squad$mass_group <- cut(squad$body_mass_kg,
+                        breaks = quantile(squad$body_mass_kg, probs = c(0, 1/3, 2/3, 1)),
+                        include.lowest = TRUE, labels = c("Light", "Medium", "Heavy"))
+balance <- read.csv("data/balance.csv")
+balance$activity <- factor(balance$activity, levels = c("Low", "Moderate", "High"))
+```
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- explain why multiple *t*-tests are a problem when comparing 3+ groups,
+- run a **one-way ANOVA** with `aov()` and read its table (*F*, *p*),
+- find **which** groups differ with **Tukey's post-hoc test**,
+- report the effect size **η²** (eta squared), and check the assumptions.
+
+⏱️ About 40 minutes.
+:::
+
+## Three groups: light, medium and heavy athletes
+
+In the previous lessons, body mass kept appearing as a factor in jump height. To compare **three** groups, the squad has been split into body-mass **tertiles** (thirds) with `cut()` and `quantile()` ([lesson 2.3](m2-03-spread.qmd)):
+
+```{webr}
+table(squad$mass_group)
+tapply(squad$body_mass_kg, squad$mass_group, range)
+
+ggplot(squad, aes(x = mass_group, y = jump_height_m * 100)) +
+  geom_jitter(width = 0.1, alpha = 0.5) +
+  stat_summary(fun = mean, fun.min = function(x) mean(x) - sd(x), fun.max = function(x) mean(x) + sd(x),
+               geom = "pointrange", colour = "firebrick") +
+  labs(x = "Body-mass group", y = "Jump height (cm)")
+```
+
+## Why not three *t*-tests?
+
+You could compare Light–Medium, Light–Heavy and Medium–Heavy with three *t*-tests. But each test has a 5 % chance of a false positive, so the chance of **at least one** false positive across three tests is about $1 - 0.95^3 = 14\%$. With 5 groups (10 comparisons) it's 40 %!
+
+**ANOVA** (*analysis of variance*) tests all groups at once:
+
+- H₀: all population means are equal (μ_Light = μ_Medium = μ_Heavy),
+- H₁: at least one mean differs.
+
+## How ANOVA works
+
+ANOVA compares two sources of variability:
+
+- **between groups**: how far the group means are from the overall mean,
+- **within groups**: how far the individual athletes are from their own group mean (the "noise").
+
+The ratio is the ***F*-statistic**:
+
+$$F = \frac{\text{variance between groups}}{\text{variance within groups}}$$
+
+If H₀ is true, the group means differ only by chance and *F* ≈ 1. A large *F* means the groups differ more than chance would explain.
+
+## One-way ANOVA in R
+
+Fit the model with `aov(outcome ~ group, data = ...)` and show the ANOVA table with `summary()`:
+
+```{webr}
+model <- aov(jump_height_m ~ mass_group, data = squad)
+summary(model)
+```
+
+The table shows, for the groups (`mass_group`) and the residual (within-group) variation: degrees of freedom (`Df`), sums of squares (`Sum Sq`), mean squares (`Mean Sq` = Sum Sq / Df), the *F* value (= Mean Sq groups / Mean Sq residuals) and the *p*-value.
+
+Here ***F*(2, 81) = 4.70, *p* = 0.012**: the mean jump height differs between the body-mass groups.
+
+::: {.task}
+Using the balance data, test whether the **Mini-BESTest score** (`minibest`) differs between the three **physical-activity** levels (`activity`). Fit the ANOVA (`model`) and show the table.
+:::
+
+```{webr}
+#| exercise: an_1
+#| caption: "Exercise · One-way ANOVA"
+model <- aov(______ ~ ______, data = balance)
+summary(model)
+```
+
+::: {.hint exercise="an_1"}
+`aov(minibest ~ activity, data = balance)`
+:::
+
+::: {.solution exercise="an_1"}
+```{webr}
+#| exercise: an_1
+#| solution: true
+model <- aov(minibest ~ activity, data = balance)
+summary(model)
+```
+:::
+
+```{webr}
+#| exercise: an_1
+#| check: true
+res <- .check_result(.result, .checker_args$solution,
+  no = "Not quite. Use `aov(minibest ~ activity, data = balance)` and `summary(model)`.")
+if (isTRUE(res$correct)) res <- .ok("Correct! F(2, 160) = 0.69, p = 0.50: no evidence that balance differs between self-reported activity levels in this sample. (A questionnaire about activity may not capture what matters for balance, and age varies a lot within each group.)")
+res
+```
+
+## Post-hoc tests: which groups differ?
+
+A significant ANOVA says *some* means differ, not *which*. **Post-hoc tests** compare all pairs while controlling the overall false-positive rate. **Tukey's HSD** (honestly significant difference) is the standard choice:
+
+```{webr}
+model <- aov(jump_height_m ~ mass_group, data = squad)
+TukeyHSD(model)
+```
+
+For each pair you get the difference (`diff`), its **adjusted** 95 % CI (`lwr`, `upr`) and the **adjusted** *p*-value (`p adj`). Only **Heavy vs. Light** is significant (−4.2 cm, *p* = 0.013); Heavy vs. Medium is borderline (*p* = 0.06).
+
+::: {.quiz id="an-q1"}
+An ANOVA comparing four training groups gives *p* = 0.003. What can you conclude?
+
+- [ ] All four groups differ from each other
+- [x] At least one group mean differs from the others; a post-hoc test is needed to find which
+- [ ] The first group is the best
+
+::: {.explanation}
+The ANOVA's H₁ is "not all means are equal". Use Tukey's HSD (or planned comparisons) to locate the differences.
+:::
+:::
+
+## Effect size: η² (eta squared)
+
+The *p*-value doesn't say how important the group differences are. **η²** is the proportion of the total variability in the outcome explained by the groups:
+
+$$\eta^2 = \frac{SS_{between}}{SS_{total}} = \frac{SS_{between}}{SS_{between} + SS_{within}}$$
+
+Rough benchmarks: 0.01 small, 0.06 medium, 0.14 large.
+
+::: {.task}
+Calculate η² for the body-mass ANOVA. The sums of squares are in the ANOVA table: `summary(model)[[1]]$"Sum Sq"` gives a vector with SS_between (first) and SS_within (second).
+:::
+
+```{webr}
+#| exercise: an_2
+#| caption: "Exercise · Eta squared"
+model <- aov(jump_height_m ~ mass_group, data = squad)
+ss <- summary(model)[[1]]$"Sum Sq"
+ss
+
+eta_sq <- ______ / sum(______)
+eta_sq
+```
+
+::: {.hint exercise="an_2"}
+`eta_sq <- ss[1] / sum(ss)`
+:::
+
+::: {.solution exercise="an_2"}
+```{webr}
+#| exercise: an_2
+#| solution: true
+model <- aov(jump_height_m ~ mass_group, data = squad)
+ss <- summary(model)[[1]]$"Sum Sq"
+ss
+
+eta_sq <- ss[1] / sum(ss)
+eta_sq
+```
+:::
+
+```{webr}
+#| exercise: an_2
+#| check: true
+.check_vars("eta_sq", .envir_result, .checker_args$envir_solution,
+  ok = "Correct! η² ≈ 0.10: body-mass group explains about 10 % of the variability in jump height, a medium effect. The other 90 % is due to everything else (strength, technique, …).")
+```
+
+## Assumptions
+
+One-way ANOVA assumes:
+
+1. **independent** observations,
+2. roughly **normal** residuals in each group,
+3. **equal variances** across groups (homogeneity of variance).
+
+Check the residuals visually, and compare the group SDs. A common rule of thumb: the largest SD shouldn't be more than about twice the smallest.
+
+```{webr}
+model <- aov(jump_height_m ~ mass_group, data = squad)
+tapply(squad$jump_height_m, squad$mass_group, sd)
+
+ggplot(data.frame(res = residuals(model)), aes(sample = res)) +
+  geom_qq() + geom_qq_line(colour = "firebrick") +
+  labs(title = "Q-Q plot of the ANOVA residuals")
+```
+
+If the assumptions are badly violated:
+
+- unequal variances → **Welch's ANOVA**: `oneway.test(y ~ group, data = ...)`,
+- non-normal / ordinal data → **Kruskal–Wallis test**: `kruskal.test(y ~ group, data = ...)`.
+
+```{webr}
+oneway.test(jump_height_m ~ mass_group, data = squad)
+kruskal.test(jump_height_m ~ mass_group, data = squad)
+```
+
+::: {.quiz id="an-q2"}
+What does `TukeyHSD()` do that three separate *t*-tests don't?
+
+- [ ] It uses the median instead of the mean
+- [x] It adjusts the *p*-values and CIs for the number of comparisons, keeping the overall false-positive rate at 5 %
+- [ ] It works without a significant ANOVA
+
+::: {.explanation}
+Without adjustment, the family-wise error rate grows with every extra comparison. Tukey's method controls it.
+:::
+:::
+
+::: {.quiz id="an-q3"}
+You compare the sprint times of **two** groups with an ANOVA instead of a *t*-test. What happens?
+
+- [ ] You get an error
+- [x] You get the same *p*-value as a Student *t*-test (*F* = *t*²)
+- [ ] The result is always more significant
+
+::: {.explanation}
+With two groups, one-way ANOVA and the equal-variance *t*-test are mathematically identical. ANOVA is the generalisation to more groups.
+:::
+:::
+
+## Lesson summary
+
+- 3+ groups: one-way ANOVA, `summary(aov(y ~ group, data = df))`. Report *F*(df₁, df₂) and *p*.
+- **F** = between-group variance / within-group variance.
+- Follow a significant ANOVA with `TukeyHSD(model)`.
+- Effect size **η²** = SS_between / SS_total.
+- Alternatives: `oneway.test()` (unequal variances), `kruskal.test()` (non-parametric).
+
+### Scratchpad
+
+`squad` (with `mass_group`) and `balance` are loaded.
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

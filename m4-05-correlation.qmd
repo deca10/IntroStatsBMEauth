@@ -1,0 +1,359 @@
+---
+title: "4.5 Correlation"
+subtitle: "Measuring relationships, and recognising when a high correlation tells you nothing new"
+webr:
+  packages: ['ggplot2', 'patchwork']
+  resources:
+    - data/jump_squad.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+library(patchwork)
+theme_set(theme_classic(base_size = 14))
+squad <- read.csv("data/jump_squad.csv")
+sport_cols <- c(Basketball = "#E69F00", Soccer = "#0072B2")
+```
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- quantify a linear relationship with **Pearson's *r*** and test it with `cor.test()`,
+- interpret ***r*²** as **shared variance**,
+- choose **Spearman's ρ** for non-linear or outlier-prone data,
+- recognise **mathematical coupling**: variables that correlate highly because one is calculated from the other, or because both measure the same physical quantity,
+- remember that correlation is not causation.
+
+⏱️ About 50 minutes. This is one of the most important lessons for interpreting force-platform data.
+:::
+
+## Pearson's correlation coefficient
+
+The **correlation coefficient *r*** measures the strength and direction of a **linear** relationship between two numeric variables:
+
+- *r* = +1: perfect positive linear relationship,
+- *r* = 0: no linear relationship,
+- *r* = −1: perfect negative linear relationship.
+
+```{webr}
+#| fig-width: 10
+#| fig-height: 4
+p1 <- ggplot(squad, aes(peak_power_rel, jump_height_m)) + geom_point() +
+  labs(title = paste("r =", round(cor(squad$peak_power_rel, squad$jump_height_m), 2)))
+p2 <- ggplot(squad, aes(con_force_rel, jump_height_m)) + geom_point() +
+  labs(title = paste("r =", round(cor(squad$con_force_rel, squad$jump_height_m), 2)))
+p3 <- ggplot(squad, aes(body_mass_kg, jump_height_m)) + geom_point() +
+  labs(title = paste("r =", round(cor(squad$body_mass_kg, squad$jump_height_m), 2)))
+p1 | p2 | p3
+```
+
+`cor(x, y)` gives *r*; `cor.test(x, y)` also gives a *p*-value (H₀: *r* = 0 in the population) and a 95 % CI:
+
+```{webr}
+cor.test(squad$body_mass_kg, squad$jump_height_m)
+```
+
+### *r*² = shared variance
+
+Squaring *r* gives the **proportion of variance that the two variables share**. Peak power and jump height have *r* = 0.83, so *r*² = 0.69: **69 % of the variability in jump height is shared with peak power.** Mean propulsive force (*r* = 0.31) shares only *r*² = 10 %.
+
+Rough guide for |*r*| in sport science: < 0.1 trivial, 0.1–0.3 small, 0.3–0.5 moderate, 0.5–0.7 large, 0.7–0.9 very large, > 0.9 nearly perfect. But as you'll see below, *how* two variables were obtained matters more than the size of *r*.
+
+::: {.task}
+Test the correlation between **contraction time** (`contraction_time_s`) and **jump height**. Store the test in `res`, and calculate the **shared variance** `r2` from `res$estimate`.
+:::
+
+```{webr}
+#| exercise: co_1
+#| caption: "Exercise · cor.test and r²"
+res <- cor.test(______, ______)
+res
+
+r2 <- ______
+r2
+```
+
+::: {.hint exercise="co_1"}
+`cor.test(squad$contraction_time_s, squad$jump_height_m)`, and `r2 <- res$estimate^2`.
+:::
+
+::: {.solution exercise="co_1"}
+```{webr}
+#| exercise: co_1
+#| solution: true
+res <- cor.test(squad$contraction_time_s, squad$jump_height_m)
+res
+
+r2 <- res$estimate^2
+r2
+```
+:::
+
+```{webr}
+#| exercise: co_1
+#| check: true
+r <- get("res", envir = .checker_args$envir_solution)
+res <- .check_vars("r2", .envir_result, .checker_args$envir_solution)
+if (isTRUE(res$correct)) res <- .ok(paste0("Correct! r = ", round(r$estimate, 2), " (p = ", signif(r$p.value, 2), "), so contraction time shares only ",
+  round(100 * r$estimate^2), " % of the variance in jump height. Taking longer doesn't simply mean jumping higher."))
+res
+```
+
+## Pearson or Spearman?
+
+Pearson's *r* assumes a **linear** relationship and is sensitive to **outliers**. **Spearman's ρ** (rho) correlates the **ranks** of the values instead, so it captures any **monotonic** relationship (consistently increasing or decreasing) and is robust to outliers. It's also the right choice for **ordinal** data.
+
+```{webr}
+cor(squad$ecc_rfd_max, squad$ecc_rfd_mean)                       # Pearson
+cor(squad$ecc_rfd_max, squad$ecc_rfd_mean, method = "spearman")  # Spearman
+```
+
+## When a high correlation tells you nothing new: mathematical coupling
+
+Here is the most important idea in this lesson. A force platform produces dozens of variables from **one** force–time curve: jump height, take-off velocity, impulse, power, RSI… They are **not independent measurements**. Many are calculated *from each other* or are linked by the laws of physics. Correlating them can produce impressive *r* values that reflect **definitions and physics, not physiology**.
+
+### Case 1: one variable calculated from the other
+
+Jump height *h* is calculated from the take-off velocity *v*<sub>TO</sub> (or vice versa) with the projectile equation:
+
+$$h = \frac{v_{TO}^2}{2g} \quad\Longleftrightarrow\quad v_{TO} = \sqrt{2 g h}$$
+
+So if you know one, you know the other exactly. Their "correlation" is just the curvature of a square-root function:
+
+```{webr}
+squad$v_to <- sqrt(2 * 9.81 * squad$jump_height_m)
+cor(squad$v_to, squad$jump_height_m)
+```
+
+*r* = 0.999. Reporting "take-off velocity was very strongly correlated with jump height (*r* = 0.999, *p* < 0.001)" would be a correlation of a variable **with itself**. They contain **the same variance**.
+
+### Case 2: two routes to the same physical quantity
+
+The **impulse–momentum theorem** (Newton's second law integrated over time) says that the **net impulse** applied during propulsion equals the change in momentum:
+
+$$J_{net} = \int (F - mg)\,dt = m \cdot v_{TO} \quad\Longrightarrow\quad \frac{J_{net}}{m} = v_{TO}$$
+
+In words: **net impulse per kg *is* the take-off velocity**, expressed in different units (N·s/kg = m/s). In the squad data, `con_impulse_rel` is the propulsive impulse per kg *including* the part that just supports body weight, so the net impulse per kg is:
+
+$$\frac{J_{net}}{m} = \text{con\_impulse\_rel} - g \times \text{con\_time\_s}$$
+
+::: {.task}
+1. Calculate the take-off velocity `v_to` from jump height.
+2. Calculate the **net propulsive impulse per kg** `net_imp` from `con_impulse_rel` and `con_time_s`.
+3. Calculate the correlation between `net_imp` and `v_to` (`r_physics`), and between the **gross** impulse `con_impulse_rel` and `v_to` (`r_gross`).
+:::
+
+```{webr}
+#| exercise: co_2
+#| caption: "Exercise · Impulse and take-off velocity"
+g <- 9.81
+
+# 1. Take-off velocity from jump height (m/s)
+squad$v_to <- ______
+
+# 2. Net propulsive impulse per kg (N·s/kg)
+squad$net_imp <- squad$con_impulse_rel - ______ * squad$con_time_s
+
+# 3. Correlations
+r_physics <- cor(______, ______)
+r_gross <- cor(______, ______)
+c(r_physics = r_physics, r_gross = r_gross)
+```
+
+::: {.hint exercise="co_2"}
+1. `sqrt(2 * g * squad$jump_height_m)`
+2. `squad$con_impulse_rel - g * squad$con_time_s`
+3. `cor(squad$net_imp, squad$v_to)` and `cor(squad$con_impulse_rel, squad$v_to)`
+:::
+
+::: {.solution exercise="co_2"}
+```{webr}
+#| exercise: co_2
+#| solution: true
+g <- 9.81
+
+# 1. Take-off velocity from jump height (m/s)
+squad$v_to <- sqrt(2 * g * squad$jump_height_m)
+
+# 2. Net propulsive impulse per kg (N·s/kg)
+squad$net_imp <- squad$con_impulse_rel - g * squad$con_time_s
+
+# 3. Correlations
+r_physics <- cor(squad$net_imp, squad$v_to)
+r_gross <- cor(squad$con_impulse_rel, squad$v_to)
+c(r_physics = r_physics, r_gross = r_gross)
+```
+:::
+
+```{webr}
+#| exercise: co_2
+#| check: true
+.check_vars(c("r_physics", "r_gross"), .envir_result, .checker_args$envir_solution,
+  ok = paste0("Correct! Net impulse per kg and take-off velocity: r = ", round(get("r_physics", envir = .checker_args$envir_solution), 3),
+              ". Gross impulse: only r = ", round(get("r_gross", envir = .checker_args$envir_solution), 2),
+              ". Subtracting the impulse needed just to support body weight reveals the physics: net impulse/mass IS take-off velocity. It isn't exactly 1 only because of small measurement and processing differences between the two calculation routes."))
+```
+
+Plot it against the identity line:
+
+```{webr}
+squad$v_to <- sqrt(2 * 9.81 * squad$jump_height_m)
+squad$net_imp <- squad$con_impulse_rel - 9.81 * squad$con_time_s
+
+ggplot(squad, aes(x = v_to, y = net_imp, colour = sport)) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed") +
+  geom_point(size = 2) +
+  scale_colour_manual(values = sport_cols) +
+  labs(x = "Take-off velocity from jump height (m/s)", y = "Net propulsive impulse (N·s/kg)", colour = NULL)
+```
+
+The points scatter tightly around the identity line. So what does *r* = 0.96 mean here?
+
+- It does **not** mean "athletes who produce more impulse jump higher" as a physiological discovery. That's Newton's second law, true for every object.
+- It **does** tell you how well **two calculation methods agree**. The ~4 % of non-shared variance is **measurement error and processing differences** (how take-off and movement onset are detected, sampling rate, flight-time vs. impulse methods). In that sense, it's a check of data quality, like the identity-line check in [lesson 3.2](m3-02-facets.qmd).
+
+::: {.callout-important}
+## The take-home message
+When two variables are **two expressions of the same quantity** (*h* and *v*<sub>TO</sub>, net impulse/mass and *v*<sub>TO</sub>), they **share almost all of their variance by definition**. Their correlation will be close to 1 no matter which athletes you test. It answers no research question about performance, and it should never be presented as a "finding".
+:::
+
+### Case 3: partly shared components
+
+Coupling isn't always complete. Many derived variables **share an ingredient**:
+
+| Variable | Calculated as | Shares an ingredient with |
+|---|---|---|
+| Power | force × velocity | take-off velocity, and therefore jump height |
+| RSI<sub>mod</sub> | jump height / contraction time | jump height (numerator) and contraction time (denominator) |
+| Relative impulse, force, power | value / body mass | body mass (denominator) |
+
+The correlation between RSI<sub>mod</sub> and jump height (*r* = 0.66) is partly **built in**, because jump height is *in* RSI<sub>mod</sub>. A simulation shows that this happens even with completely **random, unrelated** numbers:
+
+::: {.task}
+Simulate 1000 "athletes" whose jump height `h` and contraction time `t` are **independent** random numbers. Then calculate the ratio `rsi <- h / t` and its correlations with `h` and with `t`.
+:::
+
+```{webr}
+#| exercise: co_3
+#| caption: "Exercise · Spurious correlation of a ratio"
+set.seed(10)
+h <- rnorm(1000, mean = 0.40, sd = 0.05)   # jump height (m)
+t <- rnorm(1000, mean = 0.80, sd = 0.10)   # contraction time (s), unrelated to h
+
+rsi <- ______
+
+r_h_t   <- cor(h, t)      # independent: close to 0
+r_rsi_h <- cor(______, ______)
+r_rsi_t <- cor(______, ______)
+round(c(r_h_t = r_h_t, r_rsi_h = r_rsi_h, r_rsi_t = r_rsi_t), 2)
+```
+
+::: {.hint exercise="co_3"}
+`rsi <- h / t`, `cor(rsi, h)`, `cor(rsi, t)`.
+:::
+
+::: {.solution exercise="co_3"}
+```{webr}
+#| exercise: co_3
+#| solution: true
+set.seed(10)
+h <- rnorm(1000, mean = 0.40, sd = 0.05)   # jump height (m)
+t <- rnorm(1000, mean = 0.80, sd = 0.10)   # contraction time (s), unrelated to h
+
+rsi <- h / t
+
+r_h_t   <- cor(h, t)      # independent: close to 0
+r_rsi_h <- cor(rsi, h)
+r_rsi_t <- cor(rsi, t)
+round(c(r_h_t = r_h_t, r_rsi_h = r_rsi_h, r_rsi_t = r_rsi_t), 2)
+```
+:::
+
+```{webr}
+#| exercise: co_3
+#| check: true
+.check_vars(c("rsi", "r_rsi_h", "r_rsi_t"), .envir_result, .checker_args$envir_solution,
+  ok = paste0("Correct! Although h and t are unrelated (r = ", round(get("r_h_t", envir = .checker_args$envir_solution), 2),
+              "), RSI correlates r = ", round(get("r_rsi_h", envir = .checker_args$envir_solution), 2), " with h and r = ",
+              round(get("r_rsi_t", envir = .checker_args$envir_solution), 2),
+              " with t, purely by construction. This is the 'spurious correlation of ratios', described by Karl Pearson in 1897."))
+```
+
+The same trap applies to **ratio scaling by body mass**: dividing by mass doesn't necessarily remove the effect of size, and can even create a correlation with mass. In the squad, relative propulsive impulse (per kg) still correlates negatively with body mass:
+
+```{webr}
+cor.test(squad$con_impulse_rel, squad$body_mass_kg)
+```
+
+Heavier athletes look "worse" per kg. Part of this is real physiology, but part is an artefact of dividing by mass when impulse doesn't scale 1:1 with mass. **Allometric scaling** (dividing by mass raised to a power estimated from the data, e.g. *m*<sup>0.67</sup>) is the solution; you'll fit such a model with log-transformed regression in the next lesson's exercises.
+
+::: {.quiz id="co-q1"}
+A paper reports that *"peak velocity was strongly related to jump height (r = 0.95)"* in a group of volleyball players. What's your critical comment?
+
+- [ ] The sample was probably too small
+- [x] Jump height is largely determined by take-off velocity, which is closely linked to peak velocity, so the variables share most of their variance by definition; this is physics, not a finding about volleyball players
+- [ ] Spearman's rho should have been used
+
+::: {.explanation}
+When variables are mathematically or physically coupled, a high *r* is expected for any group of people, or even for a bouncing ball. Such correlations can validate a measurement method, but not a training hypothesis.
+:::
+:::
+
+::: {.quiz id="co-q2"}
+Which pair of variables is **least** affected by mathematical coupling?
+
+- [ ] RSI<sub>mod</sub> and jump height
+- [ ] Net impulse per kg and take-off velocity
+- [x] Body mass and countermovement depth
+
+::: {.explanation}
+RSI<sub>mod</sub> contains jump height, and net impulse/mass equals take-off velocity by Newton's law. Body mass and countermovement depth are measured independently, so any correlation between them reflects a genuine association (whatever its cause).
+:::
+:::
+
+## Correlation is not causation
+
+Even when variables are measured independently, a correlation doesn't show that one **causes** the other. Body mass correlates negatively with jump height (*r* = −0.37), but body mass also differs between the sports, and the sports differ in training, selection and playing demands. A **third variable** (a *confounder*) can create or hide a correlation. Multiple regression ([lesson 4.7](m4-07-multiple-regression.qmd)) lets you adjust for confounders, but only randomised experiments can establish causation convincingly.
+
+## A correlation matrix
+
+`cor()` on a data frame of numeric columns gives all pairwise correlations at once:
+
+```{webr}
+vars <- c("jump_height_m", "peak_power_rel", "con_force_rel", "con_time_s", "cmj_depth_m", "body_mass_kg")
+round(cor(squad[, vars]), 2)
+```
+
+When you read such a matrix, ask for every large value: **are these two independent measurements, or do they share an ingredient?**
+
+::: {.quiz id="co-q3"}
+*r* = −0.70 between countermovement depth (`cmj_depth_m`, negative = deeper) and propulsion time. What does *r*² tell you?
+
+- [ ] 70 % of athletes have a deep countermovement
+- [x] Depth and propulsion time share about 49 % of their variance
+- [ ] Deeper squats cause 70 % longer propulsion
+
+::: {.explanation}
+*r*² = 0.70² = 0.49. (The negative sign only means that more negative depth, i.e. deeper, goes with longer propulsion: a longer distance to push over.)
+:::
+:::
+
+## Lesson summary
+
+- `cor(x, y)` and `cor.test(x, y)`: Pearson's *r*; `method = "spearman"` for ranks/monotonic/outliers.
+- ***r*² = shared variance.**
+- **Mathematical coupling:** variables calculated from each other (*h* ↔ *v*<sub>TO</sub>), or two routes to the same physical quantity (net impulse/mass = *v*<sub>TO</sub>), share their variance by definition, so *r* ≈ 1 is not a finding. Ratios (RSI, per-kg values) create partial, built-in correlations.
+- Correlation ≠ causation: beware of confounders.
+
+### Scratchpad
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

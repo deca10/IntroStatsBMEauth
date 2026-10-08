@@ -1,0 +1,102 @@
+project:
+  type: website
+  output-dir: docs
+  render:
+    - "*.qmd"
+  resources:
+    - data/*.csv
+
+website:
+  title: "R for Sport & Exercise Science"
+  description: "A self-paced, interactive R course for sports science and kinesiology students."
+  page-navigation: true
+  bread-crumbs: true
+  search: true
+  sidebar:
+    style: docked
+    collapse-level: 2
+    contents:
+      - href: index.qmd
+        text: "Welcome"
+      - href: how-to-use.qmd
+        text: "How this course works"
+      - section: "Module 1 · Introduction to R"
+        contents:
+          - href: m1-01-basics.qmd
+            text: "1.1 R basics"
+          - href: m1-02-vectors.qmd
+            text: "1.2 Vectors"
+          - href: m1-03-factors.qmd
+            text: "1.3 Factors"
+          - href: m1-04-data-frames.qmd
+            text: "1.4 Data frames"
+          - href: m1-05-ggplot.qmd
+            text: "1.5 Plotting with ggplot2"
+          - href: m1-06-checkpoint.qmd
+            text: "1.6 Module checkpoint"
+      - section: "Module 2 · Introduction to statistics"
+        contents:
+          - href: m2-01-what-is-statistics.qmd
+            text: "2.1 What is statistics?"
+          - href: m2-02-center.qmd
+            text: "2.2 Measures of center"
+          - href: m2-03-spread.qmd
+            text: "2.3 Measures of spread"
+          - href: m2-04-normal-clt.qmd
+            text: "2.4 Normal distribution & CLT"
+          - href: m2-05-checkpoint.qmd
+            text: "2.5 Module checkpoint"
+      - section: "Module 3 · Data visualisation in depth"
+        contents:
+          - href: m3-01-summaries.qmd
+            text: "3.1 Summaries and raw data"
+          - href: m3-02-facets.qmd
+            text: "3.2 Facets and annotations"
+          - href: m3-03-scales-colours.qmd
+            text: "3.3 Scales, colours and labels"
+          - href: m3-04-themes.qmd
+            text: "3.4 Themes and exporting"
+          - href: m3-05-timeseries-patchwork.qmd
+            text: "3.5 Force curves and multi-panel figures"
+          - href: m3-06-checkpoint.qmd
+            text: "3.6 Module checkpoint"
+      - section: "Module 4 · Inferential statistics"
+        contents:
+          - href: m4-01-confidence-intervals.qmd
+            text: "4.1 Confidence intervals"
+          - href: m4-02-hypothesis-testing.qmd
+            text: "4.2 Hypothesis testing"
+          - href: m4-03-t-tests.qmd
+            text: "4.3 Comparing two groups"
+          - href: m4-04-anova.qmd
+            text: "4.4 ANOVA"
+          - href: m4-05-correlation.qmd
+            text: "4.5 Correlation"
+          - href: m4-06-simple-regression.qmd
+            text: "4.6 Simple linear regression"
+          - href: m4-07-multiple-regression.qmd
+            text: "4.7 Multiple regression"
+          - href: m4-08-chi-square.qmd
+            text: "4.8 Chi-square tests"
+          - href: m4-09-reliability.qmd
+            text: "4.9 Reliability"
+          - href: m4-10-checkpoint.qmd
+            text: "4.10 Module checkpoint"
+  page-footer:
+    center: "R for Sport & Exercise Science · Built with Quarto + webR"
+
+format:
+  live-html:
+    theme:
+      light: [cosmo, assets/theme.scss]
+      dark: [darkly, assets/theme.scss]
+    css: assets/course.css
+    include-after-body: assets/course.html
+    toc: true
+    toc-title: "On this page"
+    toc-depth: 2
+    number-sections: false
+    code-copy: true
+    link-external-newwindow: true
+
+engine: knitr

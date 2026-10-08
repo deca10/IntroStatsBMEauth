@@ -1,0 +1,407 @@
+---
+title: "4.9 Reliability"
+subtitle: "Typical error, CV, Bland–Altman plots, ICC and the smallest worthwhile change"
+webr:
+  packages: ['ggplot2']
+  resources:
+    - data/cmj_trials.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+theme_set(theme_classic(base_size = 14))
+trials <- read.csv("data/cmj_trials.csv")
+```
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- distinguish **systematic bias** from **random error** in repeated measurements,
+- calculate the **typical error (TE)** and the **coefficient of variation (CV)**,
+- draw a **Bland–Altman plot** with limits of agreement,
+- estimate the **intraclass correlation coefficient (ICC)**,
+- calculate the **smallest worthwhile change (SWC)** and judge whether a test can detect it,
+- find **processing errors** that inflate measurement error.
+
+⏱️ About 50 minutes.
+:::
+
+## Why reliability matters
+
+A coach tests an athlete's CMJ before and after a training block: 38.0 cm → 40.5 cm. Did the athlete improve? That depends on how much the result would vary **anyway** if nothing had changed. That's the test's **reliability**. A test with a lot of noise can't detect small but real changes.
+
+The `trials` dataset contains **three CMJs** of **56 professional basketball and soccer players**, performed one after another in a single session. Jump height and body mass were calculated by the force-platform software for every trial:
+
+```{webr}
+head(trials, 9)
+```
+
+Each athlete's true ability didn't change within those few minutes, so differences between trials are **measurement error** (biological variability + technical error).
+
+## Two components of error
+
+1. **Systematic bias**: a consistent shift between trials, e.g. athletes jump higher in trial 2 because of a warm-up or learning effect. It's the **mean** of the differences.
+2. **Random error**: the unpredictable trial-to-trial scatter. It's the **SD** of the differences.
+
+## Typical error and CV
+
+The **typical error** (TE) is the standard deviation of an individual's repeated measurements: the "± noise" of a single test result. From two trials:
+
+$$TE = \frac{SD(\text{trial}_2 - \text{trial}_1)}{\sqrt{2}}$$
+
+(Dividing by √2 because a difference contains the error of *two* measurements.) Expressed as a percentage of the mean, it's the **coefficient of variation**:
+
+$$CV = \frac{TE}{\text{mean}} \times 100\%$$
+
+::: {.task}
+For trials 1 and 2:
+
+1. Extract `t1` and `t2` (jump heights; `trials` is sorted by athlete, so they line up).
+2. Calculate the differences `d`, the systematic `bias` (mean of `d`), the typical error `te` and the `cv` (use the mean of all trial 1 and 2 values).
+:::
+
+```{webr}
+#| exercise: rl_1
+#| caption: "Exercise · Typical error and CV"
+t1 <- trials$jump_height_cm[trials$trial == 1]
+t2 <- trials$jump_height_cm[trials$trial == ______]
+
+d <- ______
+bias <- ______
+te <- ______ / sqrt(2)
+cv <- te / mean(c(t1, t2)) * 100
+
+round(c(bias = bias, te = te, cv = cv), 2)
+```
+
+::: {.hint exercise="rl_1"}
+`t2` uses `trial == 2`; `d <- t2 - t1`; `bias <- mean(d)`; `te <- sd(d) / sqrt(2)`.
+:::
+
+::: {.solution exercise="rl_1"}
+```{webr}
+#| exercise: rl_1
+#| solution: true
+t1 <- trials$jump_height_cm[trials$trial == 1]
+t2 <- trials$jump_height_cm[trials$trial == 2]
+
+d <- t2 - t1
+bias <- mean(d)
+te <- sd(d) / sqrt(2)
+cv <- te / mean(c(t1, t2)) * 100
+
+round(c(bias = bias, te = te, cv = cv), 2)
+```
+:::
+
+```{webr}
+#| exercise: rl_1
+#| check: true
+.check_vars(c("bias", "te", "cv"), .envir_result, .checker_args$envir_solution,
+  ok = paste0("Correct! Bias = +", round(get("bias", envir = .checker_args$envir_solution), 1), " cm (slightly higher in trial 2), TE = ",
+              round(get("te", envir = .checker_args$envir_solution), 1), " cm, CV = ", round(get("cv", envir = .checker_args$envir_solution), 1),
+              " %. Published CVs for CMJ height are usually 2-6 %, so this is surprisingly high. Let's find out why."))
+```
+
+## Bland–Altman plot
+
+A **Bland–Altman plot** shows agreement between two measurements: for each athlete, the **difference** (y) is plotted against the **mean** of the two trials (x). Three horizontal lines summarise it:
+
+- the **bias** (mean difference),
+- the **95 % limits of agreement**: bias ± 1.96 × SD of the differences. About 95 % of differences should fall between them.
+
+It shows whether the error depends on the size of the measurement, and it makes **outliers** stand out.
+
+::: {.task}
+Complete the Bland–Altman plot of trials 1 and 2: compute `ba$mean` and `ba$diff`, the limits `loa_low` and `loa_high`, and add the three horizontal lines.
+:::
+
+```{webr}
+#| exercise: rl_2
+#| caption: "Exercise · Bland–Altman plot"
+t1 <- trials$jump_height_cm[trials$trial == 1]
+t2 <- trials$jump_height_cm[trials$trial == 2]
+ba <- data.frame(athlete = unique(trials$athlete),
+                 mean = (t1 + t2) / 2,
+                 diff = ______)
+
+bias <- mean(ba$diff)
+loa_low <- bias - 1.96 * ______
+loa_high <- bias + 1.96 * ______
+
+ggplot(ba, aes(x = mean, y = diff)) +
+  geom_point() +
+  geom_hline(yintercept = bias) +
+  geom_hline(yintercept = c(______, ______), linetype = "dashed") +
+  labs(x = "Mean of trials 1 and 2 (cm)", y = "Trial 2 - trial 1 (cm)")
+```
+
+::: {.hint exercise="rl_2"}
+`diff = t2 - t1`, `sd(ba$diff)` in both limits, and `yintercept = c(loa_low, loa_high)`.
+:::
+
+::: {.solution exercise="rl_2"}
+```{webr}
+#| exercise: rl_2
+#| solution: true
+t1 <- trials$jump_height_cm[trials$trial == 1]
+t2 <- trials$jump_height_cm[trials$trial == 2]
+ba <- data.frame(athlete = unique(trials$athlete),
+                 mean = (t1 + t2) / 2,
+                 diff = t2 - t1)
+
+bias <- mean(ba$diff)
+loa_low <- bias - 1.96 * sd(ba$diff)
+loa_high <- bias + 1.96 * sd(ba$diff)
+
+ggplot(ba, aes(x = mean, y = diff)) +
+  geom_point() +
+  geom_hline(yintercept = bias) +
+  geom_hline(yintercept = c(loa_low, loa_high), linetype = "dashed") +
+  labs(x = "Mean of trials 1 and 2 (cm)", y = "Trial 2 - trial 1 (cm)")
+```
+:::
+
+```{webr}
+#| exercise: rl_2
+#| check: true
+res <- .check_vars(c("ba", "loa_low", "loa_high"), .envir_result, .checker_args$envir_solution)
+if (isTRUE(res$correct)) res <- .check_plot(.result, geoms = c("GeomPoint", "GeomHline"),
+  ok = paste0("Correct! Limits of agreement: ", round(get("loa_low", envir = .checker_args$envir_solution), 1), " to +",
+              round(get("loa_high", envir = .checker_args$envir_solution), 1), " cm. Look at the point near −21 cm: one athlete supposedly jumped 64 cm in trial 1 and 42 cm in trial 2. That's not biology."))
+res
+```
+
+## Finding processing errors
+
+The force-platform software estimates **body mass** from the quiet-standing phase of **every** trial. An athlete's mass can't change by several kg within a few minutes, so a large difference between trials means the **quiet-standing phase was not quiet** (the athlete moved, or stepped on late), like CMJ 2 of Athlete K in [lesson 2.5](m2-05-checkpoint.qmd). A wrong body weight corrupts the whole force analysis, including jump height.
+
+```{webr}
+subset(trials, athlete == "A02")
+```
+
+Athlete A02's first trial has a body mass 2.8 kg lower than the other two, and a jump height 21 cm higher. That's a processing error, not a jump.
+
+::: {.task}
+1. Calculate the **range** of body mass (max − min) across each athlete's three trials with `tapply()`, and store it in `mass_range`.
+2. Store the IDs of the athletes with a range **above 2 kg** in `flagged`.
+3. Recalculate the typical error of trials 1–2 **without** the flagged athletes (`te_clean`).
+:::
+
+```{webr}
+#| exercise: rl_3
+#| caption: "Exercise · Data quality check"
+# 1. Body-mass range per athlete
+mass_range <- tapply(trials$body_mass_kg, trials$athlete, function(x) ______)
+
+# 2. Flagged athletes
+flagged <- names(mass_range)[______]
+flagged
+
+# 3. Typical error without the flagged athletes
+clean <- subset(trials, !athlete %in% flagged)
+d_clean <- clean$jump_height_cm[clean$trial == 2] - clean$jump_height_cm[clean$trial == 1]
+te_clean <- ______
+te_clean
+```
+
+::: {.hint exercise="rl_3"}
+1. `function(x) max(x) - min(x)` (or `diff(range(x))`)
+2. `mass_range > 2`
+3. `sd(d_clean) / sqrt(2)`
+:::
+
+::: {.solution exercise="rl_3"}
+```{webr}
+#| exercise: rl_3
+#| solution: true
+# 1. Body-mass range per athlete
+mass_range <- tapply(trials$body_mass_kg, trials$athlete, function(x) max(x) - min(x))
+
+# 2. Flagged athletes
+flagged <- names(mass_range)[mass_range > 2]
+flagged
+
+# 3. Typical error without the flagged athletes
+clean <- subset(trials, !athlete %in% flagged)
+d_clean <- clean$jump_height_cm[clean$trial == 2] - clean$jump_height_cm[clean$trial == 1]
+te_clean <- sd(d_clean) / sqrt(2)
+te_clean
+```
+:::
+
+```{webr}
+#| exercise: rl_3
+#| check: true
+.check_vars(c("flagged", "te_clean"), .envir_result, .checker_args$envir_solution,
+  ok = paste0("Excellent! ", length(get("flagged", envir = .checker_args$envir_solution)), " athletes are flagged. Without them, the typical error drops from 3.4 to ",
+              round(get("te_clean", envir = .checker_args$envir_solution), 1),
+              " cm (CV ≈ 5.9 %). A few processing errors made the test look much less reliable than it is. In practice, re-analyse those trials from the raw force files rather than just deleting them, and report what you did."))
+```
+
+::: {.quiz id="rl-q1"}
+An athlete's estimated body mass is 82.0, 81.8 and 76.4 kg in three consecutive jumps. What do you do with trial 3?
+
+- [ ] Keep it: biological variation is normal
+- [x] Treat it as suspect: the quiet-standing phase was probably disturbed, so its body weight, and therefore its jump height, is unreliable; re-analyse it or exclude it
+- [ ] Average the three body masses and keep all jump heights
+
+::: {.explanation}
+A 5-kg change in a minute is impossible. Because body weight is used to calculate acceleration, velocity and jump height, an error in it propagates to everything.
+:::
+:::
+
+## Relative reliability: the ICC
+
+The TE describes **absolute** reliability (in cm). The **intraclass correlation coefficient (ICC)** describes **relative** reliability: how well the test keeps athletes in the same **rank order** across trials. It compares the variability *between* athletes with the error *within* athletes (0 = no reliability, 1 = perfect).
+
+You can calculate it from an ANOVA with athlete and trial as factors. One common form, ICC(3,1) (consistency of single measurements), is:
+
+$$ICC = \frac{MS_{athletes} - MS_{error}}{MS_{athletes} + (k - 1)\, MS_{error}}$$
+
+where *k* is the number of trials.
+
+```{webr}
+icc <- function(data) {
+  a <- aov(jump_height_cm ~ factor(athlete) + factor(trial), data = data)
+  ms <- summary(a)[[1]][, "Mean Sq"]   # athletes, trials, residual (error)
+  k <- length(unique(data$trial))
+  (ms[1] - ms[3]) / (ms[1] + (k - 1) * ms[3])
+}
+
+mass_range <- tapply(trials$body_mass_kg, trials$athlete, function(x) max(x) - min(x))
+clean <- subset(trials, !athlete %in% names(mass_range)[mass_range > 2])
+
+icc(trials)   # all athletes
+icc(clean)    # after removing processing errors
+```
+
+Common benchmarks (Koo & Li, 2016): < 0.5 poor, 0.5–0.75 moderate, 0.75–0.9 good, > 0.9 excellent. Cleaning the data moves the ICC from "moderate" to "good". (The **irr** and **psych** packages calculate all ICC forms with confidence intervals.)
+
+::: {.callout-warning}
+## A high ICC can hide a large error
+The ICC depends on how different the athletes are. In a very heterogeneous group (youth players and professionals together), the ICC can be excellent even if the TE is large. Always report the **TE or CV** as well.
+:::
+
+## The smallest worthwhile change
+
+How big must a change be to **matter**? For team-sport athletes, a common approach defines the **smallest worthwhile change (SWC)** as **0.2 × the between-athlete SD**, i.e. a "small" effect size (Hopkins).
+
+Compare the TE with the SWC:
+
+- **TE < SWC**: the test can detect the smallest worthwhile change in a single athlete ("good" sensitivity),
+- **TE ≈ SWC**: "OK", averaging several trials helps,
+- **TE > SWC**: the test is too noisy to detect the SWC in individuals.
+
+::: {.task}
+Using the **cleaned** data:
+
+1. Calculate the between-athlete SD of trial 1 jump heights and the `swc`.
+2. Calculate `te_clean` again (trials 1–2) and the ratio `te_clean / swc`.
+3. Calculate the typical error of the **mean of 3 trials**, `te_mean3`, using the CLT: TE / √3.
+:::
+
+```{webr}
+#| exercise: rl_4
+#| caption: "Exercise · Smallest worthwhile change"
+mass_range <- tapply(trials$body_mass_kg, trials$athlete, function(x) max(x) - min(x))
+clean <- subset(trials, !athlete %in% names(mass_range)[mass_range > 2])
+c1 <- clean$jump_height_cm[clean$trial == 1]
+c2 <- clean$jump_height_cm[clean$trial == 2]
+
+# 1. Smallest worthwhile change
+swc <- 0.2 * ______
+
+# 2. Typical error and ratio
+te_clean <- sd(c2 - c1) / sqrt(2)
+ratio <- ______
+
+# 3. Typical error of the mean of 3 trials
+te_mean3 <- ______
+
+round(c(swc = swc, te = te_clean, ratio = ratio, te_mean3 = te_mean3), 2)
+```
+
+::: {.hint exercise="rl_4"}
+`swc <- 0.2 * sd(c1)`, `ratio <- te_clean / swc`, `te_mean3 <- te_clean / sqrt(3)`.
+:::
+
+::: {.solution exercise="rl_4"}
+```{webr}
+#| exercise: rl_4
+#| solution: true
+mass_range <- tapply(trials$body_mass_kg, trials$athlete, function(x) max(x) - min(x))
+clean <- subset(trials, !athlete %in% names(mass_range)[mass_range > 2])
+c1 <- clean$jump_height_cm[clean$trial == 1]
+c2 <- clean$jump_height_cm[clean$trial == 2]
+
+# 1. Smallest worthwhile change
+swc <- 0.2 * sd(c1)
+
+# 2. Typical error and ratio
+te_clean <- sd(c2 - c1) / sqrt(2)
+ratio <- te_clean / swc
+
+# 3. Typical error of the mean of 3 trials
+te_mean3 <- te_clean / sqrt(3)
+
+round(c(swc = swc, te = te_clean, ratio = ratio, te_mean3 = te_mean3), 2)
+```
+:::
+
+```{webr}
+#| exercise: rl_4
+#| check: true
+e <- .checker_args$envir_solution
+.check_vars(c("swc", "ratio", "te_mean3"), .envir_result, e,
+  ok = paste0("Correct! SWC = ", round(get("swc", envir = e), 1), " cm, but TE = ", round(get("te_clean", envir = e), 1),
+              " cm, almost ", round(get("ratio", envir = e)), "× larger. A single CMJ can't detect the smallest worthwhile change in an individual. Averaging 3 jumps reduces the error to ",
+              round(get("te_mean3", envir = e), 1), " cm",
+              if (get("te_mean3", envir = e) > get("swc", envir = e)) ": better, but still above the SWC." else ", about the size of the SWC.",
+              " That's typical for jump tests, and why coaches should look for changes well above the noise, or track trends over several sessions."))
+```
+
+::: {.quiz id="rl-q2"}
+CMJ: TE = 1.5 cm, SWC = 1.0 cm. An athlete improves from 41.0 to 42.0 cm. What's the best conclusion?
+
+- [ ] The athlete improved by a worthwhile amount
+- [x] The change equals the SWC but is smaller than the noise of the test; it may well be measurement error
+- [ ] The test is useless
+
+::: {.explanation}
+A 1 cm change is well within ±1.5 cm (one TE) of random variation. You'd need a larger change, or repeated tests, to be confident.
+:::
+:::
+
+::: {.quiz id="rl-q3"}
+Why does averaging three trials reduce the typical error by a factor of √3?
+
+- [ ] Because the best trial is always the most accurate
+- [x] Because random errors partly cancel out; by the central limit theorem, the SD of a mean of *n* values is SD/√n
+- [ ] It doesn't: averaging only removes systematic bias
+
+::: {.explanation}
+Exactly the standard-error logic of [lesson 2.4](m2-04-normal-clt.qmd). It assumes the errors of the trials are independent.
+:::
+:::
+
+## Lesson summary
+
+- **Bias** = mean of the trial differences; **TE** = SD(differences) / √2; **CV** = TE / mean × 100.
+- **Bland–Altman**: difference vs. mean, with bias ± 1.96 SD **limits of agreement**.
+- **ICC**: relative reliability from an ANOVA; always report it together with the TE/CV.
+- **SWC** = 0.2 × between-athlete SD; a test is sensitive when TE ≤ SWC. Averaging *n* trials divides TE by √*n*.
+- **Check data quality** (e.g. body-mass consistency): a few processing errors can make a good test look bad.
+
+### Scratchpad
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

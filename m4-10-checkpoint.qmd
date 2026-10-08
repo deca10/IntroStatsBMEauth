@@ -1,0 +1,247 @@
+---
+title: "4.10 Module checkpoint"
+subtitle: "Choose the right test, run it, and interpret it critically"
+webr:
+  packages: ['ggplot2']
+  resources:
+    - data/jump_squad.csv
+    - data/balance.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+theme_set(theme_classic(base_size = 14))
+squad <- read.csv("data/jump_squad.csv")
+balance <- read.csv("data/balance.csv")
+```
+
+::: {.callout-note appearance="simple"}
+## How this checkpoint works
+Part A tests whether you can **choose** the right analysis. Part B is a mini-project on the squad data: three research questions, three analyses, and a critical look at a colleague's claim.
+
+⏱️ About 45 minutes.
+:::
+
+## Part A · Which analysis?
+
+::: {.quiz id="cp4-q1"}
+Do U19 players improve their 10 m sprint time after 8 weeks of resisted-sprint training? (Same players tested before and after.)
+
+- [ ] Independent *t*-test
+- [x] Paired *t*-test
+- [ ] Chi-square test
+
+::: {.explanation}
+The same players are measured twice: a paired design. See [lesson 4.3](m4-03-t-tests.qmd).
+:::
+:::
+
+::: {.quiz id="cp4-q2"}
+Does the injury rate (injured yes/no) differ between goalkeepers, defenders, midfielders and forwards?
+
+- [ ] One-way ANOVA
+- [ ] Pearson correlation
+- [x] Chi-square test of independence
+
+::: {.explanation}
+Both variables are categorical, so you compare counts in a 4 × 2 table. See [lesson 4.8](m4-08-chi-square.qmd).
+:::
+:::
+
+::: {.quiz id="cp4-q3"}
+Does VO₂max differ between three groups of runners (sprinters, middle-distance, marathon)?
+
+- [ ] Three *t*-tests
+- [x] One-way ANOVA followed by Tukey's post-hoc test
+- [ ] Multiple regression with VO₂max as predictor
+
+::: {.explanation}
+3+ groups with a numeric outcome → ANOVA; three separate *t*-tests inflate the false-positive rate. See [lesson 4.4](m4-04-anova.qmd).
+:::
+:::
+
+::: {.quiz id="cp4-q4"}
+Is the relationship between sprint time and jump height still present after accounting for body mass and sex?
+
+- [ ] Pearson correlation
+- [x] Multiple regression
+- [ ] Paired *t*-test
+
+::: {.explanation}
+"After accounting for" = adjusting for other variables, which is what multiple regression does. See [lesson 4.7](m4-07-multiple-regression.qmd).
+:::
+:::
+
+::: {.quiz id="cp4-q5"}
+How consistent is a new jump mat across two trials performed 5 minutes apart?
+
+- [ ] Independent *t*-test between trial 1 and trial 2
+- [x] Typical error / CV, Bland–Altman plot and ICC
+- [ ] Pearson correlation between trial 1 and trial 2 only
+
+::: {.explanation}
+Reliability needs absolute (TE, CV, limits of agreement) and relative (ICC) measures. A correlation alone ignores systematic bias. See [lesson 4.9](m4-09-reliability.qmd).
+:::
+:::
+
+## Part B · Mini-project
+
+### Question 1: Do the sports differ in eccentric (unweighting + braking) time?
+
+::: {.task}
+1. Run a Welch *t*-test of `ecc_time_s` by `sport` and store it in `tt`.
+2. Calculate Cohen's *d* (`d`) as (mean basketball − mean soccer) / pooled SD.
+:::
+
+```{webr}
+#| exercise: cp4_1
+#| caption: "Mini-project · Question 1"
+tt <- t.test(______ ~ ______, data = squad)
+tt
+
+b <- squad$ecc_time_s[squad$sport == "Basketball"]
+s <- squad$ecc_time_s[squad$sport == "Soccer"]
+d <- (mean(b) - mean(s)) / sqrt((sd(b)^2 + sd(s)^2) / 2)
+d
+```
+
+::: {.hint exercise="cp4_1"}
+`t.test(ecc_time_s ~ sport, data = squad)`
+:::
+
+::: {.solution exercise="cp4_1"}
+```{webr}
+#| exercise: cp4_1
+#| solution: true
+tt <- t.test(ecc_time_s ~ sport, data = squad)
+tt
+
+b <- squad$ecc_time_s[squad$sport == "Basketball"]
+s <- squad$ecc_time_s[squad$sport == "Soccer"]
+d <- (mean(b) - mean(s)) / sqrt((sd(b)^2 + sd(s)^2) / 2)
+d
+```
+:::
+
+```{webr}
+#| exercise: cp4_1
+#| check: true
+r <- get("tt", envir = .checker_args$envir_solution)
+dd <- get("d", envir = .checker_args$envir_solution)
+res <- .check_vars(c("tt", "d"), .envir_result, .checker_args$envir_solution)
+if (isTRUE(res$correct)) res <- .ok(paste0("Correct! Basketball ", round(1000 * r$estimate[1]), " ms vs. soccer ", round(1000 * r$estimate[2]),
+  " ms, p = ", signif(r$p.value, 2), ", d = ", round(dd, 2), ". ",
+  if (r$p.value < 0.05) "A significant difference." else "No significant difference: the CI of the difference includes 0, and the effect is small."))
+res
+```
+
+### Question 2: Is the sport difference in jump height robust?
+
+::: {.task}
+Fit a multiple regression of `jump_height_m` on `sport`, `body_mass_kg` and `cmj_depth_m` (`model`). Extract the **95 % CI of the sport coefficient** (`ci_sport`) with `confint(model)["sportSoccer", ]`.
+:::
+
+```{webr}
+#| exercise: cp4_2
+#| caption: "Mini-project · Question 2"
+model <- lm(jump_height_m ~ ______ + ______ + ______, data = squad)
+summary(model)
+
+ci_sport <- confint(model)["sportSoccer", ]
+ci_sport
+```
+
+::: {.hint exercise="cp4_2"}
+`lm(jump_height_m ~ sport + body_mass_kg + cmj_depth_m, data = squad)`
+:::
+
+::: {.solution exercise="cp4_2"}
+```{webr}
+#| exercise: cp4_2
+#| solution: true
+model <- lm(jump_height_m ~ sport + body_mass_kg + cmj_depth_m, data = squad)
+summary(model)
+
+ci_sport <- confint(model)["sportSoccer", ]
+ci_sport
+```
+:::
+
+```{webr}
+#| exercise: cp4_2
+#| check: true
+ci <- get("ci_sport", envir = .checker_args$envir_solution)
+.check_vars("ci_sport", .envir_result, .checker_args$envir_solution,
+  ok = paste0("Correct! The adjusted soccer − basketball difference has a 95 % CI of ", round(100 * ci[1], 1), " to ", round(100 * ci[2], 1),
+              " cm, which ", if (ci[1] < 0 && ci[2] > 0) "includes 0: once body mass and countermovement depth are accounted for, there's no evidence of a sport difference." else "excludes 0."))
+```
+
+### Question 3: A colleague's claim
+
+A colleague writes in a draft paper:
+
+> *"Net propulsive impulse was the strongest determinant of jump height (R² = 0.92, p < 0.001), indicating that coaches should prioritise impulse-oriented training."*
+
+::: {.task}
+1. Calculate `net_imp` = `con_impulse_rel − 9.81 × con_time_s` and verify the colleague's *R*² (`r2_net`).
+2. Calculate the take-off velocity `v_to` from jump height and its correlation with `net_imp` (`r_coupling`).
+:::
+
+```{webr}
+#| exercise: cp4_3
+#| caption: "Mini-project · Question 3"
+squad$net_imp <- ______
+r2_net <- summary(lm(jump_height_m ~ net_imp, data = squad))$r.squared
+
+squad$v_to <- ______
+r_coupling <- cor(______, ______)
+
+round(c(r2_net = r2_net, r_coupling = r_coupling), 3)
+```
+
+::: {.hint exercise="cp4_3"}
+`squad$con_impulse_rel - 9.81 * squad$con_time_s`, `sqrt(2 * 9.81 * squad$jump_height_m)`, `cor(squad$net_imp, squad$v_to)`.
+:::
+
+::: {.solution exercise="cp4_3"}
+```{webr}
+#| exercise: cp4_3
+#| solution: true
+squad$net_imp <- squad$con_impulse_rel - 9.81 * squad$con_time_s
+r2_net <- summary(lm(jump_height_m ~ net_imp, data = squad))$r.squared
+
+squad$v_to <- sqrt(2 * 9.81 * squad$jump_height_m)
+r_coupling <- cor(squad$net_imp, squad$v_to)
+
+round(c(r2_net = r2_net, r_coupling = r_coupling), 3)
+```
+:::
+
+```{webr}
+#| exercise: cp4_3
+#| check: true
+.check_vars(c("r2_net", "r_coupling"), .envir_result, .checker_args$envir_solution,
+  ok = "Correct, and now you can review the claim! R² = 0.92 is real, but net impulse per kg IS take-off velocity (impulse–momentum theorem), and jump height is calculated from take-off velocity. The 'determinant' is the outcome in different units. The statement is physics, not a training insight. A better question: how do athletes produce that impulse (force vs. time strategy, depth), and can training change it?")
+```
+
+::: {.quiz id="cp4-q6"}
+What's the best revision of the colleague's sentence?
+
+- [ ] Report *r* instead of *R*²
+- [ ] Use Spearman's rho because the relationship is non-linear
+- [x] Remove it as a "finding": state that net impulse and jump height are mechanically equivalent, and analyse independent determinants (e.g. force–time strategy, depth, body mass) instead
+
+::: {.explanation}
+Changing the statistic doesn't fix mathematical coupling. The analysis has to be redesigned around variables that are not definitions of the outcome. See [lesson 4.5](m4-05-correlation.qmd).
+:::
+:::
+
+## Congratulations!
+
+You have completed **Module 4 · Inferential statistics**, and with it the core of this course. You can now import and explore data in R, visualise it to publication standard, and choose, run and critically interpret the most common statistical analyses in sport and exercise science.
+
+::: {.lesson-complete}
+:::

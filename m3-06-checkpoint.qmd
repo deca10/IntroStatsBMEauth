@@ -1,0 +1,290 @@
+---
+title: "3.6 Module checkpoint"
+subtitle: "Build a publication-ready, multi-panel figure, and let it check the physics"
+webr:
+  packages: ['ggplot2', 'patchwork']
+  resources:
+    - data/jump_squad.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+library(patchwork)
+squad <- read.csv("data/jump_squad.csv")
+sport_cols <- c(Basketball = "#E69F00", Soccer = "#0072B2")
+```
+
+::: {.callout-note appearance="simple"}
+## How this checkpoint works
+Part A is a short quiz. In Part B you'll build a two-panel figure step by step, as you would for a report or paper. `squad` and the colour vector `sport_cols` (Okabe–Ito orange and blue) are loaded.
+
+⏱️ About 35 minutes.
+:::
+
+## Part A · Quick quiz
+
+::: {.quiz id="cp3-q1"}
+Which code shows the raw data **and** the mean ± SD per group?
+
+- [ ] `geom_col()` + `geom_errorbar()`
+- [x] `geom_jitter()` + `stat_summary(fun = mean, fun.min = ..., fun.max = ..., geom = "pointrange")`
+- [ ] `geom_boxplot()`
+
+::: {.explanation}
+The jittered points show each athlete; `stat_summary()` adds the mean ± SD on top. A box plot shows median and quartiles, not mean ± SD. See [lesson 3.1](m3-01-summaries.qmd).
+:::
+:::
+
+::: {.quiz id="cp3-q2"}
+You want one panel per sport, with the panels stacked vertically. Which code?
+
+- [ ] `facet_grid(sport ~ sport)`
+- [x] `facet_wrap(~ sport, ncol = 1)`
+- [ ] `facet_wrap(sport)`
+
+::: {.explanation}
+`facet_wrap(~ sport, ncol = 1)`. The `~` is required, and `ncol = 1` stacks the panels. See [lesson 3.2](m3-02-facets.qmd).
+:::
+:::
+
+::: {.quiz id="cp3-q3"}
+You zoom a box plot with `scale_y_continuous(limits = c(0.3, 0.5))` and get a warning: *"Removed 6 rows containing non-finite values"*. What happened?
+
+- [ ] Nothing important: the warning can be ignored
+- [x] The 6 values outside the limits were removed before the boxes were calculated, so the boxes are now wrong
+- [ ] 6 values were missing in the original data
+
+::: {.explanation}
+`limits` deletes data. Use `coord_cartesian(ylim = c(0.3, 0.5))` to zoom without changing the statistics. See [lesson 3.3](m3-03-scales-colours.qmd).
+:::
+:::
+
+::: {.quiz id="cp3-q4"}
+`p + theme(legend.position = "top") + theme_classic()`: where is the legend?
+
+- [ ] At the top
+- [x] On the right (the default), because `theme_classic()` reset it
+- [ ] Nowhere
+
+::: {.explanation}
+Complete themes override earlier `theme()` settings. Add them first. See [lesson 3.4](m3-04-themes.qmd).
+:::
+:::
+
+::: {.quiz id="cp3-q5"}
+In patchwork, what does `p1 / p2` do?
+
+- [ ] Divides the values of p1 by p2
+- [x] Places p1 above p2
+- [ ] Places p1 next to p2
+
+::: {.explanation}
+`/` stacks plots vertically, `|` places them side by side. See [lesson 3.5](m3-05-timeseries-patchwork.qmd).
+:::
+:::
+
+## Part B · A figure that checks the physics
+
+Physics gives us two ways to look at the **velocity** of an athlete's centre of mass:
+
+- The **take-off velocity** follows from the jump height: a body that rises *h* metres must leave the ground with $v_{TO} = \sqrt{2 g h}$.
+- The force platform also records the **peak velocity** (`peak_velocity`) during push-off. Peak velocity is reached just *before* take-off, because in the last milliseconds the force drops below body weight and the athlete already starts to slow down.
+
+So we expect: **peak velocity ≥ take-off velocity, for every athlete.** A good figure can check this.
+
+### Step 1 · Panel A: jump height by sport
+
+::: {.task}
+Create `pA`: jump height in **cm** by `sport`, showing
+
+- the raw data: `geom_jitter(width = 0.1, alpha = 0.5, aes(colour = sport), show.legend = FALSE)`,
+- the mean ± SD in black: `stat_summary()` with `geom = "pointrange"`,
+- colours from `sport_cols` with `scale_colour_manual()`,
+- labels `x = NULL`, `y = "Jump height (cm)"`, and `theme_classic(base_size = 14)`.
+:::
+
+```{webr}
+#| exercise: cp3_1
+#| caption: "Mini-project · Step 1"
+pA <- ggplot(squad, aes(x = sport, y = jump_height_m * 100)) +
+  geom_jitter(width = 0.1, alpha = 0.5, aes(colour = sport), show.legend = FALSE) +
+  stat_summary(fun = mean,
+               fun.min = function(x) mean(x) - sd(x),
+               fun.max = function(x) mean(x) + sd(x),
+               geom = "______", size = 0.8, linewidth = 1) +
+  scale_colour_manual(values = ______) +
+  labs(x = NULL, y = "______") +
+  theme_classic(base_size = 14)
+pA
+```
+
+::: {.hint exercise="cp3_1"}
+`geom = "pointrange"`, `values = sport_cols`, `y = "Jump height (cm)"`.
+:::
+
+::: {.solution exercise="cp3_1"}
+```{webr}
+#| exercise: cp3_1
+#| solution: true
+pA <- ggplot(squad, aes(x = sport, y = jump_height_m * 100)) +
+  geom_jitter(width = 0.1, alpha = 0.5, aes(colour = sport), show.legend = FALSE) +
+  stat_summary(fun = mean,
+               fun.min = function(x) mean(x) - sd(x),
+               fun.max = function(x) mean(x) + sd(x),
+               geom = "pointrange", size = 0.8, linewidth = 1) +
+  scale_colour_manual(values = sport_cols) +
+  labs(x = NULL, y = "Jump height (cm)") +
+  theme_classic(base_size = 14)
+pA
+```
+:::
+
+```{webr}
+#| exercise: cp3_1
+#| check: true
+p <- .result
+res <- .check_plot(p, geoms = c("GeomPoint", "GeomPointrange"))
+if (isTRUE(res$correct)) {
+  if (!identical(p$labels$y, "Jump height (cm)")) res <- .no("Set the y-axis title to \"Jump height (cm)\".")
+  else if (!grepl("sport_cols", paste(.user_code, collapse = ""))) res <- .no("Use `scale_colour_manual(values = sport_cols)`.")
+  else res <- .ok("Panel A done: 38.1 ± 6.0 cm (basketball) vs. 40.6 ± 4.9 cm (soccer).")
+}
+res
+```
+
+### Step 2 · Panel B: peak vs. take-off velocity
+
+::: {.task}
+1. Add a column `v_to` to `squad`: the take-off velocity, `sqrt(2 * 9.81 * jump_height_m)`.
+2. Create `pB`: a scatter plot of `v_to` (x) against `peak_velocity` (y), coloured by `sport` (with `sport_cols`), with the **identity line** `geom_abline(intercept = 0, slope = 1, linetype = "dashed")`.
+3. Find the athlete(s) whose peak velocity is **lower** than their take-off velocity and store them in `suspect`.
+:::
+
+```{webr}
+#| exercise: cp3_2
+#| caption: "Mini-project · Step 2"
+# 1. Take-off velocity from jump height
+squad$v_to <- ______
+
+# 2. Peak vs. take-off velocity
+pB <- ggplot(squad, aes(x = v_to, y = peak_velocity, colour = sport)) +
+  geom_abline(intercept = ______, slope = ______, linetype = "dashed") +
+  geom_point(size = 2) +
+  scale_colour_manual(values = sport_cols) +
+  labs(x = "Take-off velocity (m/s)", y = "Peak velocity (m/s)", colour = NULL) +
+  theme_classic(base_size = 14)
+pB
+
+# 3. Athletes that break the physics
+suspect <- subset(squad, ______)
+suspect[, c("id", "v_to", "peak_velocity")]
+```
+
+::: {.hint exercise="cp3_2"}
+1. `sqrt(2 * 9.81 * squad$jump_height_m)`
+2. `intercept = 0, slope = 1`
+3. `subset(squad, peak_velocity < v_to)`
+:::
+
+::: {.solution exercise="cp3_2"}
+```{webr}
+#| exercise: cp3_2
+#| solution: true
+# 1. Take-off velocity from jump height
+squad$v_to <- sqrt(2 * 9.81 * squad$jump_height_m)
+
+# 2. Peak vs. take-off velocity
+pB <- ggplot(squad, aes(x = v_to, y = peak_velocity, colour = sport)) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed") +
+  geom_point(size = 2) +
+  scale_colour_manual(values = sport_cols) +
+  labs(x = "Take-off velocity (m/s)", y = "Peak velocity (m/s)", colour = NULL) +
+  theme_classic(base_size = 14)
+pB
+
+# 3. Athletes that break the physics
+suspect <- subset(squad, peak_velocity < v_to)
+suspect[, c("id", "v_to", "peak_velocity")]
+```
+:::
+
+```{webr}
+#| exercise: cp3_2
+#| check: true
+res <- .check_vars(c("squad", "suspect"), .envir_result, .checker_args$envir_solution)
+if (isTRUE(res$correct)) res <- .check_plot(get("pB", envir = .envir_result), geoms = c("GeomAbline", "GeomPoint"), aes = "colour",
+  ok = "Excellent! 83 of 84 athletes sit above the identity line, as physics requires. Athlete S17 sits below it, so the jump height or the velocity of that trial should be checked in the raw data. (Notice also how tightly the points follow a line: one velocity is almost a copy of the other. More on that in the correlation lesson.)")
+res
+```
+
+### Step 3 · Combine the panels
+
+::: {.task}
+Recreate `pA` and `pB` (given) and combine them **side by side** with panel tags **A** and **B**.
+:::
+
+```{webr}
+#| exercise: cp3_3
+#| caption: "Mini-project · Step 3"
+#| fig-width: 11
+#| fig-height: 4.5
+squad$v_to <- sqrt(2 * 9.81 * squad$jump_height_m)
+pA <- ggplot(squad, aes(x = sport, y = jump_height_m * 100)) +
+  geom_jitter(width = 0.1, alpha = 0.5, aes(colour = sport), show.legend = FALSE) +
+  stat_summary(fun = mean, fun.min = function(x) mean(x) - sd(x), fun.max = function(x) mean(x) + sd(x),
+               geom = "pointrange", size = 0.8, linewidth = 1) +
+  scale_colour_manual(values = sport_cols) +
+  labs(x = NULL, y = "Jump height (cm)") + theme_classic(base_size = 14)
+pB <- ggplot(squad, aes(x = v_to, y = peak_velocity, colour = sport)) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed") + geom_point(size = 2) +
+  scale_colour_manual(values = sport_cols) +
+  labs(x = "Take-off velocity (m/s)", y = "Peak velocity (m/s)", colour = NULL) + theme_classic(base_size = 14)
+
+# Combine side by side with tags A and B
+______
+```
+
+::: {.hint exercise="cp3_3"}
+`(pA | pB) + plot_annotation(tag_levels = "A")`
+:::
+
+::: {.solution exercise="cp3_3"}
+```{webr}
+#| exercise: cp3_3
+#| solution: true
+#| fig-width: 11
+#| fig-height: 4.5
+squad$v_to <- sqrt(2 * 9.81 * squad$jump_height_m)
+pA <- ggplot(squad, aes(x = sport, y = jump_height_m * 100)) +
+  geom_jitter(width = 0.1, alpha = 0.5, aes(colour = sport), show.legend = FALSE) +
+  stat_summary(fun = mean, fun.min = function(x) mean(x) - sd(x), fun.max = function(x) mean(x) + sd(x),
+               geom = "pointrange", size = 0.8, linewidth = 1) +
+  scale_colour_manual(values = sport_cols) +
+  labs(x = NULL, y = "Jump height (cm)") + theme_classic(base_size = 14)
+pB <- ggplot(squad, aes(x = v_to, y = peak_velocity, colour = sport)) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed") + geom_point(size = 2) +
+  scale_colour_manual(values = sport_cols) +
+  labs(x = "Take-off velocity (m/s)", y = "Peak velocity (m/s)", colour = NULL) + theme_classic(base_size = 14)
+
+# Combine side by side with tags A and B
+(pA | pB) + plot_annotation(tag_levels = "A")
+```
+:::
+
+```{webr}
+#| exercise: cp3_3
+#| check: true
+if (!inherits(.result, "patchwork")) {
+  .no("Combine `pA` and `pB` with `|`.")
+} else if (!grepl("tag_levels", paste(.user_code, collapse = ""))) {
+  .no("Add panel tags with `plot_annotation(tag_levels = \"A\")`.")
+} else {
+  .ok("Congratulations, you've completed Module 3! In a real project you'd now save it with `ggsave(\"figure1.pdf\", width = 17, height = 7, units = \"cm\")`.")
+}
+```
+
+::: {.lesson-complete}
+:::

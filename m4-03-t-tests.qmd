@@ -1,0 +1,304 @@
+---
+title: "4.3 Comparing two groups"
+subtitle: "Independent and paired t-tests, and effect sizes"
+webr:
+  packages: ['ggplot2']
+  resources:
+    - data/jump_squad.csv
+    - data/cmj_trials.csv
+    - data/balance.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+theme_set(theme_classic(base_size = 14))
+squad <- read.csv("data/jump_squad.csv")
+trials <- read.csv("data/cmj_trials.csv")
+balance <- read.csv("data/balance.csv")
+sport_cols <- c(Basketball = "#E69F00", Soccer = "#0072B2")
+```
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- compare two **independent** groups with a *t*-test (Welch and Student),
+- compare two **paired** measurements (the same athletes measured twice) with a paired *t*-test,
+- calculate and interpret **Cohen's *d***,
+- check the assumptions, and know the non-parametric alternatives.
+
+⏱️ About 45 minutes.
+:::
+
+## Independent vs. paired designs
+
+| Design | Example | Test |
+|---|---|---|
+| **Independent groups**: different athletes in each group | basketball vs. soccer players | independent *t*-test |
+| **Paired / repeated measures**: the same athletes measured twice | jump height before vs. after a training block; left vs. right leg | paired *t*-test |
+
+Choosing the right one matters: paired designs remove the (often large) differences *between* athletes, so they can detect smaller effects with fewer participants.
+
+## The independent *t*-test
+
+Do soccer and basketball players differ in jump height? Always **plot first**:
+
+```{webr}
+ggplot(squad, aes(x = sport, y = jump_height_m * 100, colour = sport)) +
+  geom_jitter(width = 0.1, alpha = 0.6, show.legend = FALSE) +
+  stat_summary(fun = mean, fun.min = function(x) mean(x) - sd(x), fun.max = function(x) mean(x) + sd(x),
+               geom = "pointrange", colour = "black") +
+  scale_colour_manual(values = sport_cols) +
+  labs(x = NULL, y = "Jump height (cm)")
+```
+
+H₀: the population means are equal (difference = 0). Use `t.test()` with a **formula** `outcome ~ group`:
+
+```{webr}
+t.test(jump_height_m ~ sport, data = squad)
+```
+
+Reading the output:
+
+- *t* = −2.05 on about 79 degrees of freedom, ***p* = 0.044**,
+- the **95 % CI of the difference** (basketball − soccer) runs from −4.8 to −0.07 cm,
+- the group means are 0.381 m and 0.406 m.
+
+So soccer players jump on average **2.5 cm higher**, and the difference is (just) statistically significant.
+
+::: {.callout-tip}
+## Welch or Student?
+R's default is the **Welch** *t*-test, which doesn't assume equal variances in the two groups. The classic **Student** *t*-test (`var.equal = TRUE`) does. Welch is the safer default and loses almost nothing when variances are equal, so keep the default.
+:::
+
+::: {.task}
+Do basketball and soccer players differ in **relative peak power** (`peak_power_rel`)? Run an independent (Welch) *t*-test and store it in `res`. Then extract the 95 % CI of the difference (`res$conf.int`).
+:::
+
+```{webr}
+#| exercise: tt_1
+#| caption: "Exercise · Independent t-test"
+res <- t.test(______ ~ ______, data = squad)
+res
+res$conf.int
+```
+
+::: {.hint exercise="tt_1"}
+`t.test(peak_power_rel ~ sport, data = squad)`
+:::
+
+::: {.solution exercise="tt_1"}
+```{webr}
+#| exercise: tt_1
+#| solution: true
+res <- t.test(peak_power_rel ~ sport, data = squad)
+res
+res$conf.int
+```
+:::
+
+```{webr}
+#| exercise: tt_1
+#| check: true
+r <- get("res", envir = .checker_args$envir_solution)
+res <- .check_vars("res", .envir_result, .checker_args$envir_solution)
+if (isTRUE(res$correct)) res <- .ok(paste0("Correct! Means: ", round(r$estimate[1], 1), " vs. ", round(r$estimate[2], 1),
+  " W/kg, p = ", signif(r$p.value, 2), ". ", if (r$p.value < 0.05) "A significant difference." else "No significant difference: notice that the CI of the difference includes 0."))
+res
+```
+
+## Effect size: Cohen's *d*
+
+The *p*-value tells you whether a difference is detectable, not how **large** it is. Cohen's *d* expresses the difference in units of standard deviation:
+
+$$d = \frac{\bar{x}_1 - \bar{x}_2}{SD_{pooled}}, \qquad SD_{pooled} = \sqrt{\frac{SD_1^2 + SD_2^2}{2}}$$
+
+(this simple pooled SD is correct when the groups have the same size). Conventional benchmarks: **0.2 small, 0.5 medium, 0.8 large**. In sport science, also compare the raw difference with the **smallest worthwhile change** ([lesson 4.9](m4-09-reliability.qmd)).
+
+::: {.task}
+Calculate Cohen's *d* for the difference in **jump height** between soccer and basketball players (soccer − basketball).
+:::
+
+```{webr}
+#| exercise: tt_2
+#| caption: "Exercise · Cohen's d"
+b <- squad$jump_height_m[squad$sport == "Basketball"]
+s <- squad$jump_height_m[squad$sport == "Soccer"]
+
+sd_pooled <- sqrt((______ + ______) / 2)
+d <- (mean(s) - mean(b)) / ______
+d
+```
+
+::: {.hint exercise="tt_2"}
+`sd_pooled <- sqrt((sd(b)^2 + sd(s)^2) / 2)` (`var(b)` is the same as `sd(b)^2`), then divide by `sd_pooled`.
+:::
+
+::: {.solution exercise="tt_2"}
+```{webr}
+#| exercise: tt_2
+#| solution: true
+b <- squad$jump_height_m[squad$sport == "Basketball"]
+s <- squad$jump_height_m[squad$sport == "Soccer"]
+
+sd_pooled <- sqrt((sd(b)^2 + sd(s)^2) / 2)
+d <- (mean(s) - mean(b)) / sd_pooled
+d
+```
+:::
+
+```{webr}
+#| exercise: tt_2
+#| check: true
+.check_vars(c("sd_pooled", "d"), .envir_result, .checker_args$envir_solution,
+  ok = "Correct! d ≈ 0.45: a small-to-medium effect. Remember from the Module 3 figures: soccer players are also much lighter. Is it the sport or the body mass? Lesson 4.7 will tell.")
+```
+
+::: {.quiz id="tt-q1"}
+Two studies compare the same training methods. Study A (n = 400) finds *p* = 0.001, *d* = 0.15. Study B (n = 20) finds *p* = 0.09, *d* = 0.70. Which statement is correct?
+
+- [ ] Study A found the bigger effect
+- [x] Study B observed a larger effect, but with so few participants it's estimated imprecisely
+- [ ] Study B shows there is no effect
+
+::: {.explanation}
+*p* mixes effect size and sample size. Study A's effect is small but precisely estimated; study B's is larger but uncertain (wide CI).
+:::
+:::
+
+## The paired *t*-test
+
+The `trials` data contains **three CMJs per athlete** (56 athletes), performed one after the other in the same session:
+
+```{webr}
+head(trials)
+```
+
+Do athletes jump higher in their **third** trial than in their first (a warm-up or learning effect)? These are the **same athletes**, so the measurements are paired. A paired *t*-test is a one-sample *t*-test on the **differences**: H₀ says the mean difference is 0.
+
+First, put trial 1 and trial 3 next to each other. Because `trials` is sorted by athlete, the athletes are in the same order in both vectors:
+
+```{webr}
+t1 <- trials$jump_height_cm[trials$trial == 1]
+t3 <- trials$jump_height_cm[trials$trial == 3]
+head(cbind(t1, t3, diff = t3 - t1))
+```
+
+::: {.task}
+Run a **paired** *t*-test comparing `t3` and `t1` (`t.test(t3, t1, paired = TRUE)`) and store it in `res`. Then check that it equals a one-sample *t*-test on the differences: `t.test(t3 - t1)$p.value`.
+:::
+
+```{webr}
+#| exercise: tt_3
+#| caption: "Exercise · Paired t-test"
+t1 <- trials$jump_height_cm[trials$trial == 1]
+t3 <- trials$jump_height_cm[trials$trial == 3]
+
+res <- t.test(______, ______, paired = ______)
+res
+
+# Same thing:
+t.test(t3 - t1)$p.value
+```
+
+::: {.hint exercise="tt_3"}
+`t.test(t3, t1, paired = TRUE)`
+:::
+
+::: {.solution exercise="tt_3"}
+```{webr}
+#| exercise: tt_3
+#| solution: true
+t1 <- trials$jump_height_cm[trials$trial == 1]
+t3 <- trials$jump_height_cm[trials$trial == 3]
+
+res <- t.test(t3, t1, paired = TRUE)
+res
+
+# Same thing:
+t.test(t3 - t1)$p.value
+```
+:::
+
+```{webr}
+#| exercise: tt_3
+#| check: true
+r <- get("res", envir = .checker_args$envir_solution)
+res <- .check_vars("res", .envir_result, .checker_args$envir_solution)
+if (isTRUE(res$correct)) res <- .ok(paste0("Correct! Mean difference = ", round(r$estimate, 2), " cm (95 % CI ",
+  round(r$conf.int[1], 2), " to ", round(r$conf.int[2], 2), "), p = ", signif(r$p.value, 2),
+  ". No evidence of a systematic change from trial 1 to trial 3, which is good news for the test protocol."))
+res
+```
+
+### Why pairing matters
+
+What if you wrongly treated the same data as two independent groups?
+
+```{webr}
+t1 <- trials$jump_height_cm[trials$trial == 1]
+t2 <- trials$jump_height_cm[trials$trial == 2]
+t.test(t2, t1, paired = TRUE)$p.value    # correct
+t.test(t2, t1)$p.value                   # wrong: ignores the pairing
+```
+
+The difference between athletes (some jump 30 cm, others 50 cm) is much larger than the change between trials. The independent test treats that between-athlete variation as noise, so it has much less power. The paired test removes it by looking only at within-athlete changes.
+
+::: {.quiz id="tt-q2"}
+You measure hamstring strength of the **left and right legs** of 25 footballers. Which test compares the legs?
+
+- [ ] Independent *t*-test
+- [x] Paired *t*-test
+- [ ] One-sample *t*-test against 0 N
+
+::: {.explanation}
+Both legs belong to the same athlete, so the measurements are paired. (Technically it's a one-sample *t*-test on the left − right differences, which is exactly what a paired *t*-test does.)
+:::
+:::
+
+## Assumptions and alternatives
+
+*t*-tests assume that the data (or for paired tests, the differences) are roughly **normally distributed**, and that observations are **independent** (each athlete appears once per group). Thanks to the central limit theorem, *t*-tests are robust to moderate non-normality when samples aren't tiny. Check with a histogram or Q-Q plot ([lesson 2.4](m2-04-normal-clt.qmd)).
+
+For clearly skewed data, small samples or ordinal outcomes, use the **non-parametric** alternatives, which work on ranks:
+
+- independent groups: **Mann–Whitney *U*** / Wilcoxon rank-sum test, `wilcox.test(y ~ group, data = ...)`,
+- paired data: **Wilcoxon signed-rank test**, `wilcox.test(x, y, paired = TRUE)`.
+
+```{webr}
+# Trail Making Test B is strongly skewed: compare young vs. old with a rank-based test
+wilcox.test(tmt_b_s ~ age_group, data = balance)
+```
+
+::: {.quiz id="tt-q3"}
+Which situation calls most clearly for `wilcox.test()` instead of `t.test()`?
+
+- [ ] 80 athletes per group, jump heights roughly normal
+- [x] 9 patients per group, pain scores on a 0–10 scale with many zeros
+- [ ] Body mass of 40 men and 40 women
+
+::: {.explanation}
+A small sample with an ordinal, heavily skewed outcome is where rank-based tests are most appropriate.
+:::
+:::
+
+## Lesson summary
+
+- Independent groups: `t.test(y ~ group, data = df)` (Welch by default).
+- Paired data: `t.test(x, y, paired = TRUE)`, equivalent to a one-sample test of the differences.
+- Always report the **mean difference with its 95 % CI** and an **effect size** such as Cohen's *d* = difference / pooled SD.
+- Non-parametric alternatives: `wilcox.test()` (unpaired or `paired = TRUE`).
+
+### Scratchpad
+
+`squad`, `trials` and `balance` are loaded.
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

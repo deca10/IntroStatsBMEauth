@@ -1,0 +1,347 @@
+---
+title: "3.5 Force–time curves and multi-panel figures"
+subtitle: "Aligning and normalising time-series data, and combining plots with patchwork"
+webr:
+  packages: ['ggplot2', 'patchwork']
+  resources:
+    - data/cmj.csv
+    - data/jump_squad.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+library(patchwork)
+theme_set(theme_classic(base_size = 14))
+cmj <- read.csv("data/cmj.csv")
+squad <- read.csv("data/jump_squad.csv")
+sport_cols <- c(Basketball = "#E69F00", Soccer = "#0072B2")
+```
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- overlay repeated trials by **aligning** them to an event (take-off),
+- **normalise** force to body weight,
+- reshape **wide** data (left and right columns) into **long** format for plotting,
+- shade phases of a movement,
+- combine several plots into one figure with **patchwork**.
+
+⏱️ About 45 minutes. This lesson uses Athlete K's force data from [Module 2](m2-01-what-is-statistics.qmd).
+:::
+
+## The problem: trials don't start at the same time
+
+Let's overlay Athlete K's three jumps:
+
+```{webr}
+#| fig-width: 9
+#| fig-height: 4
+ggplot(cmj, aes(x = time_s, y = force_total, colour = trial)) +
+  geom_line()
+```
+
+The recordings started at different moments before each jump, so the curves are shifted and hard to compare. The solution is to **align** the trials to a common event. **Take-off** is easy to detect: it's the first sample where the force drops below a small threshold (20 N).
+
+### Aligning to take-off
+
+First find the take-off time of each trial. `tapply()` applies a function per group, and the function can be one you write on the spot:
+
+```{webr}
+takeoff <- tapply(cmj$time_s[cmj$force_total < 20], cmj$trial[cmj$force_total < 20], min)
+takeoff
+```
+
+`takeoff` is a **named** vector, so `takeoff["CMJ 2"]` gives the take-off time of CMJ 2, and `takeoff[cmj$trial]` gives the take-off time of the matching trial for *every row*. Subtracting it creates a time axis where 0 = take-off:
+
+```{webr}
+cmj$time_rel <- cmj$time_s - takeoff[cmj$trial]
+head(cmj[, c("trial", "time_s", "time_rel")])
+```
+
+::: {.task}
+Plot the aligned trials: `time_rel` (x) against `force_total` (y), one coloured line per `trial`. Zoom in on the interval from **−1.2 s to 0.8 s** with `coord_cartesian()`, and add a dashed vertical line at take-off (`geom_vline(xintercept = 0, linetype = "dashed")`).
+:::
+
+```{webr}
+#| exercise: m35_1
+#| caption: "Exercise · Align to take-off"
+#| fig-width: 9
+#| fig-height: 4.5
+takeoff <- tapply(cmj$time_s[cmj$force_total < 20], cmj$trial[cmj$force_total < 20], min)
+cmj$time_rel <- cmj$time_s - takeoff[cmj$trial]
+
+ggplot(cmj, aes(x = ______, y = force_total, colour = ______)) +
+  geom_line() +
+  geom_vline(xintercept = ______, linetype = "dashed") +
+  coord_cartesian(xlim = c(______, ______))
+```
+
+::: {.hint exercise="m35_1"}
+`x = time_rel`, `colour = trial`, `xintercept = 0`, `xlim = c(-1.2, 0.8)`.
+:::
+
+::: {.solution exercise="m35_1"}
+```{webr}
+#| exercise: m35_1
+#| solution: true
+#| fig-width: 9
+#| fig-height: 4.5
+takeoff <- tapply(cmj$time_s[cmj$force_total < 20], cmj$trial[cmj$force_total < 20], min)
+cmj$time_rel <- cmj$time_s - takeoff[cmj$trial]
+
+ggplot(cmj, aes(x = time_rel, y = force_total, colour = trial)) +
+  geom_line() +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  coord_cartesian(xlim = c(-1.2, 0.8))
+```
+:::
+
+```{webr}
+#| exercise: m35_1
+#| check: true
+p <- .result
+res <- .check_plot(p, geoms = c("GeomLine", "GeomVline"), aes = "colour")
+if (isTRUE(res$correct)) {
+  lim <- p$coordinates$limits$x
+  if (!identical(rlang::as_label(p$mapping$x), "time_rel")) res <- .no("Use the aligned time `time_rel` on the x-axis.")
+  else if (is.null(lim) || !isTRUE(all.equal(as.numeric(lim), c(-1.2, 0.8)))) res <- .no("Zoom with `coord_cartesian(xlim = c(-1.2, 0.8))`.")
+  else res <- .ok("Now the three jumps line up! The propulsion phases are remarkably similar; CMJ 2 has a slightly lower peak.")
+}
+res
+```
+
+## Normalising to body weight
+
+Forces are often expressed in **multiples of body weight** (BW), which makes athletes of different sizes comparable and makes the curve easier to read: 1 BW = standing still, 0 = flight. Athlete K's body weight is ≈ 726 N ([lesson 2.2](m2-02-center.qmd)):
+
+```{webr}
+#| fig-width: 9
+#| fig-height: 4
+takeoff <- tapply(cmj$time_s[cmj$force_total < 20], cmj$trial[cmj$force_total < 20], min)
+cmj$time_rel <- cmj$time_s - takeoff[cmj$trial]
+bw <- mean(cmj$force_total[cmj$trial == "CMJ 3" & cmj$time_s <= 1.5])
+cmj$force_bw <- cmj$force_total / bw
+
+ggplot(cmj, aes(x = time_rel, y = force_bw, colour = trial)) +
+  geom_hline(yintercept = 1, colour = "grey60") +
+  geom_line() +
+  coord_cartesian(xlim = c(-1.2, 0.8)) +
+  labs(x = "Time relative to take-off (s)", y = "Force (multiples of body weight)", colour = NULL)
+```
+
+## Wide vs. long data: left and right legs
+
+`cmj` stores the two legs in **two columns** (`force_left`, `force_right`). That's called **wide** format. ggplot2 wants **long** format instead: one column with the force and one column saying which leg it belongs to. Then you can simply map `colour = leg`.
+
+You can build the long data by stacking two data frames with `rbind()`:
+
+```{webr}
+cmj3 <- subset(cmj, trial == "CMJ 3")
+
+legs <- rbind(
+  data.frame(time_s = cmj3$time_s, leg = "Left",  force = cmj3$force_left),
+  data.frame(time_s = cmj3$time_s, leg = "Right", force = cmj3$force_right)
+)
+head(legs)
+nrow(cmj3); nrow(legs)   # twice as many rows
+```
+
+(The **tidyr** package's `pivot_longer()` does this in one step, which is very useful once you have many columns.)
+
+::: {.task}
+Build `legs` for **CMJ 1** (as above) and plot the left and right force over time as two coloured lines. Shade the **flight phase** with `annotate("rect", ...)`: in CMJ 1 the flight lasts from about **4.58 s to 5.16 s**. Use `ymin = -Inf, ymax = Inf` so the shading covers the full height, with `alpha = 0.2`.
+:::
+
+```{webr}
+#| exercise: m35_2
+#| caption: "Exercise · Long format and shading"
+#| fig-width: 9
+#| fig-height: 4.5
+cmj1 <- subset(cmj, trial == "CMJ 1")
+
+legs <- rbind(
+  data.frame(time_s = cmj1$time_s, leg = "Left",  force = cmj1$______),
+  data.frame(time_s = cmj1$time_s, leg = "Right", force = cmj1$______)
+)
+
+ggplot(legs, aes(x = time_s, y = force, colour = ______)) +
+  annotate("rect", xmin = ______, xmax = ______, ymin = -Inf, ymax = Inf, alpha = 0.2) +
+  geom_line() +
+  labs(x = "Time (s)", y = "Vertical force (N)")
+```
+
+::: {.hint exercise="m35_2"}
+`force_left` and `force_right`; `colour = leg`; `xmin = 4.58, xmax = 5.16`.
+:::
+
+::: {.solution exercise="m35_2"}
+```{webr}
+#| exercise: m35_2
+#| solution: true
+#| fig-width: 9
+#| fig-height: 4.5
+cmj1 <- subset(cmj, trial == "CMJ 1")
+
+legs <- rbind(
+  data.frame(time_s = cmj1$time_s, leg = "Left",  force = cmj1$force_left),
+  data.frame(time_s = cmj1$time_s, leg = "Right", force = cmj1$force_right)
+)
+
+ggplot(legs, aes(x = time_s, y = force, colour = leg)) +
+  annotate("rect", xmin = 4.58, xmax = 5.16, ymin = -Inf, ymax = Inf, alpha = 0.2) +
+  geom_line() +
+  labs(x = "Time (s)", y = "Vertical force (N)")
+```
+:::
+
+```{webr}
+#| exercise: m35_2
+#| check: true
+res <- .check_vars("legs", .envir_result, .checker_args$envir_solution)
+if (isTRUE(res$correct)) res <- .check_plot(.result, geoms = c("GeomRect", "GeomLine"), aes = "colour",
+  ok = "Excellent! Look before the jump (2–4 s): the athlete shifts weight between the legs while preparing. Long format + colour makes such patterns easy to see.")
+res
+```
+
+::: {.quiz id="m35-q1"}
+Why do we align repeated trials to take-off before overlaying them?
+
+- [ ] To make the recordings shorter
+- [x] Because recordings start at arbitrary moments, so the same movement phase happens at different clock times in each trial
+- [ ] Because ggplot2 can't plot different time ranges
+
+::: {.explanation}
+Time since the start of the recording has no biomechanical meaning. Aligning to a clear event (onset, take-off, foot contact) makes the phases comparable across trials and athletes.
+:::
+:::
+
+::: {.quiz id="m35-q2"}
+You have a data frame with columns `time`, `hr_athlete1`, `hr_athlete2`, `hr_athlete3`. To plot one coloured line per athlete with ggplot2, you should first…
+
+- [ ] add three `geom_line()` layers, one per column
+- [x] reshape it to long format: columns `time`, `athlete`, `hr`
+- [ ] calculate the mean of the three columns
+
+::: {.explanation}
+Three separate layers works, but it doesn't scale and you lose the automatic legend. Long ("tidy") data, with one row per observation, is what ggplot2 is designed for.
+:::
+:::
+
+## Combining plots with patchwork
+
+Journal figures often have several panels (A, B, C…). The **patchwork** package lets you combine ggplot objects with simple operators:
+
+| Code | Layout |
+|---|---|
+| `p1 + p2` or `p1 | p2` | side by side |
+| `p1 / p2` | on top of each other |
+| `(p1 | p2) / p3` | two on top, one below |
+| `+ plot_annotation(tag_levels = "A")` | add panel tags A, B, C |
+| `+ plot_layout(guides = "collect")` | combine duplicate legends into one |
+
+```{webr}
+#| fig-width: 10
+#| fig-height: 7
+p_box <- ggplot(squad, aes(x = sport, y = jump_height_m, fill = sport)) +
+  geom_boxplot(show.legend = FALSE) +
+  scale_fill_manual(values = sport_cols) +
+  labs(x = NULL, y = "Jump height (m)")
+
+p_scatter <- ggplot(squad, aes(x = body_mass_kg, y = jump_height_m, colour = sport)) +
+  geom_point() +
+  scale_colour_manual(values = sport_cols) +
+  labs(x = "Body mass (kg)", y = "Jump height (m)", colour = NULL)
+
+p_hist <- ggplot(squad, aes(x = body_mass_kg, fill = sport)) +
+  geom_histogram(binwidth = 5, colour = "white", position = "identity", alpha = 0.7) +
+  scale_fill_manual(values = sport_cols) +
+  labs(x = "Body mass (kg)", y = "Athletes", fill = NULL)
+
+(p_box | p_scatter) / p_hist +
+  plot_annotation(tag_levels = "A")
+```
+
+Together, the three panels tell a story: soccer players jump slightly higher (A), but they are also much lighter (C), and lighter athletes tend to jump higher (B). Is it the sport or the body mass? You'll answer that with multiple regression in Module 4.
+
+::: {.task}
+Combine the two plots `p_force` and `p_power` (given) **side by side**, with panel tags **A** and **B**, and with their two identical legends **collected** into one.
+:::
+
+```{webr}
+#| exercise: m35_3
+#| caption: "Exercise · patchwork"
+#| fig-width: 10
+#| fig-height: 4.5
+p_force <- ggplot(squad, aes(x = con_force_rel, y = jump_height_m, colour = sport)) +
+  geom_point() + scale_colour_manual(values = sport_cols) +
+  labs(x = "Mean propulsive force (N/kg)", y = "Jump height (m)", colour = NULL)
+
+p_power <- ggplot(squad, aes(x = peak_power_rel, y = jump_height_m, colour = sport)) +
+  geom_point() + scale_colour_manual(values = sport_cols) +
+  labs(x = "Peak power (W/kg)", y = "Jump height (m)", colour = NULL)
+
+(______ | ______) +
+  plot_annotation(tag_levels = "______") +
+  plot_layout(guides = "______")
+```
+
+::: {.hint exercise="m35_3"}
+`(p_force | p_power)`, `tag_levels = "A"`, `guides = "collect"`. The brackets matter: `+` is evaluated before `|`, so without them the annotation would be added to `p_power` only.
+:::
+
+::: {.solution exercise="m35_3"}
+```{webr}
+#| exercise: m35_3
+#| solution: true
+#| fig-width: 10
+#| fig-height: 4.5
+p_force <- ggplot(squad, aes(x = con_force_rel, y = jump_height_m, colour = sport)) +
+  geom_point() + scale_colour_manual(values = sport_cols) +
+  labs(x = "Mean propulsive force (N/kg)", y = "Jump height (m)", colour = NULL)
+
+p_power <- ggplot(squad, aes(x = peak_power_rel, y = jump_height_m, colour = sport)) +
+  geom_point() + scale_colour_manual(values = sport_cols) +
+  labs(x = "Peak power (W/kg)", y = "Jump height (m)", colour = NULL)
+
+(p_force | p_power) +
+  plot_annotation(tag_levels = "A") +
+  plot_layout(guides = "collect")
+```
+:::
+
+```{webr}
+#| exercise: m35_3
+#| check: true
+p <- .result
+code <- paste(.user_code, collapse = "")
+if (!inherits(p, "patchwork")) {
+  .no("Combine the plots with `|` or `+` so the result is a patchwork.")
+} else if (!grepl("tag_levels", code) || !grepl("collect", code)) {
+  .no("Add `plot_annotation(tag_levels = \"A\")` and `plot_layout(guides = \"collect\")`.")
+} else {
+  .ok("Well done! Look at the difference: jump height is only weakly related to mean force (A) but strongly to peak power (B). Module 4 explains why.")
+}
+```
+
+## Lesson summary
+
+- Align repeated trials to an event: `time_rel <- time - event_time[trial]`, using a named vector of event times from `tapply()`.
+- Normalise force to body weight (`force / bw`) to compare athletes and read curves easily.
+- ggplot2 prefers **long** data: stack columns with `rbind()` (or `tidyr::pivot_longer()`), then map `colour = group`.
+- Shade phases with `annotate("rect", xmin, xmax, ymin = -Inf, ymax = Inf, alpha = ...)`.
+- **patchwork:** `|` side by side, `/` stacked, `plot_annotation(tag_levels = "A")`, `plot_layout(guides = "collect")`.
+
+### Scratchpad
+
+`cmj` and `squad` are loaded, along with patchwork.
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>3.5 Force–time curves and multi-panel figures – R for Sport &amp; Exercise Science</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./m3-06-checkpoint.html" rel="next">
+<link href="./m3-04-themes.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-4648af033ffcd0093e02db57821e876a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-66c2c5f7df196ef24f157ebd1a397ab6.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-4648af033ffcd0093e02db57821e876a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script src="site_libs/quarto-contrib/live-runtime/live-runtime.js" type="module"></script>
+<link href="site_libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="module" src="site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+<link href="site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="assets/course.css">
+</head>
+
+<body class="nav-sidebar docked quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m3-01-summaries.html">Module 3 · Data visualisation in depth</a></li><li class="breadcrumb-item"><a href="./m3-05-timeseries-patchwork.html">3.5 Force curves and multi-panel figures</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">R for Sport &amp; Exercise Science</a> 
+        <div class="sidebar-tools-main">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./how-to-use.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">How this course works</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Module 1 · Introduction to R</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m1-01-basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1.1 R basics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m1-02-vectors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1.2 Vectors</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m1-03-factors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1.3 Factors</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m1-04-data-frames.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1.4 Data frames</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m1-05-ggplot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1.5 Plotting with ggplot2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m1-06-checkpoint.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1.6 Module checkpoint</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Module 2 · Introduction to statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m2-01-what-is-statistics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">2.1 What is statistics?</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m2-02-center.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">2.2 Measures of center</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m2-03-spread.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">2.3 Measures of spread</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m2-04-normal-clt.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">2.4 Normal distribution &amp; CLT</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m2-05-checkpoint.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">2.5 Module checkpoint</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Module 3 · Data visualisation in depth</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m3-01-summaries.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3.1 Summaries and raw data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m3-02-facets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3.2 Facets and annotations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m3-03-scales-colours.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3.3 Scales, colours and labels</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m3-04-themes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3.4 Themes and exporting</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m3-05-timeseries-patchwork.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">3.5 Force curves and multi-panel figures</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m3-06-checkpoint.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3.6 Module checkpoint</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Module 4 · Inferential statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m4-01-confidence-intervals.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.1 Confidence intervals</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m4-02-hypothesis-testing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.2 Hypothesis testing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m4-03-t-tests.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.3 Comparing two groups</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m4-04-anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.4 ANOVA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m4-05-correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.5 Correlation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m4-06-simple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.6 Simple linear regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m4-07-multiple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.7 Multiple regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m4-08-chi-square.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.8 Chi-square tests</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m4-09-reliability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.9 Reliability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m4-10-checkpoint.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.10 Module checkpoint</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul class="collapse">
+  <li><a href="#the-problem-trials-dont-start-at-the-same-time" id="toc-the-problem-trials-dont-start-at-the-same-time" class="nav-link active" data-scroll-target="#the-problem-trials-dont-start-at-the-same-time">The problem: trials don’t start at the same time</a></li>
+  <li><a href="#normalising-to-body-weight" id="toc-normalising-to-body-weight" class="nav-link" data-scroll-target="#normalising-to-body-weight">Normalising to body weight</a></li>
+  <li><a href="#wide-vs.-long-data-left-and-right-legs" id="toc-wide-vs.-long-data-left-and-right-legs" class="nav-link" data-scroll-target="#wide-vs.-long-data-left-and-right-legs">Wide vs.&nbsp;long data: left and right legs</a></li>
+  <li><a href="#combining-plots-with-patchwork" id="toc-combining-plots-with-patchwork" class="nav-link" data-scroll-target="#combining-plots-with-patchwork">Combining plots with patchwork</a></li>
+  <li><a href="#lesson-summary" id="toc-lesson-summary" class="nav-link" data-scroll-target="#lesson-summary">Lesson summary</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m3-01-summaries.html">Module 3 · Data visualisation in depth</a></li><li class="breadcrumb-item"><a href="./m3-05-timeseries-patchwork.html">3.5 Force curves and multi-panel figures</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">3.5 Force–time curves and multi-panel figures</h1>
+<p class="subtitle lead">Aligning and normalising time-series data, and combining plots with patchwork</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="cell">
+<div>
+<div id="webr-1" class="exercise-cell">
+
+</div>
+<script type="webr-1-contents">
+eyJhdHRyIjp7ImVjaG8iOmZhbHNlLCJlZGl0IjpmYWxzZSwiZXZhbCI6dHJ1ZSwiaW5jbHVkZSI6ZmFsc2UsIm91dHB1dCI6ZmFsc2V9LCJjb2RlIjoiIyAtLS0tIEdyYWRpbmcgaGVscGVycyAoaGlkZGVuIGZyb20gc3R1ZGVudHMpIC0tLS1cbi5vayA8LSBmdW5jdGlvbihtc2cgPSBcIkNvcnJlY3QhIFdlbGwgZG9uZS5cIikgbGlzdChjb3JyZWN0ID0gVFJVRSwgdHlwZSA9IFwic3VjY2Vzc1wiLCBtZXNzYWdlID0gbXNnKVxuLm5vIDwtIGZ1bmN0aW9uKG1zZyA9IFwiTm90IHF1aXRlLiBIYXZlIGEgbG9vayBhdCB0aGUgaGludCBhbmQgdHJ5IGFnYWluLlwiKSBsaXN0KGNvcnJlY3QgPSBGQUxTRSwgdHlwZSA9IFwiZXJyb3JcIiwgbWVzc2FnZSA9IG1zZylcblxuIyBDb21wYXJlIHRoZSB2YWx1ZSB0aGUgc3R1ZGVudCdzIGNvZGUgcmV0dXJuZWQgd2l0aCB0aGUgdmFsdWUgdGhlIHNvbHV0aW9uIHJldHVybmVkXG4uY2hlY2tfcmVzdWx0IDwtIGZ1bmN0aW9uKHJlc3VsdCwgc29sdXRpb24sIG9rID0gXCJDb3JyZWN0ISBXZWxsIGRvbmUuXCIsXG4gICAgICAgICAgICAgICAgICAgICAgICAgIG5vID0gXCJOb3QgcXVpdGUuIENvbXBhcmUgeW91ciBvdXRwdXQgd2l0aCB3aGF0IHRoZSB0YXNrIGFza3MgZm9yLlwiKSB7XG4gIGlmIChpc1RSVUUoYWxsLmVxdWFsKHJlc3VsdCwgc29sdXRpb24sIGNoZWNrLmF0dHJpYnV0ZXMgPSBUUlVFKSkpIC5vayhvaykgZWxzZSAubm8obm8pXG59XG5cbiMgQ2hlY2sgdGhhdCB2YXJpYWJsZXMgY3JlYXRlZCBieSB0aGUgc3R1ZGVudCBtYXRjaCB0aG9zZSBvZiB0aGUgc29sdXRpb25cbi5jaGVja192YXJzIDwtIGZ1bmN0aW9uKHZhcnMsIGVudiwgc29sX2Vudiwgb2sgPSBcIkNvcnJlY3QhIFdlbGwgZG9uZS5cIikge1xuICBmb3IgKHYgaW4gdmFycykge1xuICAgIGlmICghZXhpc3RzKHYsIGVudmlyID0gZW52LCBpbmhlcml0cyA9IEZBTFNFKSlcbiAgICAgIHJldHVybigubm8ocGFzdGUwKFwiSSBjYW4ndCBmaW5kIGEgdmFyaWFibGUgY2FsbGVkIGBcIiwgdiwgXCJgLiBEaWQgeW91IGNyZWF0ZSBpdCAoc3BlbGxpbmcgbWF0dGVycyEpP1wiKSkpXG4gICAgaWYgKCFpc1RSVUUoYWxsLmVxdWFsKGdldCh2LCBlbnZpciA9IGVudiksIGdldCh2LCBlbnZpciA9IHNvbF9lbnYpKSkpXG4gICAgICByZXR1cm4oLm5vKHBhc3RlMChcImBcIiwgdiwgXCJgIGV4aXN0cywgYnV0IGl0cyB2YWx1ZSBpc24ndCB3aGF0IEkgZXhwZWN0ZWQuIENoZWNrIGl0IGFuZCB0cnkgYWdhaW4uXCIpKSlcbiAgfVxuICAub2sob2spXG59XG5cbiMgQ2hlY2sgdGhhdCB0aGUgc3R1ZGVudCdzIGNvZGUgY29udGFpbnMgY2VydGFpbiBwaWVjZXMgb2YgdGV4dCAoZS5nLiBmdW5jdGlvbiBuYW1lcylcbi5jaGVja19jb2RlIDwtIGZ1bmN0aW9uKGNvZGUsIHBhdHRlcm5zLCBvayA9IFwiQ29ycmVjdCEgV2VsbCBkb25lLlwiKSB7XG4gIGNvZGUgPC0gcGFzdGUoY29kZSwgY29sbGFwc2UgPSBcIlxcblwiKVxuICBmb3IgKHAgaW4gcGF0dGVybnMpIHtcbiAgICBpZiAoIWdyZXBsKHAsIGNvZGUsIGZpeGVkID0gVFJVRSkpXG4gICAgICByZXR1cm4oLm5vKHBhc3RlMChcIllvdXIgY29kZSBzaG91bGQgdXNlIGBcIiwgcCwgXCJgLiBIYXZlIGFub3RoZXIgbG9vayBhdCB0aGUgdGFzay5cIikpKVxuICB9XG4gIC5vayhvaylcbn1cblxuIyBDaGVjayBhIGdncGxvdDogbXVzdCBiZSBhIHBsb3QsIHVzZSB0aGUgZ2l2ZW4gZ2VvbXMgYW5kIHRoZSBnaXZlbiBhZXN0aGV0aWNzXG4uY2hlY2tfcGxvdCA8LSBmdW5jdGlvbihwLCBnZW9tcyA9IGNoYXJhY3RlcigpLCBhZXMgPSBjaGFyYWN0ZXIoKSwgb2sgPSBcIkdyZWF0IHBsb3QhXCIpIHtcbiAgaWYgKCFpbmhlcml0cyhwLCBcImdncGxvdFwiKSlcbiAgICByZXR1cm4oLm5vKFwiWW91ciBjb2RlIHNob3VsZCByZXR1cm4gYSBnZ3Bsb3QuIERpZCB5b3Ugc3RhcnQgd2l0aCBgZ2dwbG90KC4uLilgIGFuZCBjb25uZWN0IGxheWVycyB3aXRoIGArYD9cIikpXG4gIHVzZWRfZ2VvbXMgPC0gdmFwcGx5KHAkbGF5ZXJzLCBmdW5jdGlvbihsKSBjbGFzcyhsJGdlb20pWzFdLCBjaGFyYWN0ZXIoMSkpXG4gIGZvciAoZyBpbiBnZW9tcykge1xuICAgIGlmICghZyAlaW4lIHVzZWRfZ2VvbXMpXG4gICAgICByZXR1cm4oLm5vKHBhc3RlMChcIllvdXIgcGxvdCBuZWVkcyBhIGBcIiwgdG9sb3dlcihzdWIoXCJeR2VvbVwiLCBcImdlb21fXCIsIGcpKSwgXCIoKWAgbGF5ZXIuXCIpKSlcbiAgfVxuICBtYXBwZWQgPC0gYyhuYW1lcyhwJG1hcHBpbmcpLCB1bmxpc3QobGFwcGx5KHAkbGF5ZXJzLCBmdW5jdGlvbihsKSBuYW1lcyhsJG1hcHBpbmcpKSksXG4gICAgICAgICAgICAgIHVubGlzdChsYXBwbHkocCRsYXllcnMsIGZ1bmN0aW9uKGwpIG5hbWVzKGwkYWVzX3BhcmFtcykpKSlcbiAgZm9yIChhIGluIGFlcykge1xuICAgIGlmICghYSAlaW4lIG1hcHBlZClcbiAgICAgIHJldHVybigubm8ocGFzdGUwKFwiWW91ciBwbG90IHNob3VsZCBzZXQgdGhlIGBcIiwgYSwgXCJgIGFlc3RoZXRpYy5cIikpKVxuICB9XG4gIC5vayhvaylcbn0ifQ==
+</script>
+</div>
+</div>
+<div class="cell">
+<div>
+<div id="webr-2" class="exercise-cell">
+
+</div>
+<script type="webr-2-contents">
+eyJhdHRyIjp7ImVjaG8iOmZhbHNlLCJlZGl0IjpmYWxzZSwiZXZhbCI6dHJ1ZSwiaW5jbHVkZSI6ZmFsc2UsIm91dHB1dCI6ZmFsc2V9LCJjb2RlIjoibGlicmFyeShnZ3Bsb3QyKVxubGlicmFyeShwYXRjaHdvcmspXG50aGVtZV9zZXQodGhlbWVfY2xhc3NpYyhiYXNlX3NpemUgPSAxNCkpXG5jbWogPC0gcmVhZC5jc3YoXCJkYXRhL2Ntai5jc3ZcIilcbnNxdWFkIDwtIHJlYWQuY3N2KFwiZGF0YS9qdW1wX3NxdWFkLmNzdlwiKVxuc3BvcnRfY29scyA8LSBjKEJhc2tldGJhbGwgPSBcIiNFNjlGMDBcIiwgU29jY2VyID0gXCIjMDA3MkIyXCIpIn0=
+</script>
+</div>
+</div>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>In this lesson you will learn to
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>overlay repeated trials by <strong>aligning</strong> them to an event (take-off),</li>
+<li><strong>normalise</strong> force to body weight,</li>
+<li>reshape <strong>wide</strong> data (left and right columns) into <strong>long</strong> format for plotting,</li>
+<li>shade phases of a movement,</li>
+<li>combine several plots into one figure with <strong>patchwork</strong>.</li>
+</ul>
+<p>⏱️ About 45 minutes. This lesson uses Athlete K’s force data from <a href="./m2-01-what-is-statistics.html">Module 2</a>.</p>
+</div>
+</div>
+<section id="the-problem-trials-dont-start-at-the-same-time" class="level2">
+<h2 class="anchored" data-anchor-id="the-problem-trials-dont-start-at-the-same-time">The problem: trials don’t start at the same time</h2>
+<p>Let’s overlay Athlete K’s three jumps:</p>
+<div class="cell">
+<div>
+<div id="webr-3" class="exercise-cell">
+
+</div>
+<script type="webr-3-contents">
+eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWUsImZpZy1oZWlnaHQiOjQsImZpZy13aWR0aCI6OX0sImNvZGUiOiJnZ3Bsb3QoY21qLCBhZXMoeCA9IHRpbWVfcywgeSA9IGZvcmNlX3RvdGFsLCBjb2xvdXIgPSB0cmlhbCkpICtcbiAgZ2VvbV9saW5lKCkifQ==
+</script>
+</div>
+</div>
+<p>The recordings started at different moments before each jump, so the curves are shifted and hard to compare. The solution is to <strong>align</strong> the trials to a common event. <strong>Take-off</strong> is easy to detect: it’s the first sample where the force drops below a small threshold (20 N).</p>
+<section id="aligning-to-take-off" class="level3">
+<h3 class="anchored" data-anchor-id="aligning-to-take-off">Aligning to take-off</h3>
+<p>First find the take-off time of each trial. <code>tapply()</code> applies a function per group, and the function can be one you write on the spot:</p>
+<div class="cell">
+<div>
+<div id="webr-4" class="exercise-cell">
+
+</div>
+<script type="webr-4-contents">
+eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoidGFrZW9mZiA8LSB0YXBwbHkoY21qJHRpbWVfc1tjbWokZm9yY2VfdG90YWwgPCAyMF0sIGNtaiR0cmlhbFtjbWokZm9yY2VfdG90YWwgPCAyMF0sIG1pbilcbnRha2VvZmYifQ==
+</script>
+</div>
+</div>
+<p><code>takeoff</code> is a <strong>named</strong> vector, so <code>takeoff["CMJ 2"]</code> gives the take-off time of CMJ 2, and <code>takeoff[cmj$trial]</code> gives the take-off time of the matching trial for <em>every row</em>. Subtracting it creates a time axis where 0 = take-off:</p>
+<div class="cell">
+<div>
+<div id="webr-5" class="exercise-cell">
+
+</div>
+<script type="webr-5-contents">
+eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoiY21qJHRpbWVfcmVsIDwtIGNtaiR0aW1lX3MgLSB0YWtlb2ZmW2NtaiR0cmlhbF1cbmhlYWQoY21qWywgYyhcInRyaWFsXCIsIFwidGltZV9zXCIsIFwidGltZV9yZWxcIildKSJ9
+</script>
+</div>
+</div>
+<div class="task">
+<p>Plot the aligned trials: <code>time_rel</code> (x) against <code>force_total</code> (y), one coloured line per <code>trial</code>. Zoom in on the interval from <strong>−1.2 s to 0.8 s</strong> with <code>coord_cartesian()</code>, and add a dashed vertical line at take-off (<code>geom_vline(xintercept = 0, linetype = "dashed")</code>).</p>
+</div>
+<div class="cell" data-exercise="m35_1" data-caption="Exercise · Align to take-off">
+<div>
+<div id="webr-6" class="exercise-cell">
+
+</div>
+<script type="webr-6-contents">
+eyJhdHRyIjp7ImNhcHRpb24iOiJFeGVyY2lzZSDCtyBBbGlnbiB0byB0YWtlLW9mZiIsImVkaXQiOnRydWUsImV2YWwiOnRydWUsImV4ZXJjaXNlIjoibTM1XzEiLCJmaWctaGVpZ2h0Ijo0LjUsImZpZy13aWR0aCI6OX0sImNvZGUiOiJ0YWtlb2ZmIDwtIHRhcHBseShjbWokdGltZV9zW2NtaiRmb3JjZV90b3RhbCA8IDIwXSwgY21qJHRyaWFsW2NtaiRmb3JjZV90b3RhbCA8IDIwXSwgbWluKVxuY21qJHRpbWVfcmVsIDwtIGNtaiR0aW1lX3MgLSB0YWtlb2ZmW2NtaiR0cmlhbF1cblxuZ2dwbG90KGNtaiwgYWVzKHggPSBfX19fX18sIHkgPSBmb3JjZV90b3RhbCwgY29sb3VyID0gX19fX19fKSkgK1xuICBnZW9tX2xpbmUoKSArXG4gIGdlb21fdmxpbmUoeGludGVyY2VwdCA9IF9fX19fXywgbGluZXR5cGUgPSBcImRhc2hlZFwiKSArXG4gIGNvb3JkX2NhcnRlc2lhbih4bGltID0gYyhfX19fX18sIF9fX19fXykpIn0=
+</script>
+</div>
+</div>
+<div class="hint webr-ojs-exercise exercise-hint d-none" data-exercise="m35_1">
+<p><code>x = time_rel</code>, <code>colour = trial</code>, <code>xintercept = 0</code>, <code>xlim = c(-1.2, 0.8)</code>.</p>
+</div>
+<div class="webr-ojs-exercise exercise-solution d-none" data-exercise="m35_1">
+<div class="cell" data-exercise="m35_1" data-solution="true">
+<div class="webr-ojs-exercise exercise-solution d-none" data-exercise="m35_1">
+<code id="interpolate-8" class="solution-code d-none">takeoff &lt;- tapply(cmj$time_s[cmj$force_total &lt; 20], cmj$trial[cmj$force_total &lt; 20], min)
+cmj$time_rel &lt;- cmj$time_s - takeoff[cmj$trial]
+
+ggplot(cmj, aes(x = time_rel, y = force_total, colour = trial)) +
+  geom_line() +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  coord_cartesian(xlim = c(-1.2, 0.8))</code>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="interpolate-9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="interpolate-9-1"><a href="#interpolate-9-1" aria-hidden="true" tabindex="-1"></a>takeoff <span class="ot">&lt;-</span> <span class="fu">tapply</span>(cmj<span class="sc">$</span>time_s[cmj<span class="sc">$</span>force_total <span class="sc">&lt;</span> <span class="dv">20</span>], cmj<span class="sc">$</span>trial[cmj<span class="sc">$</span>force_total <span class="sc">&lt;</span> <span class="dv">20</span>], min)</span>
+<span id="interpolate-9-2"><a href="#interpolate-9-2" aria-hidden="true" tabindex="-1"></a>cmj<span class="sc">$</span>time_rel <span class="ot">&lt;-</span> cmj<span class="sc">$</span>time_s <span class="sc">-</span> takeoff[cmj<span class="sc">$</span>trial]</span>
+<span id="interpolate-9-3"><a href="#interpolate-9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="interpolate-9-4"><a href="#interpolate-9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(cmj, <span class="fu">aes</span>(<span class="at">x =</span> time_rel, <span class="at">y =</span> force_total, <span class="at">colour =</span> trial)) <span class="sc">+</span></span>
+<span id="interpolate-9-5"><a href="#interpolate-9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="interpolate-9-6"><a href="#interpolate-9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="interpolate-9-7"><a href="#interpolate-9-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">1.2</span>, <span class="fl">0.8</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+<div class="cell" data-exercise="m35_1" data-check="true">
+<script type="exercise-check-m35_1-contents">
+eyJhdHRyIjp7ImNoZWNrIjp0cnVlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJleGVyY2lzZSI6Im0zNV8xIn0sImNvZGUiOiJwIDwtIC5yZXN1bHRcbnJlcyA8LSAuY2hlY2tfcGxvdChwLCBnZW9tcyA9IGMoXCJHZW9tTGluZVwiLCBcIkdlb21WbGluZVwiKSwgYWVzID0gXCJjb2xvdXJcIilcbmlmIChpc1RSVUUocmVzJGNvcnJlY3QpKSB7XG4gIGxpbSA8LSBwJGNvb3JkaW5hdGVzJGxpbWl0cyR4XG4gIGlmICghaWRlbnRpY2FsKHJsYW5nOjphc19sYWJlbChwJG1hcHBpbmckeCksIFwidGltZV9yZWxcIikpIHJlcyA8LSAubm8oXCJVc2UgdGhlIGFsaWduZWQgdGltZSBgdGltZV9yZWxgIG9uIHRoZSB4LWF4aXMuXCIpXG4gIGVsc2UgaWYgKGlzLm51bGwobGltKSB8fCAhaXNUUlVFKGFsbC5lcXVhbChhcy5udW1lcmljKGxpbSksIGMoLTEuMiwgMC44KSkpKSByZXMgPC0gLm5vKFwiWm9vbSB3aXRoIGBjb29yZF9jYXJ0ZXNpYW4oeGxpbSA9IGMoLTEuMiwgMC44KSlgLlwiKVxuICBlbHNlIHJlcyA8LSAub2soXCJOb3cgdGhlIHRocmVlIGp1bXBzIGxpbmUgdXAhIFRoZSBwcm9wdWxzaW9uIHBoYXNlcyBhcmUgcmVtYXJrYWJseSBzaW1pbGFyOyBDTUogMiBoYXMgYSBzbGlnaHRseSBsb3dlciBwZWFrLlwiKVxufVxucmVzIn0=
+</script>
+</div>
+</section>
+</section>
+<section id="normalising-to-body-weight" class="level2">
+<h2 class="anchored" data-anchor-id="normalising-to-body-weight">Normalising to body weight</h2>
+<p>Forces are often expressed in <strong>multiples of body weight</strong> (BW), which makes athletes of different sizes comparable and makes the curve easier to read: 1 BW = standing still, 0 = flight. Athlete K’s body weight is ≈ 726 N (<a href="./m2-02-center.html">lesson 2.2</a>):</p>
+<div class="cell">
+<div>
+<div id="webr-11" class="exercise-cell">
+
+</div>
+<script type="webr-11-contents">
+eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWUsImZpZy1oZWlnaHQiOjQsImZpZy13aWR0aCI6OX0sImNvZGUiOiJ0YWtlb2ZmIDwtIHRhcHBseShjbWokdGltZV9zW2NtaiRmb3JjZV90b3RhbCA8IDIwXSwgY21qJHRyaWFsW2NtaiRmb3JjZV90b3RhbCA8IDIwXSwgbWluKVxuY21qJHRpbWVfcmVsIDwtIGNtaiR0aW1lX3MgLSB0YWtlb2ZmW2NtaiR0cmlhbF1cbmJ3IDwtIG1lYW4oY21qJGZvcmNlX3RvdGFsW2NtaiR0cmlhbCA9PSBcIkNNSiAzXCIgJiBjbWokdGltZV9zIDw9IDEuNV0pXG5jbWokZm9yY2VfYncgPC0gY21qJGZvcmNlX3RvdGFsIC8gYndcblxuZ2dwbG90KGNtaiwgYWVzKHggPSB0aW1lX3JlbCwgeSA9IGZvcmNlX2J3LCBjb2xvdXIgPSB0cmlhbCkpICtcbiAgZ2VvbV9obGluZSh5aW50ZXJjZXB0ID0gMSwgY29sb3VyID0gXCJncmV5NjBcIikgK1xuICBnZW9tX2xpbmUoKSArXG4gIGNvb3JkX2NhcnRlc2lhbih4bGltID0gYygtMS4yLCAwLjgpKSArXG4gIGxhYnMoeCA9IFwiVGltZSByZWxhdGl2ZSB0byB0YWtlLW9mZiAocylcIiwgeSA9IFwiRm9yY2UgKG11bHRpcGxlcyBvZiBib2R5IHdlaWdodClcIiwgY29sb3VyID0gTlVMTCkifQ==
+</script>
+</div>
+</div>
+</section>
+<section id="wide-vs.-long-data-left-and-right-legs" class="level2">
+<h2 class="anchored" data-anchor-id="wide-vs.-long-data-left-and-right-legs">Wide vs.&nbsp;long data: left and right legs</h2>
+<p><code>cmj</code> stores the two legs in <strong>two columns</strong> (<code>force_left</code>, <code>force_right</code>). That’s called <strong>wide</strong> format. ggplot2 wants <strong>long</strong> format instead: one column with the force and one column saying which leg it belongs to. Then you can simply map <code>colour = leg</code>.</p>
+<p>You can build the long data by stacking two data frames with <code>rbind()</code>:</p>
+<div class="cell">
+<div>
+<div id="webr-12" class="exercise-cell">
+
+</div>
+<script type="webr-12-contents">
+eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoiY21qMyA8LSBzdWJzZXQoY21qLCB0cmlhbCA9PSBcIkNNSiAzXCIpXG5cbmxlZ3MgPC0gcmJpbmQoXG4gIGRhdGEuZnJhbWUodGltZV9zID0gY21qMyR0aW1lX3MsIGxlZyA9IFwiTGVmdFwiLCAgZm9yY2UgPSBjbWozJGZvcmNlX2xlZnQpLFxuICBkYXRhLmZyYW1lKHRpbWVfcyA9IGNtajMkdGltZV9zLCBsZWcgPSBcIlJpZ2h0XCIsIGZvcmNlID0gY21qMyRmb3JjZV9yaWdodClcbilcbmhlYWQobGVncylcbm5yb3coY21qMyk7IG5yb3cobGVncykgICAjIHR3aWNlIGFzIG1hbnkgcm93cyJ9
+</script>
+</div>
+</div>
+<p>(The <strong>tidyr</strong> package’s <code>pivot_longer()</code> does this in one step, which is very useful once you have many columns.)</p>
+<div class="task">
+<p>Build <code>legs</code> for <strong>CMJ 1</strong> (as above) and plot the left and right force over time as two coloured lines. Shade the <strong>flight phase</strong> with <code>annotate("rect", ...)</code>: in CMJ 1 the flight lasts from about <strong>4.58 s to 5.16 s</strong>. Use <code>ymin = -Inf, ymax = Inf</code> so the shading covers the full height, with <code>alpha = 0.2</code>.</p>
+</div>
+<div class="cell" data-exercise="m35_2" data-caption="Exercise · Long format and shading">
+<div>
+<div id="webr-13" class="exercise-cell">
+
+</div>
+<script type="webr-13-contents">
+eyJhdHRyIjp7ImNhcHRpb24iOiJFeGVyY2lzZSDCtyBMb25nIGZvcm1hdCBhbmQgc2hhZGluZyIsImVkaXQiOnRydWUsImV2YWwiOnRydWUsImV4ZXJjaXNlIjoibTM1XzIiLCJmaWctaGVpZ2h0Ijo0LjUsImZpZy13aWR0aCI6OX0sImNvZGUiOiJjbWoxIDwtIHN1YnNldChjbWosIHRyaWFsID09IFwiQ01KIDFcIilcblxubGVncyA8LSByYmluZChcbiAgZGF0YS5mcmFtZSh0aW1lX3MgPSBjbWoxJHRpbWVfcywgbGVnID0gXCJMZWZ0XCIsICBmb3JjZSA9IGNtajEkX19fX19fKSxcbiAgZGF0YS5mcmFtZSh0aW1lX3MgPSBjbWoxJHRpbWVfcywgbGVnID0gXCJSaWdodFwiLCBmb3JjZSA9IGNtajEkX19fX19fKVxuKVxuXG5nZ3Bsb3QobGVncywgYWVzKHggPSB0aW1lX3MsIHkgPSBmb3JjZSwgY29sb3VyID0gX19fX19fKSkgK1xuICBhbm5vdGF0ZShcInJlY3RcIiwgeG1pbiA9IF9fX19fXywgeG1heCA9IF9fX19fXywgeW1pbiA9IC1JbmYsIHltYXggPSBJbmYsIGFscGhhID0gMC4yKSArXG4gIGdlb21fbGluZSgpICtcbiAgbGFicyh4ID0gXCJUaW1lIChzKVwiLCB5ID0gXCJWZXJ0aWNhbCBmb3JjZSAoTilcIikifQ==
+</script>
+</div>
+</div>
+<div class="hint webr-ojs-exercise exercise-hint d-none" data-exercise="m35_2">
+<p><code>force_left</code> and <code>force_right</code>; <code>colour = leg</code>; <code>xmin = 4.58, xmax = 5.16</code>.</p>
+</div>
+<div class="webr-ojs-exercise exercise-solution d-none" data-exercise="m35_2">
+<div class="cell" data-exercise="m35_2" data-solution="true">
+<div class="webr-ojs-exercise exercise-solution d-none" data-exercise="m35_2">
+<code id="interpolate-15" class="solution-code d-none">cmj1 &lt;- subset(cmj, trial == "CMJ 1")
+
+legs &lt;- rbind(
+  data.frame(time_s = cmj1$time_s, leg = "Left",  force = cmj1$force_left),
+  data.frame(time_s = cmj1$time_s, leg = "Right", force = cmj1$force_right)
+)
+
+ggplot(legs, aes(x = time_s, y = force, colour = leg)) +
+  annotate("rect", xmin = 4.58, xmax = 5.16, ymin = -Inf, ymax = Inf, alpha = 0.2) +
+  geom_line() +
+  labs(x = "Time (s)", y = "Vertical force (N)")</code>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="interpolate-16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="interpolate-16-1"><a href="#interpolate-16-1" aria-hidden="true" tabindex="-1"></a>cmj1 <span class="ot">&lt;-</span> <span class="fu">subset</span>(cmj, trial <span class="sc">==</span> <span class="st">"CMJ 1"</span>)</span>
+<span id="interpolate-16-2"><a href="#interpolate-16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="interpolate-16-3"><a href="#interpolate-16-3" aria-hidden="true" tabindex="-1"></a>legs <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="interpolate-16-4"><a href="#interpolate-16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(<span class="at">time_s =</span> cmj1<span class="sc">$</span>time_s, <span class="at">leg =</span> <span class="st">"Left"</span>,  <span class="at">force =</span> cmj1<span class="sc">$</span>force_left),</span>
+<span id="interpolate-16-5"><a href="#interpolate-16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(<span class="at">time_s =</span> cmj1<span class="sc">$</span>time_s, <span class="at">leg =</span> <span class="st">"Right"</span>, <span class="at">force =</span> cmj1<span class="sc">$</span>force_right)</span>
+<span id="interpolate-16-6"><a href="#interpolate-16-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="interpolate-16-7"><a href="#interpolate-16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="interpolate-16-8"><a href="#interpolate-16-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(legs, <span class="fu">aes</span>(<span class="at">x =</span> time_s, <span class="at">y =</span> force, <span class="at">colour =</span> leg)) <span class="sc">+</span></span>
+<span id="interpolate-16-9"><a href="#interpolate-16-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"rect"</span>, <span class="at">xmin =</span> <span class="fl">4.58</span>, <span class="at">xmax =</span> <span class="fl">5.16</span>, <span class="at">ymin =</span> <span class="sc">-</span><span class="cn">Inf</span>, <span class="at">ymax =</span> <span class="cn">Inf</span>, <span class="at">alpha =</span> <span class="fl">0.2</span>) <span class="sc">+</span></span>
+<span id="interpolate-16-10"><a href="#interpolate-16-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="interpolate-16-11"><a href="#interpolate-16-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Time (s)"</span>, <span class="at">y =</span> <span class="st">"Vertical force (N)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+<div class="cell" data-exercise="m35_2" data-check="true">
+<script type="exercise-check-m35_2-contents">
+eyJhdHRyIjp7ImNoZWNrIjp0cnVlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJleGVyY2lzZSI6Im0zNV8yIn0sImNvZGUiOiJyZXMgPC0gLmNoZWNrX3ZhcnMoXCJsZWdzXCIsIC5lbnZpcl9yZXN1bHQsIC5jaGVja2VyX2FyZ3MkZW52aXJfc29sdXRpb24pXG5pZiAoaXNUUlVFKHJlcyRjb3JyZWN0KSkgcmVzIDwtIC5jaGVja19wbG90KC5yZXN1bHQsIGdlb21zID0gYyhcIkdlb21SZWN0XCIsIFwiR2VvbUxpbmVcIiksIGFlcyA9IFwiY29sb3VyXCIsXG4gIG9rID0gXCJFeGNlbGxlbnQhIExvb2sgYmVmb3JlIHRoZSBqdW1wICgy4oCTNCBzKTogdGhlIGF0aGxldGUgc2hpZnRzIHdlaWdodCBiZXR3ZWVuIHRoZSBsZWdzIHdoaWxlIHByZXBhcmluZy4gTG9uZyBmb3JtYXQgKyBjb2xvdXIgbWFrZXMgc3VjaCBwYXR0ZXJucyBlYXN5IHRvIHNlZS5cIilcbnJlcyJ9
+</script>
+</div>
+<div id="m35-q1" class="quiz">
+<p>Why do we align repeated trials to take-off before overlaying them?</p>
+<ul class="task-list">
+<li><label><input type="checkbox">To make the recordings shorter</label></li>
+<li><label><input type="checkbox" checked="">Because recordings start at arbitrary moments, so the same movement phase happens at different clock times in each trial</label></li>
+<li><label><input type="checkbox">Because ggplot2 can’t plot different time ranges</label></li>
+</ul>
+<div class="explanation">
+<p>Time since the start of the recording has no biomechanical meaning. Aligning to a clear event (onset, take-off, foot contact) makes the phases comparable across trials and athletes.</p>
+</div>
+</div>
+<div id="m35-q2" class="quiz">
+<p>You have a data frame with columns <code>time</code>, <code>hr_athlete1</code>, <code>hr_athlete2</code>, <code>hr_athlete3</code>. To plot one coloured line per athlete with ggplot2, you should first…</p>
+<ul class="task-list">
+<li><label><input type="checkbox">add three <code>geom_line()</code> layers, one per column</label></li>
+<li><label><input type="checkbox" checked="">reshape it to long format: columns <code>time</code>, <code>athlete</code>, <code>hr</code></label></li>
+<li><label><input type="checkbox">calculate the mean of the three columns</label></li>
+</ul>
+<div class="explanation">
+<p>Three separate layers works, but it doesn’t scale and you lose the automatic legend. Long (“tidy”) data, with one row per observation, is what ggplot2 is designed for.</p>
+</div>
+</div>
+</section>
+<section id="combining-plots-with-patchwork" class="level2">
+<h2 class="anchored" data-anchor-id="combining-plots-with-patchwork">Combining plots with patchwork</h2>
+<p>Journal figures often have several panels (A, B, C…). The <strong>patchwork</strong> package lets you combine ggplot objects with simple operators:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Code</th>
+<th>Layout</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>p1 + p2</code> or <code>p1 | p2</code></td>
+<td>side by side</td>
+</tr>
+<tr class="even">
+<td><code>p1 / p2</code></td>
+<td>on top of each other</td>
+</tr>
+<tr class="odd">
+<td><code>(p1 | p2) / p3</code></td>
+<td>two on top, one below</td>
+</tr>
+<tr class="even">
+<td><code>+ plot_annotation(tag_levels = "A")</code></td>
+<td>add panel tags A, B, C</td>
+</tr>
+<tr class="odd">
+<td><code>+ plot_layout(guides = "collect")</code></td>
+<td>combine duplicate legends into one</td>
+</tr>
+</tbody>
+</table>
+<div class="cell">
+<div>
+<div id="webr-18" class="exercise-cell">
+
+</div>
+<script type="webr-18-contents">
+eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWUsImZpZy1oZWlnaHQiOjcsImZpZy13aWR0aCI6MTB9LCJjb2RlIjoicF9ib3ggPC0gZ2dwbG90KHNxdWFkLCBhZXMoeCA9IHNwb3J0LCB5ID0ganVtcF9oZWlnaHRfbSwgZmlsbCA9IHNwb3J0KSkgK1xuICBnZW9tX2JveHBsb3Qoc2hvdy5sZWdlbmQgPSBGQUxTRSkgK1xuICBzY2FsZV9maWxsX21hbnVhbCh2YWx1ZXMgPSBzcG9ydF9jb2xzKSArXG4gIGxhYnMoeCA9IE5VTEwsIHkgPSBcIkp1bXAgaGVpZ2h0IChtKVwiKVxuXG5wX3NjYXR0ZXIgPC0gZ2dwbG90KHNxdWFkLCBhZXMoeCA9IGJvZHlfbWFzc19rZywgeSA9IGp1bXBfaGVpZ2h0X20sIGNvbG91ciA9IHNwb3J0KSkgK1xuICBnZW9tX3BvaW50KCkgK1xuICBzY2FsZV9jb2xvdXJfbWFudWFsKHZhbHVlcyA9IHNwb3J0X2NvbHMpICtcbiAgbGFicyh4ID0gXCJCb2R5IG1hc3MgKGtnKVwiLCB5ID0gXCJKdW1wIGhlaWdodCAobSlcIiwgY29sb3VyID0gTlVMTClcblxucF9oaXN0IDwtIGdncGxvdChzcXVhZCwgYWVzKHggPSBib2R5X21hc3Nfa2csIGZpbGwgPSBzcG9ydCkpICtcbiAgZ2VvbV9oaXN0b2dyYW0oYmlud2lkdGggPSA1LCBjb2xvdXIgPSBcIndoaXRlXCIsIHBvc2l0aW9uID0gXCJpZGVudGl0eVwiLCBhbHBoYSA9IDAuNykgK1xuICBzY2FsZV9maWxsX21hbnVhbCh2YWx1ZXMgPSBzcG9ydF9jb2xzKSArXG4gIGxhYnMoeCA9IFwiQm9keSBtYXNzIChrZylcIiwgeSA9IFwiQXRobGV0ZXNcIiwgZmlsbCA9IE5VTEwpXG5cbihwX2JveCB8IHBfc2NhdHRlcikgLyBwX2hpc3QgK1xuICBwbG90X2Fubm90YXRpb24odGFnX2xldmVscyA9IFwiQVwiKSJ9
+</script>
+</div>
+</div>
+<p>Together, the three panels tell a story: soccer players jump slightly higher (A), but they are also much lighter (C), and lighter athletes tend to jump higher (B). Is it the sport or the body mass? You’ll answer that with multiple regression in Module 4.</p>
+<div class="task">
+<p>Combine the two plots <code>p_force</code> and <code>p_power</code> (given) <strong>side by side</strong>, with panel tags <strong>A</strong> and <strong>B</strong>, and with their two identical legends <strong>collected</strong> into one.</p>
+</div>
+<div class="cell" data-exercise="m35_3" data-caption="Exercise · patchwork">
+<div>
+<div id="webr-19" class="exercise-cell">
+
+</div>
+<script type="webr-19-contents">
+eyJhdHRyIjp7ImNhcHRpb24iOiJFeGVyY2lzZSDCtyBwYXRjaHdvcmsiLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJleGVyY2lzZSI6Im0zNV8zIiwiZmlnLWhlaWdodCI6NC41LCJmaWctd2lkdGgiOjEwfSwiY29kZSI6InBfZm9yY2UgPC0gZ2dwbG90KHNxdWFkLCBhZXMoeCA9IGNvbl9mb3JjZV9yZWwsIHkgPSBqdW1wX2hlaWdodF9tLCBjb2xvdXIgPSBzcG9ydCkpICtcbiAgZ2VvbV9wb2ludCgpICsgc2NhbGVfY29sb3VyX21hbnVhbCh2YWx1ZXMgPSBzcG9ydF9jb2xzKSArXG4gIGxhYnMoeCA9IFwiTWVhbiBwcm9wdWxzaXZlIGZvcmNlIChOL2tnKVwiLCB5ID0gXCJKdW1wIGhlaWdodCAobSlcIiwgY29sb3VyID0gTlVMTClcblxucF9wb3dlciA8LSBnZ3Bsb3Qoc3F1YWQsIGFlcyh4ID0gcGVha19wb3dlcl9yZWwsIHkgPSBqdW1wX2hlaWdodF9tLCBjb2xvdXIgPSBzcG9ydCkpICtcbiAgZ2VvbV9wb2ludCgpICsgc2NhbGVfY29sb3VyX21hbnVhbCh2YWx1ZXMgPSBzcG9ydF9jb2xzKSArXG4gIGxhYnMoeCA9IFwiUGVhayBwb3dlciAoVy9rZylcIiwgeSA9IFwiSnVtcCBoZWlnaHQgKG0pXCIsIGNvbG91ciA9IE5VTEwpXG5cbihfX19fX18gfCBfX19fX18pICtcbiAgcGxvdF9hbm5vdGF0aW9uKHRhZ19sZXZlbHMgPSBcIl9fX19fX1wiKSArXG4gIHBsb3RfbGF5b3V0KGd1aWRlcyA9IFwiX19fX19fXCIpIn0=
+</script>
+</div>
+</div>
+<div class="hint webr-ojs-exercise exercise-hint d-none" data-exercise="m35_3">
+<p><code>(p_force | p_power)</code>, <code>tag_levels = "A"</code>, <code>guides = "collect"</code>. The brackets matter: <code>+</code> is evaluated before <code>|</code>, so without them the annotation would be added to <code>p_power</code> only.</p>
+</div>
+<div class="webr-ojs-exercise exercise-solution d-none" data-exercise="m35_3">
+<div class="cell" data-exercise="m35_3" data-solution="true">
+<div class="webr-ojs-exercise exercise-solution d-none" data-exercise="m35_3">
+<code id="interpolate-21" class="solution-code d-none">p_force &lt;- ggplot(squad, aes(x = con_force_rel, y = jump_height_m, colour = sport)) +
+  geom_point() + scale_colour_manual(values = sport_cols) +
+  labs(x = "Mean propulsive force (N/kg)", y = "Jump height (m)", colour = NULL)
+
+p_power &lt;- ggplot(squad, aes(x = peak_power_rel, y = jump_height_m, colour = sport)) +
+  geom_point() + scale_colour_manual(values = sport_cols) +
+  labs(x = "Peak power (W/kg)", y = "Jump height (m)", colour = NULL)
+
+(p_force | p_power) +
+  plot_annotation(tag_levels = "A") +
+  plot_layout(guides = "collect")</code>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="interpolate-22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="interpolate-22-1"><a href="#interpolate-22-1" aria-hidden="true" tabindex="-1"></a>p_force <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(squad, <span class="fu">aes</span>(<span class="at">x =</span> con_force_rel, <span class="at">y =</span> jump_height_m, <span class="at">colour =</span> sport)) <span class="sc">+</span></span>
+<span id="interpolate-22-2"><a href="#interpolate-22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> sport_cols) <span class="sc">+</span></span>
+<span id="interpolate-22-3"><a href="#interpolate-22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Mean propulsive force (N/kg)"</span>, <span class="at">y =</span> <span class="st">"Jump height (m)"</span>, <span class="at">colour =</span> <span class="cn">NULL</span>)</span>
+<span id="interpolate-22-4"><a href="#interpolate-22-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="interpolate-22-5"><a href="#interpolate-22-5" aria-hidden="true" tabindex="-1"></a>p_power <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(squad, <span class="fu">aes</span>(<span class="at">x =</span> peak_power_rel, <span class="at">y =</span> jump_height_m, <span class="at">colour =</span> sport)) <span class="sc">+</span></span>
+<span id="interpolate-22-6"><a href="#interpolate-22-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> sport_cols) <span class="sc">+</span></span>
+<span id="interpolate-22-7"><a href="#interpolate-22-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Peak power (W/kg)"</span>, <span class="at">y =</span> <span class="st">"Jump height (m)"</span>, <span class="at">colour =</span> <span class="cn">NULL</span>)</span>
+<span id="interpolate-22-8"><a href="#interpolate-22-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="interpolate-22-9"><a href="#interpolate-22-9" aria-hidden="true" tabindex="-1"></a>(p_force <span class="sc">|</span> p_power) <span class="sc">+</span></span>
+<span id="interpolate-22-10"><a href="#interpolate-22-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_annotation</span>(<span class="at">tag_levels =</span> <span class="st">"A"</span>) <span class="sc">+</span></span>
+<span id="interpolate-22-11"><a href="#interpolate-22-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_layout</span>(<span class="at">guides =</span> <span class="st">"collect"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+<div class="cell" data-exercise="m35_3" data-check="true">
+<script type="exercise-check-m35_3-contents">
+eyJhdHRyIjp7ImNoZWNrIjp0cnVlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJleGVyY2lzZSI6Im0zNV8zIn0sImNvZGUiOiJwIDwtIC5yZXN1bHRcbmNvZGUgPC0gcGFzdGUoLnVzZXJfY29kZSwgY29sbGFwc2UgPSBcIlwiKVxuaWYgKCFpbmhlcml0cyhwLCBcInBhdGNod29ya1wiKSkge1xuICAubm8oXCJDb21iaW5lIHRoZSBwbG90cyB3aXRoIGB8YCBvciBgK2Agc28gdGhlIHJlc3VsdCBpcyBhIHBhdGNod29yay5cIilcbn0gZWxzZSBpZiAoIWdyZXBsKFwidGFnX2xldmVsc1wiLCBjb2RlKSB8fCAhZ3JlcGwoXCJjb2xsZWN0XCIsIGNvZGUpKSB7XG4gIC5ubyhcIkFkZCBgcGxvdF9hbm5vdGF0aW9uKHRhZ19sZXZlbHMgPSBcXFwiQVxcXCIpYCBhbmQgYHBsb3RfbGF5b3V0KGd1aWRlcyA9IFxcXCJjb2xsZWN0XFxcIilgLlwiKVxufSBlbHNlIHtcbiAgLm9rKFwiV2VsbCBkb25lISBMb29rIGF0IHRoZSBkaWZmZXJlbmNlOiBqdW1wIGhlaWdodCBpcyBvbmx5IHdlYWtseSByZWxhdGVkIHRvIG1lYW4gZm9yY2UgKEEpIGJ1dCBzdHJvbmdseSB0byBwZWFrIHBvd2VyIChCKS4gTW9kdWxlIDQgZXhwbGFpbnMgd2h5LlwiKVxufSJ9
+</script>
+</div>
+</section>
+<section id="lesson-summary" class="level2">
+<h2 class="anchored" data-anchor-id="lesson-summary">Lesson summary</h2>
+<ul>
+<li>Align repeated trials to an event: <code>time_rel &lt;- time - event_time[trial]</code>, using a named vector of event times from <code>tapply()</code>.</li>
+<li>Normalise force to body weight (<code>force / bw</code>) to compare athletes and read curves easily.</li>
+<li>ggplot2 prefers <strong>long</strong> data: stack columns with <code>rbind()</code> (or <code>tidyr::pivot_longer()</code>), then map <code>colour = group</code>.</li>
+<li>Shade phases with <code>annotate("rect", xmin, xmax, ymin = -Inf, ymax = Inf, alpha = ...)</code>.</li>
+<li><strong>patchwork:</strong> <code>|</code> side by side, <code>/</code> stacked, <code>plot_annotation(tag_levels = "A")</code>, <code>plot_layout(guides = "collect")</code>.</li>
+</ul>
+<section id="scratchpad" class="level3">
+<h3 class="anchored" data-anchor-id="scratchpad">Scratchpad</h3>
+<p><code>cmj</code> and <code>squad</code> are loaded, along with patchwork.</p>
+<div class="cell" data-autorun="false">
+<div>
+<div id="webr-24" class="exercise-cell">
+
+</div>
+<script type="webr-24-contents">
+eyJhdHRyIjp7ImF1dG9ydW4iOmZhbHNlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlfSwiY29kZSI6IiMgWW91ciBjb2RlIGhlcmUifQ==
+</script>
+</div>
+</div>
+<div class="lesson-complete">
+
+</div>
+
+
+<script type="webr-data">
+eyJvcHRpb25zIjp7ImJhc2VVcmwiOiJodHRwczovL3dlYnIuci13YXNtLm9yZy92MC42LjAvIn0sInBhY2thZ2VzIjp7InBrZ3MiOlsiZXZhbHVhdGUiLCJrbml0ciIsImh0bWx0b29scyIsImdncGxvdDIiLCJwYXRjaHdvcmsiXSwicmVwb3MiOltdfSwicmVuZGVyX2RmIjoiZGVmYXVsdCJ9
+</script>
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W3siY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0yNCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMjQ7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0yNCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzI0ID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMjQtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0yNC1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8yNCA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMjQsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0xOSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMTk7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0xOSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzE5ID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMTktY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICAvLyBEZWZhdWx0IGV4ZXJjaXNlIGNvbmZpZ3VyYXRpb25cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oXG4gICAge1xuICAgICAgaWQ6IFwid2Vici0xOS1jb250ZW50c1wiLFxuICAgICAgZW52aXI6IGBleGVyY2lzZS1lbnYtJHtibG9jay5hdHRyLmV4ZXJjaXNlfWAsXG4gICAgICBlcnJvcjogZmFsc2UsXG4gICAgICBjYXB0aW9uOiAnRXhlcmNpc2UnLFxuICAgIH0sXG4gICAgYmxvY2suYXR0clxuICApO1xuXG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG4gIHJldHVybiBlZGl0b3IuY29udGFpbmVyO1xufVxudmlld29mIF93ZWJyX3ZhbHVlXzE5ID0gd2ViUk9qcy5wcm9jZXNzKF93ZWJyX2VkaXRvcl8xOSwge30pO1xuX3dlYnJfZmVlZGJhY2tfMTkgPSB7XG4gIGNvbnN0IHsgV2ViUkdyYWRlciB9ID0gd2luZG93Ll9leGVyY2lzZV9vanNfcnVudGltZTtcbiAgY29uc3QgZW1wdHlGZWVkYmFjayA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2RpdicpO1xuXG4gIGNvbnN0IGdyYWRlciA9IG5ldyBXZWJSR3JhZGVyKF93ZWJyX3ZhbHVlXzE5LmV2YWx1YXRvcik7XG4gIGNvbnN0IGZlZWRiYWNrID0gYXdhaXQgZ3JhZGVyLmdyYWRlRXhlcmNpc2UoKTtcbiAgaWYgKCFmZWVkYmFjaykgcmV0dXJuIGVtcHR5RmVlZGJhY2s7XG4gIHJldHVybiBmZWVkYmFjaztcbn1cbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0xOCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMTg7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0xOCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzE4ID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMTgtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0xOC1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8xOCA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMTgsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0xMyIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMTM7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0xMyIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzEzID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMTMtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICAvLyBEZWZhdWx0IGV4ZXJjaXNlIGNvbmZpZ3VyYXRpb25cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oXG4gICAge1xuICAgICAgaWQ6IFwid2Vici0xMy1jb250ZW50c1wiLFxuICAgICAgZW52aXI6IGBleGVyY2lzZS1lbnYtJHtibG9jay5hdHRyLmV4ZXJjaXNlfWAsXG4gICAgICBlcnJvcjogZmFsc2UsXG4gICAgICBjYXB0aW9uOiAnRXhlcmNpc2UnLFxuICAgIH0sXG4gICAgYmxvY2suYXR0clxuICApO1xuXG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG4gIHJldHVybiBlZGl0b3IuY29udGFpbmVyO1xufVxudmlld29mIF93ZWJyX3ZhbHVlXzEzID0gd2ViUk9qcy5wcm9jZXNzKF93ZWJyX2VkaXRvcl8xMywge30pO1xuX3dlYnJfZmVlZGJhY2tfMTMgPSB7XG4gIGNvbnN0IHsgV2ViUkdyYWRlciB9ID0gd2luZG93Ll9leGVyY2lzZV9vanNfcnVudGltZTtcbiAgY29uc3QgZW1wdHlGZWVkYmFjayA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2RpdicpO1xuXG4gIGNvbnN0IGdyYWRlciA9IG5ldyBXZWJSR3JhZGVyKF93ZWJyX3ZhbHVlXzEzLmV2YWx1YXRvcik7XG4gIGNvbnN0IGZlZWRiYWNrID0gYXdhaXQgZ3JhZGVyLmdyYWRlRXhlcmNpc2UoKTtcbiAgaWYgKCFmZWVkYmFjaykgcmV0dXJuIGVtcHR5RmVlZGJhY2s7XG4gIHJldHVybiBmZWVkYmFjaztcbn1cbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0xMiIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMTI7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0xMiIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzEyID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMTItY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0xMi1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8xMiA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMTIsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0xMSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMTE7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0xMSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzExID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMTEtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0xMS1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8xMSA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMTEsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC02IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoie1xuICAvLyBXYWl0IGZvciBvdXRwdXQgdG8gYmUgd3JpdHRlbiB0byB0aGUgRE9NLCB0aGVuIHRyaWdnZXIgd2lkZ2V0IHJlbmRlcmluZ1xuICBhd2FpdCBfd2Vicl92YWx1ZV82O1xuICBpZiAod2luZG93LkhUTUxXaWRnZXRzKSB7XG4gICAgd2luZG93LkhUTUxXaWRnZXRzLnN0YXRpY1JlbmRlcigpO1xuICB9XG4gIGlmICh3aW5kb3cuUGFnZWRUYWJsZURvYykge1xuICAgIHdpbmRvdy5QYWdlZFRhYmxlRG9jLmluaXRBbGwoKTtcbiAgfVxufVxuIn0seyJjZWxsTmFtZSI6IndlYnItNiIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzYgPSB7XG4gIGNvbnN0IHsgV2ViUkV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwid2Vici02LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgLy8gRGVmYXVsdCBleGVyY2lzZSBjb25maWd1cmF0aW9uXG4gIGNvbnN0IG9wdGlvbnMgPSBPYmplY3QuYXNzaWduKFxuICAgIHtcbiAgICAgIGlkOiBcIndlYnItNi1jb250ZW50c1wiLFxuICAgICAgZW52aXI6IGBleGVyY2lzZS1lbnYtJHtibG9jay5hdHRyLmV4ZXJjaXNlfWAsXG4gICAgICBlcnJvcjogZmFsc2UsXG4gICAgICBjYXB0aW9uOiAnRXhlcmNpc2UnLFxuICAgIH0sXG4gICAgYmxvY2suYXR0clxuICApO1xuXG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG4gIHJldHVybiBlZGl0b3IuY29udGFpbmVyO1xufVxudmlld29mIF93ZWJyX3ZhbHVlXzYgPSB3ZWJST2pzLnByb2Nlc3MoX3dlYnJfZWRpdG9yXzYsIHt9KTtcbl93ZWJyX2ZlZWRiYWNrXzYgPSB7XG4gIGNvbnN0IHsgV2ViUkdyYWRlciB9ID0gd2luZG93Ll9leGVyY2lzZV9vanNfcnVudGltZTtcbiAgY29uc3QgZW1wdHlGZWVkYmFjayA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2RpdicpO1xuXG4gIGNvbnN0IGdyYWRlciA9IG5ldyBXZWJSR3JhZGVyKF93ZWJyX3ZhbHVlXzYuZXZhbHVhdG9yKTtcbiAgY29uc3QgZmVlZGJhY2sgPSBhd2FpdCBncmFkZXIuZ3JhZGVFeGVyY2lzZSgpO1xuICBpZiAoIWZlZWRiYWNrKSByZXR1cm4gZW1wdHlGZWVkYmFjaztcbiAgcmV0dXJuIGZlZWRiYWNrO1xufVxuIn0seyJjZWxsTmFtZSI6IndlYnItd2lkZ2V0LTUiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJ7XG4gIC8vIFdhaXQgZm9yIG91dHB1dCB0byBiZSB3cml0dGVuIHRvIHRoZSBET00sIHRoZW4gdHJpZ2dlciB3aWRnZXQgcmVuZGVyaW5nXG4gIGF3YWl0IF93ZWJyX3ZhbHVlXzU7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici01IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfd2Vicl9lZGl0b3JfNSA9IHtcbiAgY29uc3QgeyBXZWJSRXhlcmNpc2VFZGl0b3IsIGI2NERlY29kZSB9ID0gd2luZG93Ll9leGVyY2lzZV9vanNfcnVudGltZTtcbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJ3ZWJyLTUtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici01LWNvbnRlbnRzYCB9LCBibG9jay5hdHRyKTtcbiAgY29uc3QgZWRpdG9yID0gbmV3IFdlYlJFeGVyY2lzZUVkaXRvcih3ZWJST2pzLndlYlJQcm9taXNlLCBibG9jay5jb2RlLCBvcHRpb25zKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl93ZWJyX3ZhbHVlXzUgPSB3ZWJST2pzLnByb2Nlc3MoX3dlYnJfZWRpdG9yXzUsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC00IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoie1xuICAvLyBXYWl0IGZvciBvdXRwdXQgdG8gYmUgd3JpdHRlbiB0byB0aGUgRE9NLCB0aGVuIHRyaWdnZXIgd2lkZ2V0IHJlbmRlcmluZ1xuICBhd2FpdCBfd2Vicl92YWx1ZV80O1xuICBpZiAod2luZG93LkhUTUxXaWRnZXRzKSB7XG4gICAgd2luZG93LkhUTUxXaWRnZXRzLnN0YXRpY1JlbmRlcigpO1xuICB9XG4gIGlmICh3aW5kb3cuUGFnZWRUYWJsZURvYykge1xuICAgIHdpbmRvdy5QYWdlZFRhYmxlRG9jLmluaXRBbGwoKTtcbiAgfVxufVxuIn0seyJjZWxsTmFtZSI6IndlYnItNCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzQgPSB7XG4gIGNvbnN0IHsgV2ViUkV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwid2Vici00LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHdlYnItNC1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV80ID0gd2ViUk9qcy5wcm9jZXNzKF93ZWJyX2VkaXRvcl80LCB7fSk7XG4ifSx7ImNlbGxOYW1lIjoid2Vici13aWRnZXQtMyIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMztcbiAgaWYgKHdpbmRvdy5IVE1MV2lkZ2V0cykge1xuICAgIHdpbmRvdy5IVE1MV2lkZ2V0cy5zdGF0aWNSZW5kZXIoKTtcbiAgfVxuICBpZiAod2luZG93LlBhZ2VkVGFibGVEb2MpIHtcbiAgICB3aW5kb3cuUGFnZWRUYWJsZURvYy5pbml0QWxsKCk7XG4gIH1cbn1cbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLTMiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF93ZWJyX2VkaXRvcl8zID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMy1jb250ZW50c1xcXCJdYCkudGV4dENvbnRlbnQ7XG4gIGNvbnN0IGJsb2NrID0gSlNPTi5wYXJzZShiNjREZWNvZGUoc2NyaXB0Q29udGVudCkpO1xuXG4gIGNvbnN0IG9wdGlvbnMgPSBPYmplY3QuYXNzaWduKHsgaWQ6IGB3ZWJyLTMtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgV2ViUkV4ZXJjaXNlRWRpdG9yKHdlYlJPanMud2ViUlByb21pc2UsIGJsb2NrLmNvZGUsIG9wdGlvbnMpO1xuXG4gIHJldHVybiBlZGl0b3IuY29udGFpbmVyO1xufVxuX3dlYnJfdmFsdWVfMyA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMywge30pO1xuIn0seyJjZWxsTmFtZSI6IndlYnItd2lkZ2V0LTIiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJ7XG4gIC8vIFdhaXQgZm9yIG91dHB1dCB0byBiZSB3cml0dGVuIHRvIHRoZSBET00sIHRoZW4gdHJpZ2dlciB3aWRnZXQgcmVuZGVyaW5nXG4gIGF3YWl0IF93ZWJyX3ZhbHVlXzI7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0yIiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6Il93ZWJyX3ZhbHVlXzIgPSB7XG4gIGNvbnN0IHsgaGlnaGxpZ2h0UiwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMi1jb250ZW50c1xcXCJdYCkudGV4dENvbnRlbnQ7XG4gIGNvbnN0IGJsb2NrID0gSlNPTi5wYXJzZShiNjREZWNvZGUoc2NyaXB0Q29udGVudCkpO1xuXG4gIC8vIERlZmF1bHQgZXZhbHVhdGlvbiBjb25maWd1cmF0aW9uXG4gIGNvbnN0IG9wdGlvbnMgPSBPYmplY3QuYXNzaWduKHtcbiAgICBpZDogXCJ3ZWJyLTItY29udGVudHNcIixcbiAgICBlY2hvOiB0cnVlLFxuICAgIG91dHB1dDogdHJ1ZVxuICB9LCBibG9jay5hdHRyKTtcblxuICAvLyBFdmFsdWF0ZSB0aGUgcHJvdmlkZWQgUiBjb2RlXG4gIGNvbnN0IHJlc3VsdCA9IHdlYlJPanMucHJvY2Vzcyh7Y29kZTogYmxvY2suY29kZSwgb3B0aW9uc30sIHt9KTtcblxuICAvLyBFYXJseSB5aWVsZCB3aGlsZSB3ZSB3YWl0IGZvciB0aGUgZmlyc3QgZXZhbHVhdGlvbiBhbmQgcmVuZGVyXG4gIGlmIChvcHRpb25zLm91dHB1dCAmJiAhKFwiMlwiIGluIHdlYlJPanMucmVuZGVyZWRPanMpKSB7XG4gICAgY29uc3QgY29udGFpbmVyID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudChcImRpdlwiKTtcbiAgICBjb25zdCBzcGlubmVyID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudChcImRpdlwiKTtcblxuICAgIGlmIChvcHRpb25zLmVjaG8pIHtcbiAgICAgIC8vIFNob3cgb3V0cHV0IGFzIGhpZ2hsaWdodGVkIHNvdXJjZVxuICAgICAgY29uc3QgcHJlRWxlbSA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoXCJwcmVcIik7XG4gICAgICBjb250YWluZXIuY2xhc3NOYW1lID0gXCJzb3VyY2VDb2RlXCI7XG4gICAgICBwcmVFbGVtLmNsYXNzTmFtZSA9IFwic291cmNlQ29kZSByXCI7XG4gICAgICBwcmVFbGVtLmFwcGVuZENoaWxkKGhpZ2hsaWdodFIoYmxvY2suY29kZSkpO1xuICAgICAgc3Bpbm5lci5jbGFzc05hbWUgPSBcInNwaW5uZXItZ3JvdyBzcGlubmVyLWdyb3ctc20gbS0yIHBvc2l0aW9uLWFic29sdXRlIHRvcC0wIGVuZC0wXCI7XG4gICAgICBwcmVFbGVtLmFwcGVuZENoaWxkKHNwaW5uZXIpO1xuICAgICAgY29udGFpbmVyLmFwcGVuZENoaWxkKHByZUVsZW0pO1xuICAgIH0gZWxzZSB7XG4gICAgICBzcGlubmVyLmNsYXNzTmFtZSA9IFwic3Bpbm5lci1ib3JkZXIgc3Bpbm5lci1ib3JkZXItc21cIjtcbiAgICAgIGNvbnRhaW5lci5hcHBlbmRDaGlsZChzcGlubmVyKTtcbiAgICB9XG5cbiAgICB5aWVsZCBjb250YWluZXI7XG4gIH1cblxuICB3ZWJST2pzLnJlbmRlcmVkT2pzW1wiMlwiXSA9IHRydWU7XG4gIHlpZWxkIGF3YWl0IHJlc3VsdDtcbn1cbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0xIiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoie1xuICAvLyBXYWl0IGZvciBvdXRwdXQgdG8gYmUgd3JpdHRlbiB0byB0aGUgRE9NLCB0aGVuIHRyaWdnZXIgd2lkZ2V0IHJlbmRlcmluZ1xuICBhd2FpdCBfd2Vicl92YWx1ZV8xO1xuICBpZiAod2luZG93LkhUTUxXaWRnZXRzKSB7XG4gICAgd2luZG93LkhUTUxXaWRnZXRzLnN0YXRpY1JlbmRlcigpO1xuICB9XG4gIGlmICh3aW5kb3cuUGFnZWRUYWJsZURvYykge1xuICAgIHdpbmRvdy5QYWdlZFRhYmxlRG9jLmluaXRBbGwoKTtcbiAgfVxufVxuIn0seyJjZWxsTmFtZSI6IndlYnItMSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJfd2Vicl92YWx1ZV8xID0ge1xuICBjb25zdCB7IGhpZ2hsaWdodFIsIGI2NERlY29kZSB9ID0gd2luZG93Ll9leGVyY2lzZV9vanNfcnVudGltZTtcbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJ3ZWJyLTEtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICAvLyBEZWZhdWx0IGV2YWx1YXRpb24gY29uZmlndXJhdGlvblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7XG4gICAgaWQ6IFwid2Vici0xLWNvbnRlbnRzXCIsXG4gICAgZWNobzogdHJ1ZSxcbiAgICBvdXRwdXQ6IHRydWVcbiAgfSwgYmxvY2suYXR0cik7XG5cbiAgLy8gRXZhbHVhdGUgdGhlIHByb3ZpZGVkIFIgY29kZVxuICBjb25zdCByZXN1bHQgPSB3ZWJST2pzLnByb2Nlc3Moe2NvZGU6IGJsb2NrLmNvZGUsIG9wdGlvbnN9LCB7fSk7XG5cbiAgLy8gRWFybHkgeWllbGQgd2hpbGUgd2Ugd2FpdCBmb3IgdGhlIGZpcnN0IGV2YWx1YXRpb24gYW5kIHJlbmRlclxuICBpZiAob3B0aW9ucy5vdXRwdXQgJiYgIShcIjFcIiBpbiB3ZWJST2pzLnJlbmRlcmVkT2pzKSkge1xuICAgIGNvbnN0IGNvbnRhaW5lciA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoXCJkaXZcIik7XG4gICAgY29uc3Qgc3Bpbm5lciA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoXCJkaXZcIik7XG5cbiAgICBpZiAob3B0aW9ucy5lY2hvKSB7XG4gICAgICAvLyBTaG93IG91dHB1dCBhcyBoaWdobGlnaHRlZCBzb3VyY2VcbiAgICAgIGNvbnN0IHByZUVsZW0gPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KFwicHJlXCIpO1xuICAgICAgY29udGFpbmVyLmNsYXNzTmFtZSA9IFwic291cmNlQ29kZVwiO1xuICAgICAgcHJlRWxlbS5jbGFzc05hbWUgPSBcInNvdXJjZUNvZGUgclwiO1xuICAgICAgcHJlRWxlbS5hcHBlbmRDaGlsZChoaWdobGlnaHRSKGJsb2NrLmNvZGUpKTtcbiAgICAgIHNwaW5uZXIuY2xhc3NOYW1lID0gXCJzcGlubmVyLWdyb3cgc3Bpbm5lci1ncm93LXNtIG0tMiBwb3NpdGlvbi1hYnNvbHV0ZSB0b3AtMCBlbmQtMFwiO1xuICAgICAgcHJlRWxlbS5hcHBlbmRDaGlsZChzcGlubmVyKTtcbiAgICAgIGNvbnRhaW5lci5hcHBlbmRDaGlsZChwcmVFbGVtKTtcbiAgICB9IGVsc2Uge1xuICAgICAgc3Bpbm5lci5jbGFzc05hbWUgPSBcInNwaW5uZXItYm9yZGVyIHNwaW5uZXItYm9yZGVyLXNtXCI7XG4gICAgICBjb250YWluZXIuYXBwZW5kQ2hpbGQoc3Bpbm5lcik7XG4gICAgfVxuXG4gICAgeWllbGQgY29udGFpbmVyO1xuICB9XG5cbiAgd2ViUk9qcy5yZW5kZXJlZE9qc1tcIjFcIl0gPSB0cnVlO1xuICB5aWVsZCBhd2FpdCByZXN1bHQ7XG59XG4ifSx7ImNlbGxOYW1lIjoiaW50ZXJwb2xhdGUtOCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgY29uc3QgeyBpbnRlcnBvbGF0ZSB9ID0gd2luZG93Ll9leGVyY2lzZV9vanNfcnVudGltZTtcbiAgY29uc3QgYmxvY2tfaWQgPSBcIjhcIjtcbiAgY29uc3QgbGFuZ3VhZ2UgPSBcIm5vbmVcIjtcbiAgY29uc3QgZGVmX21hcCA9IHtcbn07XG4gIGNvbnN0IGVsZW0gPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZChgaW50ZXJwb2xhdGUtJHtibG9ja19pZH1gKTtcblxuICAvLyBTdG9yZSBvcmlnaW5hbCB0ZW1wbGF0ZWQgSFRNTCBmb3IgcmVmZXJlbmNlIGluIGZ1dHVyZSByZWFjdGl2ZSB1cGRhdGVzXG4gIGlmICghZWxlbS5vcmlnSFRNTCkgZWxlbS5vcmlnSFRNTCA9IGVsZW0uaW5uZXJIVE1MO1xuXG4gIC8vIEludGVycG9sYXRlIHJlYWN0aXZlIE9KUyB2YXJpYWJsZXMgaW50byBlc3RhYmxpc2hlZCBIVE1MIGVsZW1lbnRcbiAgZWxlbS5pbm5lckhUTUwgPSBlbGVtLm9yaWdIVE1MO1xuICBPYmplY3Qua2V5cyhkZWZfbWFwKS5mb3JFYWNoKChkZWYpID0+XG4gICAgaW50ZXJwb2xhdGUoZWxlbSwgXCIke1wiICsgZGVmICsgXCJ9XCIsIGRlZl9tYXBbZGVmXSwgbGFuZ3VhZ2UpXG4gICk7XG59XG4ifSx7ImNlbGxOYW1lIjoiaW50ZXJwb2xhdGUtOSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgY29uc3QgeyBpbnRlcnBvbGF0ZSB9ID0gd2luZG93Ll9leGVyY2lzZV9vanNfcnVudGltZTtcbiAgY29uc3QgYmxvY2tfaWQgPSBcIjlcIjtcbiAgY29uc3QgbGFuZ3VhZ2UgPSBcInJcIjtcbiAgY29uc3QgZGVmX21hcCA9IHtcbn07XG4gIGNvbnN0IGVsZW0gPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZChgaW50ZXJwb2xhdGUtJHtibG9ja19pZH1gKTtcblxuICAvLyBTdG9yZSBvcmlnaW5hbCB0ZW1wbGF0ZWQgSFRNTCBmb3IgcmVmZXJlbmNlIGluIGZ1dHVyZSByZWFjdGl2ZSB1cGRhdGVzXG4gIGlmICghZWxlbS5vcmlnSFRNTCkgZWxlbS5vcmlnSFRNTCA9IGVsZW0uaW5uZXJIVE1MO1xuXG4gIC8vIEludGVycG9sYXRlIHJlYWN0aXZlIE9KUyB2YXJpYWJsZXMgaW50byBlc3RhYmxpc2hlZCBIVE1MIGVsZW1lbnRcbiAgZWxlbS5pbm5lckhUTUwgPSBlbGVtLm9yaWdIVE1MO1xuICBPYmplY3Qua2V5cyhkZWZfbWFwKS5mb3JFYWNoKChkZWYpID0+XG4gICAgaW50ZXJwb2xhdGUoZWxlbSwgXCIke1wiICsgZGVmICsgXCJ9XCIsIGRlZl9tYXBbZGVmXSwgbGFuZ3VhZ2UpXG4gICk7XG59XG4ifSx7ImNlbGxOYW1lIjoiaW50ZXJwb2xhdGUtMTUiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJ7XG4gIGNvbnN0IHsgaW50ZXJwb2xhdGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG4gIGNvbnN0IGJsb2NrX2lkID0gXCIxNVwiO1xuICBjb25zdCBsYW5ndWFnZSA9IFwibm9uZVwiO1xuICBjb25zdCBkZWZfbWFwID0ge1xufTtcbiAgY29uc3QgZWxlbSA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKGBpbnRlcnBvbGF0ZS0ke2Jsb2NrX2lkfWApO1xuXG4gIC8vIFN0b3JlIG9yaWdpbmFsIHRlbXBsYXRlZCBIVE1MIGZvciByZWZlcmVuY2UgaW4gZnV0dXJlIHJlYWN0aXZlIHVwZGF0ZXNcbiAgaWYgKCFlbGVtLm9yaWdIVE1MKSBlbGVtLm9yaWdIVE1MID0gZWxlbS5pbm5lckhUTUw7XG5cbiAgLy8gSW50ZXJwb2xhdGUgcmVhY3RpdmUgT0pTIHZhcmlhYmxlcyBpbnRvIGVzdGFibGlzaGVkIEhUTUwgZWxlbWVudFxuICBlbGVtLmlubmVySFRNTCA9IGVsZW0ub3JpZ0hUTUw7XG4gIE9iamVjdC5rZXlzKGRlZl9tYXApLmZvckVhY2goKGRlZikgPT5cbiAgICBpbnRlcnBvbGF0ZShlbGVtLCBcIiR7XCIgKyBkZWYgKyBcIn1cIiwgZGVmX21hcFtkZWZdLCBsYW5ndWFnZSlcbiAgKTtcbn1cbiJ9LHsiY2VsbE5hbWUiOiJpbnRlcnBvbGF0ZS0xNiIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgY29uc3QgeyBpbnRlcnBvbGF0ZSB9ID0gd2luZG93Ll9leGVyY2lzZV9vanNfcnVudGltZTtcbiAgY29uc3QgYmxvY2tfaWQgPSBcIjE2XCI7XG4gIGNvbnN0IGxhbmd1YWdlID0gXCJyXCI7XG4gIGNvbnN0IGRlZl9tYXAgPSB7XG59O1xuICBjb25zdCBlbGVtID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoYGludGVycG9sYXRlLSR7YmxvY2tfaWR9YCk7XG5cbiAgLy8gU3RvcmUgb3JpZ2luYWwgdGVtcGxhdGVkIEhUTUwgZm9yIHJlZmVyZW5jZSBpbiBmdXR1cmUgcmVhY3RpdmUgdXBkYXRlc1xuICBpZiAoIWVsZW0ub3JpZ0hUTUwpIGVsZW0ub3JpZ0hUTUwgPSBlbGVtLmlubmVySFRNTDtcblxuICAvLyBJbnRlcnBvbGF0ZSByZWFjdGl2ZSBPSlMgdmFyaWFibGVzIGludG8gZXN0YWJsaXNoZWQgSFRNTCBlbGVtZW50XG4gIGVsZW0uaW5uZXJIVE1MID0gZWxlbS5vcmlnSFRNTDtcbiAgT2JqZWN0LmtleXMoZGVmX21hcCkuZm9yRWFjaCgoZGVmKSA9PlxuICAgIGludGVycG9sYXRlKGVsZW0sIFwiJHtcIiArIGRlZiArIFwifVwiLCBkZWZfbWFwW2RlZl0sIGxhbmd1YWdlKVxuICApO1xufVxuIn0seyJjZWxsTmFtZSI6ImludGVycG9sYXRlLTIxIiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoie1xuICBjb25zdCB7IGludGVycG9sYXRlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBibG9ja19pZCA9IFwiMjFcIjtcbiAgY29uc3QgbGFuZ3VhZ2UgPSBcIm5vbmVcIjtcbiAgY29uc3QgZGVmX21hcCA9IHtcbn07XG4gIGNvbnN0IGVsZW0gPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZChgaW50ZXJwb2xhdGUtJHtibG9ja19pZH1gKTtcblxuICAvLyBTdG9yZSBvcmlnaW5hbCB0ZW1wbGF0ZWQgSFRNTCBmb3IgcmVmZXJlbmNlIGluIGZ1dHVyZSByZWFjdGl2ZSB1cGRhdGVzXG4gIGlmICghZWxlbS5vcmlnSFRNTCkgZWxlbS5vcmlnSFRNTCA9IGVsZW0uaW5uZXJIVE1MO1xuXG4gIC8vIEludGVycG9sYXRlIHJlYWN0aXZlIE9KUyB2YXJpYWJsZXMgaW50byBlc3RhYmxpc2hlZCBIVE1MIGVsZW1lbnRcbiAgZWxlbS5pbm5lckhUTUwgPSBlbGVtLm9yaWdIVE1MO1xuICBPYmplY3Qua2V5cyhkZWZfbWFwKS5mb3JFYWNoKChkZWYpID0+XG4gICAgaW50ZXJwb2xhdGUoZWxlbSwgXCIke1wiICsgZGVmICsgXCJ9XCIsIGRlZl9tYXBbZGVmXSwgbGFuZ3VhZ2UpXG4gICk7XG59XG4ifSx7ImNlbGxOYW1lIjoiaW50ZXJwb2xhdGUtMjIiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJ7XG4gIGNvbnN0IHsgaW50ZXJwb2xhdGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG4gIGNvbnN0IGJsb2NrX2lkID0gXCIyMlwiO1xuICBjb25zdCBsYW5ndWFnZSA9IFwiclwiO1xuICBjb25zdCBkZWZfbWFwID0ge1xufTtcbiAgY29uc3QgZWxlbSA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKGBpbnRlcnBvbGF0ZS0ke2Jsb2NrX2lkfWApO1xuXG4gIC8vIFN0b3JlIG9yaWdpbmFsIHRlbXBsYXRlZCBIVE1MIGZvciByZWZlcmVuY2UgaW4gZnV0dXJlIHJlYWN0aXZlIHVwZGF0ZXNcbiAgaWYgKCFlbGVtLm9yaWdIVE1MKSBlbGVtLm9yaWdIVE1MID0gZWxlbS5pbm5lckhUTUw7XG5cbiAgLy8gSW50ZXJwb2xhdGUgcmVhY3RpdmUgT0pTIHZhcmlhYmxlcyBpbnRvIGVzdGFibGlzaGVkIEhUTUwgZWxlbWVudFxuICBlbGVtLmlubmVySFRNTCA9IGVsZW0ub3JpZ0hUTUw7XG4gIE9iamVjdC5rZXlzKGRlZl9tYXApLmZvckVhY2goKGRlZikgPT5cbiAgICBpbnRlcnBvbGF0ZShlbGVtLCBcIiR7XCIgKyBkZWYgKyBcIn1cIiwgZGVmX21hcFtkZWZdLCBsYW5ndWFnZSlcbiAgKTtcbn1cbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXByZWx1ZGUiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJ3ZWJST2pzID0ge1xuICBjb25zdCB7IFdlYlIsIENoYW5uZWxUeXBlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lLldlYlI7XG4gIGNvbnN0IHtcbiAgICBXZWJSRXZhbHVhdG9yLFxuICAgIFdlYlJFbnZpcm9ubWVudE1hbmFnZXIsXG4gICAgc2V0dXBSLFxuICAgIGI2NERlY29kZSxcbiAgICBjb2xsYXBzZVBhdGhcbiAgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc3RhdHVzQ29udGFpbmVyID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoXCJleGVyY2lzZS1sb2FkaW5nLXN0YXR1c1wiKTtcbiAgY29uc3QgaW5kaWNhdG9yQ29udGFpbmVyID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoXCJleGVyY2lzZS1sb2FkaW5nLWluZGljYXRvclwiKTtcbiAgaW5kaWNhdG9yQ29udGFpbmVyLmNsYXNzTGlzdC5yZW1vdmUoXCJkLW5vbmVcIik7XG5cbiAgbGV0IHN0YXR1c1RleHQgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KFwiZGl2XCIpXG4gIHN0YXR1c1RleHQuY2xhc3NMaXN0ID0gXCJleGVyY2lzZS1sb2FkaW5nLWRldGFpbHNcIjtcbiAgc3RhdHVzVGV4dCA9IHN0YXR1c0NvbnRhaW5lci5hcHBlbmRDaGlsZChzdGF0dXNUZXh0KTtcbiAgc3RhdHVzVGV4dC50ZXh0Q29udGVudCA9IGBJbml0aWFsaXNlYDtcblxuICAvLyBIb2lzdCBpbmRpY2F0b3Igb3V0IGZyb20gZmluYWwgc2xpZGUgd2hlbiBydW5uaW5nIHVuZGVyIHJldmVhbFxuICBjb25zdCByZXZlYWxTdGF0dXMgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKFwiLnJldmVhbCAuZXhlcmNpc2UtbG9hZGluZy1pbmRpY2F0b3JcIik7XG4gIGlmIChyZXZlYWxTdGF0dXMpIHtcbiAgICByZXZlYWxTdGF0dXMucmVtb3ZlKCk7XG4gICAgZG9jdW1lbnQucXVlcnlTZWxlY3RvcihcIi5yZXZlYWwgPiAuc2xpZGVzXCIpLmFwcGVuZENoaWxkKHJldmVhbFN0YXR1cyk7XG4gIH1cblxuICAvLyBNYWtlIGFueSByZXZlYWwgc2xpZGVzIHdpdGggbGl2ZSBjZWxscyBzY3JvbGxhYmxlXG4gIGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3JBbGwoXCIucmV2ZWFsIC5leGVyY2lzZS1jZWxsXCIpLmZvckVhY2goKGVsKSA9PiB7XG4gICAgZWwuY2xvc2VzdCgnc2VjdGlvbi5zbGlkZScpLmNsYXNzTGlzdC5hZGQoXCJzY3JvbGxhYmxlXCIpO1xuICB9KVxuXG4gIC8vIHdlYlIgc3VwcGxlbWVudGFsIGRhdGEgYW5kIG9wdGlvbnNcbiAgY29uc3QgZGF0YUNvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwid2Vici1kYXRhXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgZGF0YSA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKGRhdGFDb250ZW50KSk7XG5cbiAgLy8gR3JhYiBsaXN0IG9mIHJlc291cmNlcyB0byBiZSBkb3dubG9hZGVkXG4gIGNvbnN0IGZpbGVzQ29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJ2ZnMtZmlsZVxcXCJdYCkudGV4dENvbnRlbnQ7XG4gIGNvbnN0IGZpbGVzID0gSlNPTi5wYXJzZShiNjREZWNvZGUoZmlsZXNDb250ZW50KSk7XG5cbiAgLy8gSW5pdGlhbGlzZSB3ZWJSIGFuZCBzZXR1cCBmb3IgUiBjb2RlIGV2YWx1YXRpb25cbiAgbGV0IHdlYlJQcm9taXNlID0gKGFzeW5jICh3ZWJSKSA9PiB7XG4gICAgc3RhdHVzVGV4dC50ZXh0Q29udGVudCA9IGBEb3dubG9hZGluZyB3ZWJSYDtcbiAgICBhd2FpdCB3ZWJSLmluaXQoKTtcblxuICAgIC8vIEluc3RhbGwgcHJvdmlkZWQgbGlzdCBvZiBwYWNrYWdlc1xuICAgIC8vIEVuc3VyZSB3ZWJSIGRlZmF1bHQgcmVwbyBpcyBpbmNsdWRlZFxuICAgIGRhdGEucGFja2FnZXMucmVwb3MucHVzaChcImh0dHBzOi8vcmVwby5yLXdhc20ub3JnXCIpXG4gICAgYXdhaXQgZGF0YS5wYWNrYWdlcy5wa2dzLm1hcCgocGtnKSA9PiAoKSA9PiB7XG4gICAgICBzdGF0dXNUZXh0LnRleHRDb250ZW50ID0gYERvd25sb2FkaW5nIHBhY2thZ2U6ICR7cGtnfWA7XG4gICAgICByZXR1cm4gd2ViUi5ldmFsUlZvaWQoYFxuICAgICAgICB3ZWJyOjppbnN0YWxsKHBrZywgcmVwb3MgPSByZXBvcylcbiAgICAgICAgbGlicmFyeShwa2csIGNoYXJhY3Rlci5vbmx5ID0gVFJVRSlcbiAgICAgIGAsIHsgZW52OiB7XG4gICAgICAgIHBrZzogcGtnLFxuICAgICAgICByZXBvczogZGF0YS5wYWNrYWdlcy5yZXBvcyxcbiAgICAgIH19KTtcbiAgICB9KS5yZWR1Y2UoKGN1ciwgbmV4dCkgPT4gY3VyLnRoZW4obmV4dCksIFByb21pc2UucmVzb2x2ZSgpKTtcblxuICAgIC8vIERvd25sb2FkIGFuZCBpbnN0YWxsIHJlc291cmNlc1xuICAgIGF3YWl0IGZpbGVzLm1hcCgoZmlsZSkgPT4gYXN5bmMgKCkgPT4ge1xuICAgICAgY29uc3QgbmFtZSA9IGZpbGUuc3Vic3RyaW5nKGZpbGUubGFzdEluZGV4T2YoJy8nKSArIDEpO1xuICAgICAgc3RhdHVzVGV4dC50ZXh0Q29udGVudCA9IGBEb3dubG9hZGluZyByZXNvdXJjZTogJHtuYW1lfWA7XG4gICAgICBjb25zdCByZXNwb25zZSA9IGF3YWl0IGZldGNoKGZpbGUpO1xuICAgICAgaWYgKCFyZXNwb25zZS5vaykge1xuICAgICAgICB0aHJvdyBuZXcgRXJyb3IoYENhbid0IGRvd25sb2FkIFxcYCR7ZmlsZX1cXGAuIEVycm9yICR7cmVzcG9uc2Uuc3RhdHVzfTogXCIke3Jlc3BvbnNlLnN0YXR1c1RleHR9XCIuYCk7XG4gICAgICB9XG4gICAgICBjb25zdCBkYXRhID0gYXdhaXQgcmVzcG9uc2UuYXJyYXlCdWZmZXIoKTtcblxuICAgICAgLy8gU3RvcmUgVVJMcyBpbiB0aGUgY3dkIHdpdGhvdXQgYW55IHN1YmRpcmVjdG9yeSBzdHJ1Y3R1cmVcbiAgICAgIGlmIChmaWxlLmluY2x1ZGVzKFwiOi8vXCIpKSB7XG4gICAgICAgIGZpbGUgPSBuYW1lO1xuICAgICAgfVxuXG4gICAgICAvLyBDb2xsYXBzZSBoaWdoZXIgZGlyZWN0b3J5IHN0cnVjdHVyZVxuICAgICAgZmlsZSA9IGNvbGxhcHNlUGF0aChmaWxlKTtcblxuICAgICAgLy8gQ3JlYXRlIGRpcmVjdG9yeSB0cmVlLCBpZ25vcmluZyBcImRpcmVjdG9yeSBleGlzdHNcIiBWRlMgZXJyb3JzXG4gICAgICBjb25zdCBwYXJ0cyA9IGZpbGUuc3BsaXQoJy8nKS5zbGljZSgwLCAtMSk7XG4gICAgICBsZXQgcGF0aCA9ICcnO1xuICAgICAgd2hpbGUgKHBhcnRzLmxlbmd0aCA+IDApIHtcbiAgICAgICAgcGF0aCArPSBwYXJ0cy5zaGlmdCgpICsgJy8nO1xuICAgICAgICBjb25zdCBhbmFseXNpcyA9IGF3YWl0IHdlYlIuRlMuYW5hbHl6ZVBhdGgocGF0aCk7XG4gICAgICAgIGlmICghYW5hbHlzaXMuZXhpc3RzKSB7XG4gICAgICAgICAgdHJ5IHtcbiAgICAgICAgICAgIGF3YWl0IHdlYlIuRlMubWtkaXIocGF0aCk7XG4gICAgICAgICAgfSBjYXRjaCAoZSkge1xuICAgICAgICAgICAgdGhyb3cgbmV3IEVycm9yKGBGaWxlc3lzdGVtIEVycm9yOiBcIiR7ZS5tZXNzYWdlfVwiLmApO1xuICAgICAgICAgIH1cbiAgICAgICAgfVxuICAgICAgfVxuXG4gICAgICAvLyBXcml0ZSB0aGlzIGZpbGUgdG8gdGhlIFZGU1xuICAgICAgcmV0dXJuIGF3YWl0IHdlYlIuRlMud3JpdGVGaWxlKGZpbGUsIG5ldyBVaW50OEFycmF5KGRhdGEpKTtcbiAgICB9KS5yZWR1Y2UoKGN1ciwgbmV4dCkgPT4gY3VyLnRoZW4obmV4dCksIFByb21pc2UucmVzb2x2ZSgpKTtcblxuICAgIHN0YXR1c1RleHQudGV4dENvbnRlbnQgPSBgSW5zdGFsbGluZyB3ZWJSIHNoaW1zYDtcbiAgICBhd2FpdCB3ZWJSLmV2YWxSVm9pZChgd2Vicjo6c2hpbV9pbnN0YWxsKClgKTtcblxuICAgIHN0YXR1c1RleHQudGV4dENvbnRlbnQgPSBgV2ViUiBlbnZpcm9ubWVudCBzZXR1cGA7XG4gICAgYXdhaXQgc2V0dXBSKHdlYlIsIGRhdGEpO1xuXG4gICAgc3RhdHVzVGV4dC5yZW1vdmUoKTtcbiAgICBpZiAoc3RhdHVzQ29udGFpbmVyLmNoaWxkcmVuLmxlbmd0aCA9PSAwKSB7XG4gICAgICBzdGF0dXNDb250YWluZXIucGFyZW50Tm9kZS5yZW1vdmUoKTtcbiAgICB9XG4gICAgcmV0dXJuIHdlYlI7XG4gIH0pKG5ldyBXZWJSKGRhdGEub3B0aW9ucykpO1xuXG4gIC8vIEtlZXAgdHJhY2sgb2YgaW5pdGlhbCBPSlMgYmxvY2sgcmVuZGVyXG4gIGNvbnN0IHJlbmRlcmVkT2pzID0ge307XG5cbiAgY29uc3QgcHJvY2VzcyA9IGFzeW5jIChjb250ZXh0LCBpbnB1dHMpID0+IHtcbiAgICBjb25zdCB3ZWJSID0gYXdhaXQgd2ViUlByb21pc2U7XG4gICAgY29uc3QgZXZhbHVhdG9yID0gbmV3IFdlYlJFdmFsdWF0b3Iod2ViUiwgY29udGV4dClcbiAgICBhd2FpdCBldmFsdWF0b3IucHJvY2VzcyhpbnB1dHMpO1xuICAgIHJldHVybiBldmFsdWF0b3IuY29udGFpbmVyO1xuICB9XG5cbiAgcmV0dXJuIHtcbiAgICBwcm9jZXNzLFxuICAgIHdlYlJQcm9taXNlLFxuICAgIHJlbmRlcmVkT2pzLFxuICB9O1xufVxuIn1dfQ==
+</script>
+<div id="exercise-loading-indicator" class="exercise-loading-indicator d-none d-flex align-items-center gap-2">
+<div id="exercise-loading-status" class="d-flex gap-2">
+
+</div>
+<div class="spinner-grow spinner-grow-sm">
+
+</div>
+</div>
+<script type="vfs-file">
+WyJkYXRhL2Ntai5jc3YiLCJkYXRhL2p1bXBfc3F1YWQuY3N2Il0=
+</script>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script>
+/*
+  Course runtime: interactive quizzes, lesson completion and progress tracking.
+  Progress is stored in the student's own browser (localStorage) only.
+*/
+(function () {
+  const LESSONS = [
+    { file: "m1-01-basics.html",               title: "1.1 R basics",                   module: "Module 1 · Introduction to R" },
+    { file: "m1-02-vectors.html",              title: "1.2 Vectors",                    module: "Module 1 · Introduction to R" },
+    { file: "m1-03-factors.html",              title: "1.3 Factors",                    module: "Module 1 · Introduction to R" },
+    { file: "m1-04-data-frames.html",          title: "1.4 Data frames",                module: "Module 1 · Introduction to R" },
+    { file: "m1-05-ggplot.html",               title: "1.5 Plotting with ggplot2",      module: "Module 1 · Introduction to R" },
+    { file: "m1-06-checkpoint.html",           title: "1.6 Module checkpoint",          module: "Module 1 · Introduction to R" },
+    { file: "m2-01-what-is-statistics.html",   title: "2.1 What is statistics?",        module: "Module 2 · Introduction to statistics" },
+    { file: "m2-02-center.html",               title: "2.2 Measures of center",         module: "Module 2 · Introduction to statistics" },
+    { file: "m2-03-spread.html",               title: "2.3 Measures of spread",         module: "Module 2 · Introduction to statistics" },
+    { file: "m2-04-normal-clt.html",           title: "2.4 Normal distribution & CLT",  module: "Module 2 · Introduction to statistics" },
+    { file: "m2-05-checkpoint.html",           title: "2.5 Module checkpoint",          module: "Module 2 · Introduction to statistics" },
+    { file: "m3-01-summaries.html", title: "3.1 Summaries and raw data", module: "Module 3 · Data visualisation in depth" },
+    { file: "m3-02-facets.html", title: "3.2 Facets and annotations", module: "Module 3 · Data visualisation in depth" },
+    { file: "m3-03-scales-colours.html", title: "3.3 Scales, colours and labels", module: "Module 3 · Data visualisation in depth" },
+    { file: "m3-04-themes.html", title: "3.4 Themes and exporting", module: "Module 3 · Data visualisation in depth" },
+    { file: "m3-05-timeseries-patchwork.html", title: "3.5 Force curves and multi-panel figures", module: "Module 3 · Data visualisation in depth" },
+    { file: "m3-06-checkpoint.html", title: "3.6 Module checkpoint", module: "Module 3 · Data visualisation in depth" },
+    { file: "m4-01-confidence-intervals.html", title: "4.1 Confidence intervals", module: "Module 4 · Inferential statistics" },
+    { file: "m4-02-hypothesis-testing.html", title: "4.2 Hypothesis testing", module: "Module 4 · Inferential statistics" },
+    { file: "m4-03-t-tests.html", title: "4.3 Comparing two groups", module: "Module 4 · Inferential statistics" },
+    { file: "m4-04-anova.html", title: "4.4 ANOVA", module: "Module 4 · Inferential statistics" },
+    { file: "m4-05-correlation.html", title: "4.5 Correlation", module: "Module 4 · Inferential statistics" },
+    { file: "m4-06-simple-regression.html", title: "4.6 Simple linear regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-07-multiple-regression.html", title: "4.7 Multiple regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-08-chi-square.html", title: "4.8 Chi-square tests", module: "Module 4 · Inferential statistics" },
+    { file: "m4-09-reliability.html", title: "4.9 Reliability", module: "Module 4 · Inferential statistics" },
+    { file: "m4-10-checkpoint.html", title: "4.10 Module checkpoint", module: "Module 4 · Inferential statistics" }
+  ];
+  const PREFIX = "r4ss:";
+  // Built from pieces so Quarto does not try to parse this as a document table
+  const TBL_OPEN = "<" + "table class=\"table table-sm\">";
+  const TBL_CLOSE = "</" + "table>";
+
+  const store = {
+    get(key, fallback) {
+      try { const v = localStorage.getItem(PREFIX + key); return v === null ? fallback : JSON.parse(v); }
+      catch (e) { return fallback; }
+    },
+    set(key, value) {
+      try { localStorage.setItem(PREFIX + key, JSON.stringify(value)); } catch (e) { /* storage blocked */ }
+    },
+    clear() {
+      try {
+        Object.keys(localStorage).filter(k => k.startsWith(PREFIX)).forEach(k => localStorage.removeItem(k));
+      } catch (e) { /* storage blocked */ }
+    }
+  };
+
+  function pageFile() {
+    let f = window.location.pathname.split("/").pop();
+    if (!f) f = "index.html";
+    if (!f.includes(".")) f += ".html";
+    return f;
+  }
+  const PAGE = pageFile();
+  const lessonIndex = LESSONS.findIndex(l => l.file === PAGE);
+
+  function quizScores(file) {
+    const q = store.get("quiz:" + file, {});
+    const ids = Object.keys(q);
+    return { total: ids.length, firstTry: ids.filter(id => q[id].firstTry).length, solved: ids.filter(id => q[id].solved).length };
+  }
+
+  /* ---------------- Quizzes ---------------- */
+  function buildQuizzes() {
+    const quizzes = document.querySelectorAll("div.quiz");
+    const record = store.get("quiz:" + PAGE, {});
+    quizzes.forEach((quiz, qi) => {
+      const id = quiz.id || ("q" + (qi + 1));
+      const list = quiz.querySelector("ul.task-list, ul");
+      if (!list) return;
+      const items = Array.from(list.querySelectorAll(":scope > li"));
+      const newList = document.createElement("ul");
+      newList.className = "quiz-options";
+      const feedback = document.createElement("div");
+      feedback.className = "quiz-feedback";
+      feedback.setAttribute("aria-live", "polite");
+      let attempts = 0;
+
+      items.forEach(li => {
+        const box = li.querySelector("input[type=checkbox]");
+        const isCorrect = !!(box && box.checked);
+        if (box) box.remove();
+        const label = li.querySelector("label");
+        const html = (label ? label.innerHTML : li.innerHTML).trim();
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "quiz-option";
+        btn.innerHTML = html;
+        btn.addEventListener("click", () => {
+          attempts += 1;
+          if (isCorrect) {
+            btn.classList.add("correct");
+            feedback.textContent = attempts === 1 ? "Correct! 🎉" : "Correct — you got there!";
+            feedback.className = "quiz-feedback correct";
+            quiz.classList.add("solved");
+            newList.querySelectorAll("button").forEach(b => (b.disabled = true));
+            const rec = store.get("quiz:" + PAGE, {});
+            const prev = rec[id];
+            rec[id] = { solved: true, firstTry: prev ? prev.firstTry : attempts === 1 };
+            store.set("quiz:" + PAGE, rec);
+            updateScoreLines();
+          } else {
+            btn.classList.add("wrong");
+            btn.disabled = true;
+            feedback.textContent = "Not quite — try another option.";
+            feedback.className = "quiz-feedback wrong";
+          }
+        });
+        const wrap = document.createElement("li");
+        wrap.appendChild(btn);
+        newList.appendChild(wrap);
+      });
+      list.replaceWith(newList);
+      newList.after(feedback);
+
+      // Restore a previously solved quiz
+      if (record[id] && record[id].solved) {
+        quiz.classList.add("solved");
+        newList.querySelectorAll("button").forEach(b => (b.disabled = true));
+        feedback.textContent = record[id].firstTry ? "Solved on first try ✓" : "Solved ✓";
+        feedback.className = "quiz-feedback correct";
+      }
+      quiz.dataset.quizId = id;
+    });
+    // Register quizzes so the score knows the total, even before they are answered
+    const all = Array.from(quizzes).map(q => q.dataset.quizId).filter(Boolean);
+    store.set("quizcount:" + PAGE, all.length);
+  }
+
+  /* ---------------- Lesson completion ---------------- */
+  function updateScoreLines() {
+    const total = store.get("quizcount:" + PAGE, 0);
+    const s = quizScores(PAGE);
+    document.querySelectorAll(".lesson-complete .score-line").forEach(el => {
+      el.textContent = total
+        ? `Quizzes on this page: ${s.solved}/${total} solved (${s.firstTry} on the first try).`
+        : "";
+    });
+  }
+
+  function buildCompletion() {
+    document.querySelectorAll("div.lesson-complete").forEach(box => {
+      box.innerHTML = "";
+      const score = document.createElement("div");
+      score.className = "score-line";
+      const btn = document.createElement("button");
+      btn.className = "btn-complete";
+      const render = () => {
+        const done = store.get("done:" + PAGE, false);
+        btn.textContent = done ? "✓ Lesson completed (click to undo)" : "Mark this lesson as complete";
+        btn.classList.toggle("done", done);
+      };
+      btn.addEventListener("click", () => {
+        store.set("done:" + PAGE, !store.get("done:" + PAGE, false));
+        render();
+        markSidebar();
+      });
+      box.appendChild(score);
+      box.appendChild(btn);
+      if (lessonIndex >= 0 && lessonIndex < LESSONS.length - 1) {
+        const next = LESSONS[lessonIndex + 1];
+        const p = document.createElement("p");
+        p.style.marginTop = "0.8rem";
+        p.innerHTML = `Next up: <a href="${next.file}">${next.title} →</a>`;
+        box.appendChild(p);
+      }
+      render();
+    });
+    updateScoreLines();
+  }
+
+  /* ---------------- Sequential guidance ---------------- */
+  function sequenceBanner() {
+    if (lessonIndex <= 0) return;
+    const firstUndone = LESSONS.slice(0, lessonIndex).find(l => !store.get("done:" + l.file, false));
+    if (!firstUndone) return;
+    const main = document.querySelector("main#quarto-document-content, main");
+    if (!main) return;
+    const header = main.querySelector("header#title-block-header");
+    const banner = document.createElement("div");
+    banner.className = "sequence-banner";
+    banner.innerHTML = `📌 This course is designed to be followed in order. You haven't marked
+      <a href="${firstUndone.file}">${firstUndone.title}</a> as complete yet — we recommend finishing it first.`;
+    if (header) header.after(banner); else main.prepend(banner);
+  }
+
+  function markSidebar() {
+    document.querySelectorAll("#quarto-sidebar a.sidebar-link, #quarto-sidebar a.sidebar-item-text").forEach(a => {
+      const href = (a.getAttribute("href") || "").split("/").pop().split("#")[0];
+      const lesson = LESSONS.find(l => l.file === href);
+      if (!lesson) return;
+      let mark = a.querySelector(".done-mark");
+      const done = store.get("done:" + lesson.file, false);
+      if (done && !mark) {
+        mark = document.createElement("span");
+        mark.className = "done-mark";
+        mark.textContent = "✓";
+        (a.querySelector(".menu-text") || a).appendChild(mark);
+      } else if (!done && mark) {
+        mark.remove();
+      }
+    });
+  }
+
+  /* ---------------- Progress overview (home page) ---------------- */
+  function buildOverview() {
+    document.querySelectorAll("div.progress-overview").forEach(box => {
+      const doneCount = LESSONS.filter(l => store.get("done:" + l.file, false)).length;
+      const pct = Math.round((100 * doneCount) / LESSONS.length);
+      let rows = "";
+      let currentModule = "";
+      LESSONS.forEach(l => {
+        if (l.module !== currentModule) {
+          currentModule = l.module;
+          const inMod = LESSONS.filter(m => m.module === currentModule);
+          const modDone = inMod.filter(m => store.get("done:" + m.file, false)).length;
+          rows += `<tr class="table-light"><th colspan="3">${currentModule} (${modDone}/${inMod.length})</th></tr>`;
+        }
+        const done = store.get("done:" + l.file, false);
+        const total = store.get("quizcount:" + l.file, 0);
+        const s = quizScores(l.file);
+        const quiz = total ? `${s.solved}/${total}` : "–";
+        rows += `<tr><td><a href="${l.file}">${l.title}</a></td><td>${done ? "✅ Complete" : "⬜ Not yet"}</td><td>${quiz}</td></tr>`;
+      });
+      const next = LESSONS.find(l => !store.get("done:" + l.file, false));
+      box.innerHTML = `
+        <p><strong>Your progress:</strong> ${doneCount} of ${LESSONS.length} lessons complete (${pct}%).</p>
+        <div class="bar"><span style="width:${pct}%"></span></div>
+        ${next ? `<p>👉 Continue with <a href="${next.file}"><strong>${next.title}</strong></a></p>` : "<p>🏆 You've completed every available lesson. Fantastic work!</p>"}
+        ${TBL_OPEN}<thead><tr><th>Lesson</th><th>Status</th><th>Quizzes solved</th></tr></thead><tbody>${rows}</tbody>${TBL_CLOSE}
+        <p style="font-size:0.85em;opacity:0.75">Progress is saved in this browser only. Using another device or a private window starts fresh.</p>`;
+    });
+    document.querySelectorAll("div.reset-progress").forEach(box => {
+      box.innerHTML = "";
+      const btn = document.createElement("button");
+      btn.className = "btn btn-outline-danger btn-sm";
+      btn.textContent = "Reset all my course progress";
+      btn.addEventListener("click", () => {
+        if (confirm("Reset all lesson and quiz progress stored in this browser?")) {
+          store.clear();
+          location.reload();
+        }
+      });
+      box.appendChild(btn);
+    });
+  }
+
+  function init() {
+    buildQuizzes();
+    buildCompletion();
+    sequenceBanner();
+    markSidebar();
+    buildOverview();
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
+</script>
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W119
+</script>
+<script type="module">
+if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+window._ojs.paths.runtimeToDoc = "../..";
+window._ojs.paths.runtimeToRoot = "../..";
+window._ojs.paths.docToRoot = "";
+window._ojs.selfContained = false;
+window._ojs.runtime.interpretFromScriptTags();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./m3-04-themes.html" class="pagination-link" aria-label="3.4 Themes and exporting">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">3.4 Themes and exporting</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./m3-06-checkpoint.html" class="pagination-link" aria-label="3.6 Module checkpoint">
+        <span class="nav-page-text">3.6 Module checkpoint</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>R for Sport &amp; Exercise Science · Built with Quarto + webR</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

@@ -1,0 +1,546 @@
+---
+title: "2.3 Measures of spread"
+subtitle: "Range, variance, standard deviation, quantiles and outliers"
+webr:
+  packages: ['ggplot2']
+  resources:
+    - data/balance.csv
+    - data/cmj.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+theme_set(theme_gray(base_size = 14))
+balance <- read.csv("data/balance.csv")
+cmj <- read.csv("data/cmj.csv")
+cmj3 <- subset(cmj, trial == "CMJ 3")
+quiet <- subset(cmj3, time_s <= 1.5)
+```
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- explain why a measure of center is not enough,
+- calculate the **range**, **variance**, **standard deviation** and **coefficient of variation**,
+- use **quartiles**, **quantiles** (percentiles) and **quintiles**,
+- find **outliers** with the **IQR rule**, and decide what to do with them.
+
+⏱️ About 45 minutes.
+:::
+
+## Measures of spread
+
+Two athletes each perform five CMJs:
+
+```{webr}
+athlete_A <- c(40, 41, 39, 40, 40)
+athlete_B <- c(30, 50, 35, 45, 40)
+mean(athlete_A)
+mean(athlete_B)
+```
+
+Both have a mean of exactly 40 cm, but they are clearly not the same: A is very **consistent**, B is all over the place. A measure of center alone hides this. A **measure of spread** (or *variability*, *dispersion*) describes how far the values are scattered around the center.
+
+The simplest is the **range**: maximum minus minimum.
+
+```{webr}
+range(athlete_B)          # min and max
+diff(range(athlete_B))    # max - min
+```
+
+The range is easy to understand, but it depends on only two values (the most extreme ones), so a single unusual trial changes it completely. We need measures that use **all** the data.
+
+## Variance and standard deviation
+
+The idea: measure how far each value is from the mean (its **deviation**), and average those distances.
+
+Let's do it step by step for athlete B:
+
+```{webr}
+x <- athlete_B
+deviations <- x - mean(x)
+deviations
+sum(deviations)    # always 0! positives and negatives cancel out
+```
+
+Because the deviations always sum to zero, we **square** them first (squares are always positive). The average squared deviation is the **variance**:
+
+$$s^2 = \frac{\sum (x_i - \bar{x})^2}{n - 1}$$
+
+Because the deviations were squared, the variance is in **squared units** (cm²), which is hard to interpret. Taking the square root brings us back to the original units. This is the **standard deviation (SD)**:
+
+$$s = \sqrt{s^2}$$
+
+```{webr}
+squared <- deviations^2
+variance <- sum(squared) / (length(x) - 1)
+variance
+sqrt(variance)
+```
+
+R does all of this for you with `var()` and `sd()`:
+
+```{webr}
+var(athlete_B)
+sd(athlete_B)
+sd(athlete_A)
+```
+
+Athlete B's SD (7.9 cm) is more than 10 times larger than athlete A's (0.7 cm). Roughly speaking, the SD is the *typical distance of a value from the mean*.
+
+::: {.callout-tip}
+## Why divide by *n* − 1?
+We usually calculate the SD of a **sample** to estimate the spread in the **population**. Deviations are measured from the sample mean, which is always a bit closer to the sample values than the unknown population mean. Dividing by *n* − 1 instead of *n* corrects for this. R's `var()` and `sd()` always use *n* − 1.
+:::
+
+::: {.task}
+Calculate the variance of `sprint` **by hand**, following the steps above, and store it in `var_by_hand`. Then calculate the standard deviation with `sd()` and store it in `sd_sprint`.
+:::
+
+```{webr}
+#| exercise: sp_1
+#| caption: "Exercise · Variance and standard deviation"
+sprint <- c(4.12, 4.05, 4.20, 3.98, 4.15)   # 30 m sprint times (s)
+
+# Variance by hand
+dev <- sprint - mean(sprint)
+var_by_hand <- ______
+
+# Standard deviation
+sd_sprint <- ______
+
+var_by_hand
+sd_sprint
+```
+
+::: {.hint exercise="sp_1"}
+`sum(dev^2) / (length(sprint) - 1)`, and `sd(sprint)`. Check that `var_by_hand` equals `var(sprint)`.
+:::
+
+::: {.solution exercise="sp_1"}
+```{webr}
+#| exercise: sp_1
+#| solution: true
+sprint <- c(4.12, 4.05, 4.20, 3.98, 4.15)   # 30 m sprint times (s)
+
+# Variance by hand
+dev <- sprint - mean(sprint)
+var_by_hand <- sum(dev^2) / (length(sprint) - 1)
+
+# Standard deviation
+sd_sprint <- sd(sprint)
+
+var_by_hand
+sd_sprint
+```
+:::
+
+```{webr}
+#| exercise: sp_1
+#| check: true
+res <- .check_vars(c("var_by_hand", "sd_sprint"), .envir_result, .checker_args$envir_solution)
+if (!isTRUE(res$correct) && exists("var_by_hand", envir = .envir_result) &&
+    isTRUE(all.equal(get("var_by_hand", envir = .envir_result), sum((c(4.12, 4.05, 4.20, 3.98, 4.15) - 4.1)^2) / 5)))
+  res <- .no("Close! You divided by n. Divide by `length(sprint) - 1` instead.")
+if (isTRUE(res$correct)) res <- .ok("Correct! SD ≈ 0.087 s: the sprint times typically differ from the mean (4.10 s) by under a tenth of a second.")
+res
+```
+
+### Using the SD on force data: when does the jump start?
+
+When analysing a CMJ, you need to know **when the movement starts**. During quiet standing the force wobbles randomly around body weight. A common rule (e.g. Owen et al., 2014) is: *the movement starts when the force drops more than **5 SDs** below body weight*. A drop that big is very unlikely to be just noise.
+
+The quiet-standing data of CMJ 3 is loaded as `quiet` (0–1.5 s).
+
+::: {.task}
+1. Calculate body weight (`bw`, the mean of `quiet$force_total`) and the SD of the quiet-standing force (`bw_sd`).
+2. Calculate the onset `threshold` = `bw - 5 * bw_sd`.
+3. Find the **first time** at which `cmj3$force_total` drops below the threshold. `which()` returns the positions where a condition is `TRUE`, and `[1]` takes the first one. This is given for you.
+:::
+
+```{webr}
+#| exercise: sp_2
+#| caption: "Exercise · Movement onset with the SD"
+# 1. Body weight and its SD during quiet standing
+bw <- ______
+bw_sd <- ______
+
+# 2. Onset threshold
+threshold <- ______
+
+# 3. First time the force drops below the threshold
+onset_time <- cmj3$time_s[which(cmj3$force_total < threshold)[1]]
+onset_time
+```
+
+::: {.hint exercise="sp_2"}
+`mean(quiet$force_total)`, `sd(quiet$force_total)`, and `bw - 5 * bw_sd`.
+:::
+
+::: {.solution exercise="sp_2"}
+```{webr}
+#| exercise: sp_2
+#| solution: true
+# 1. Body weight and its SD during quiet standing
+bw <- mean(quiet$force_total)
+bw_sd <- sd(quiet$force_total)
+
+# 2. Onset threshold
+threshold <- bw - 5 * bw_sd
+
+# 3. First time the force drops below the threshold
+onset_time <- cmj3$time_s[which(cmj3$force_total < threshold)[1]]
+onset_time
+```
+:::
+
+```{webr}
+#| exercise: sp_2
+#| check: true
+.check_vars(c("bw", "bw_sd", "threshold", "onset_time"), .envir_result, .checker_args$envir_solution,
+  ok = "Excellent! The SD of quiet standing is only ≈2.4 N, so the threshold is ≈714 N and the movement starts at 1.536 s. That's exactly how force-plate software does it.")
+```
+
+### The coefficient of variation (CV)
+
+The SD is in the units of the data, so you can't compare the variability of, say, jump height (cm) and sprint time (s) directly. The **coefficient of variation** expresses the SD as a **percentage of the mean**:
+
+$$CV = \frac{SD}{\bar{x}} \times 100\%$$
+
+In sport science the CV is widely used to describe the **consistency of repeated trials** (test–retest reliability). A CV below about 5 % is generally considered good for jump height.
+
+::: {.task}
+Athlete K's three jump heights are given. Calculate their **CV in %** and store it in `cv_height`.
+:::
+
+```{webr}
+#| exercise: sp_3
+#| caption: "Exercise · Coefficient of variation"
+height_cm <- c(40.4, 39.6, 41.3)
+
+# CV in %
+cv_height <- ______
+cv_height
+```
+
+::: {.hint exercise="sp_3"}
+`sd(height_cm) / mean(height_cm) * 100`
+:::
+
+::: {.solution exercise="sp_3"}
+```{webr}
+#| exercise: sp_3
+#| solution: true
+height_cm <- c(40.4, 39.6, 41.3)
+
+# CV in %
+cv_height <- sd(height_cm) / mean(height_cm) * 100
+cv_height
+```
+:::
+
+```{webr}
+#| exercise: sp_3
+#| check: true
+.check_vars("cv_height", .envir_result, .checker_args$envir_solution,
+  ok = "Correct! CV ≈ 2.1 %: Athlete K jumps very consistently.")
+```
+
+::: {.quiz id="sp-q1"}
+What are the units of the **variance** of jump heights measured in cm?
+
+- [ ] cm
+- [x] cm²
+- [ ] %
+
+::: {.explanation}
+The variance averages **squared** deviations, so its unit is cm². That's why we usually report the SD (cm), its square root.
+:::
+:::
+
+::: {.quiz id="sp-q2"}
+If you add 10 cm to every jump height (e.g. a measurement offset), what happens to the SD?
+
+- [ ] It increases by 10 cm
+- [x] It stays the same
+- [ ] It increases by 10 %
+
+::: {.explanation}
+Every value *and* the mean move by 10 cm, so the deviations from the mean don't change, and neither does the SD. Spread is about distances between values, not their location.
+:::
+:::
+
+## Quartiles, quantiles and quintiles
+
+The SD works best for roughly symmetric data. A second family of spread measures is based on **sorting** the data, just like the median.
+
+**Quantiles** divide sorted data into equal-sized parts. The 0.9 quantile (also called the **90th percentile**) is the value below which 90 % of the observations lie. Special names exist for some common divisions:
+
+| Name | Divides the data into | Cut points |
+|---|---|---|
+| **Quartiles** | 4 parts | 25 %, 50 %, 75 % (Q1, Q2 = median, Q3) |
+| **Quintiles** | 5 parts | 20 %, 40 %, 60 %, 80 % |
+| **Deciles** | 10 parts | 10 %, 20 %, …, 90 % |
+| **Percentiles** | 100 parts | 1 %, 2 %, …, 99 % |
+
+The function `quantile()` gives the quartiles (plus min and max) by default:
+
+```{webr}
+quantile(balance$minibest)
+```
+
+So 25 % of participants scored 18 or less (Q1) and 75 % scored 25 or less (Q3). Use the `probs` argument for other quantiles:
+
+```{webr}
+quantile(balance$minibest, probs = 0.9)                   # 90th percentile
+quantile(balance$minibest, probs = c(0.2, 0.4, 0.6, 0.8)) # quintiles
+quantile(balance$minibest, probs = seq(0.1, 0.9, by = 0.1)) # deciles
+```
+
+`seq(0.1, 0.9, by = 0.1)` creates the sequence 0.1, 0.2, …, 0.9.
+
+The distance between Q3 and Q1 is the **interquartile range (IQR)**: the range of the middle 50 % of the data. Like the median, it's **robust** to extreme values.
+
+```{webr}
+IQR(balance$minibest)
+```
+
+Percentiles are used a lot for **normative data**: *"Your Mini-BESTest score is at the 20th percentile for your age group"*, or physical-fitness test norms for children.
+
+::: {.task}
+1. Calculate the **quintiles** of `balance$tmt_a_s` (Trail Making Test A time) and store them in `tmt_quintiles`.
+2. Calculate the **IQR** of `balance$tmt_a_s` and store it in `tmt_iqr`.
+:::
+
+```{webr}
+#| exercise: sp_4
+#| caption: "Exercise · Quantiles and quintiles"
+# 1. Quintiles of TMT-A time
+tmt_quintiles <- quantile(______, probs = ______)
+
+# 2. Interquartile range
+tmt_iqr <- ______
+
+tmt_quintiles
+tmt_iqr
+```
+
+::: {.hint exercise="sp_4"}
+`probs = c(0.2, 0.4, 0.6, 0.8)` and `IQR(balance$tmt_a_s)`.
+:::
+
+::: {.solution exercise="sp_4"}
+```{webr}
+#| exercise: sp_4
+#| solution: true
+# 1. Quintiles of TMT-A time
+tmt_quintiles <- quantile(balance$tmt_a_s, probs = c(0.2, 0.4, 0.6, 0.8))
+
+# 2. Interquartile range
+tmt_iqr <- IQR(balance$tmt_a_s)
+
+tmt_quintiles
+tmt_iqr
+```
+:::
+
+```{webr}
+#| exercise: sp_4
+#| check: true
+.check_vars(c("tmt_quintiles", "tmt_iqr"), .envir_result, .checker_args$envir_solution,
+  ok = "Correct! The fastest 20 % finished within ≈18 s, while the slowest 20 % needed more than ≈53 s.")
+```
+
+### Making quintile groups
+
+Researchers often split participants into groups using quantiles, e.g. *"the lowest 20 % of balance scores"*. The function `cut()` does this when you give it the quantiles as `breaks`:
+
+```{webr}
+breaks <- quantile(balance$age, probs = seq(0, 1, by = 0.2))
+balance$age_quintile <- cut(balance$age, breaks = breaks, include.lowest = TRUE,
+                            labels = c("Q1", "Q2", "Q3", "Q4", "Q5"))
+table(balance$age_quintile)
+tapply(balance$minibest, balance$age_quintile, median)
+```
+
+Each quintile group contains about 20 % of the participants (≈33 people), and you can see the median balance score drop in the oldest quintiles.
+
+::: {.quiz id="sp-q3"}
+A player's sprint time is at the **80th percentile** of the team's 30 m times. What does that mean?
+
+- [ ] They are faster than 80 % of the team
+- [x] 80 % of the team's times are equal to or lower than theirs, so they are among the slower players
+- [ ] Their time is 80 % of the team's best time
+
+::: {.explanation}
+Percentiles describe the position in the sorted data. For sprint *times*, a lower value is better, so a time at the 80th percentile is slower than 80 % of the team. Always check whether higher or lower is better!
+:::
+:::
+
+## Finding outliers using the IQR
+
+An **outlier** is an observation that lies unusually far from the rest. A widely used rule (by John Tukey, and the same one box plots use) flags values that lie more than **1.5 × IQR** beyond the quartiles:
+
+$$\text{lower fence} = Q_1 - 1.5 \times IQR \qquad \text{upper fence} = Q_3 + 1.5 \times IQR$$
+
+Values below the lower fence or above the upper fence are potential outliers. In a box plot, they are the dots beyond the whiskers.
+
+```{webr}
+#| fig-width: 8
+#| fig-height: 3
+ggplot(balance, aes(x = tmt_a_s)) +
+  geom_boxplot() +
+  labs(x = "Trail Making Test A (s)")
+```
+
+The dots on the right are the participants the IQR rule flags in the **Trail Making Test A**.
+
+::: {.task}
+Find the outliers in the **Trail Making Test A** times (`tmt_a_s`).
+
+1. Calculate `q1` and `q3` with `quantile()` (probs 0.25 and 0.75) and `iqr` with `IQR()`.
+2. Calculate the `upper_fence`.
+3. Create `slow`: the participants (rows of `balance`) whose `tmt_a_s` is **above** the upper fence. Then count them.
+:::
+
+```{webr}
+#| exercise: sp_5
+#| caption: "Exercise · Finding outliers using the IQR"
+# 1. Quartiles and IQR
+q1 <- quantile(balance$tmt_a_s, probs = ______)
+q3 <- quantile(balance$tmt_a_s, probs = ______)
+iqr <- ______
+
+# 2. Upper fence
+upper_fence <- ______
+
+# 3. Participants above the upper fence
+slow <- subset(balance, ______)
+nrow(slow)
+```
+
+::: {.hint exercise="sp_5"}
+1. `probs = 0.25`, `probs = 0.75`, `IQR(balance$tmt_a_s)`
+2. `q3 + 1.5 * iqr`
+3. `subset(balance, tmt_a_s > upper_fence)`
+:::
+
+::: {.solution exercise="sp_5"}
+```{webr}
+#| exercise: sp_5
+#| solution: true
+# 1. Quartiles and IQR
+q1 <- quantile(balance$tmt_a_s, probs = 0.25)
+q3 <- quantile(balance$tmt_a_s, probs = 0.75)
+iqr <- IQR(balance$tmt_a_s)
+
+# 2. Upper fence
+upper_fence <- q3 + 1.5 * iqr
+
+# 3. Participants above the upper fence
+slow <- subset(balance, tmt_a_s > upper_fence)
+nrow(slow)
+```
+:::
+
+```{webr}
+#| exercise: sp_5
+#| check: true
+res <- .check_vars(c("upper_fence", "slow"), .envir_result, .checker_args$envir_solution)
+if (isTRUE(res$correct)) res <- .ok(paste0("Correct! The upper fence is ", round(get("upper_fence", envir = .envir_result)),
+  " s and ", nrow(get("slow", envir = .envir_result)), " participants lie above it. Look at `slow[, c(\"age\", \"tmt_a_s\")]`: 6 of the 8 are aged over 60, and one hit the 300 s time limit. Slow, but genuine."))
+res
+```
+
+### An outlier is not automatically an error
+
+What should you do with outliers? **Never delete them automatically.** First ask *why* a value is unusual:
+
+- **Measurement or data-entry error** (a jump height of 410 cm instead of 41.0 cm): correct it or remove it, and report that you did.
+- **A genuine but extreme observation** (a very slow participant, an elite athlete in a recreational group): keep it, and consider robust statistics (median, IQR).
+- **Part of the phenomenon you're studying**: definitely keep it!
+
+The force data shows the last case beautifully. Apply the IQR rule to all force samples of CMJ 3:
+
+```{webr}
+f <- cmj3$force_total
+upper <- quantile(f, 0.75) + 1.5 * IQR(f)
+upper
+sum(f > upper)    # number of "outlier" samples
+```
+
+```{webr}
+#| fig-width: 9
+#| fig-height: 4.5
+cmj3$outlier <- cmj3$force_total > upper
+ggplot(cmj3, aes(x = time_s, y = force_total)) +
+  geom_line(colour = "grey60") +
+  geom_point(data = subset(cmj3, outlier), colour = "red", size = 0.8) +
+  labs(x = "Time (s)", y = "Vertical force (N)", title = "Samples flagged as outliers by the IQR rule (red)")
+```
+
+Almost 300 samples are flagged, and they are exactly the **propulsion** and **landing** phases: the most important parts of the jump! Most of the recording is quiet standing, so the IQR rule considers everything else "unusual". The lesson: outlier rules are tools for **spotting** values worth a second look, not for deciding what to delete. Always combine them with your knowledge of the data.
+
+::: {.quiz id="sp-q4"}
+For a variable, Q1 = 20 and Q3 = 30. Above which value would an observation be flagged as an outlier?
+
+- [ ] 35
+- [x] 45
+- [ ] 60
+
+::: {.explanation}
+IQR = 30 − 20 = 10. Upper fence = Q3 + 1.5 × IQR = 30 + 15 = 45.
+:::
+:::
+
+::: {.quiz id="sp-q5"}
+You find a participant with a body mass of 7.2 kg in a dataset of adult runners. What should you do?
+
+- [ ] Keep it: outliers are real data
+- [ ] Delete the participant without mentioning it
+- [x] Check the original records: it's probably a data-entry error (72 kg), so correct it if you can, and document what you did
+
+::: {.explanation}
+A 7.2 kg adult is impossible, so this is an error, not a genuine extreme value. Fix it from the source data if possible (otherwise set it to `NA`), and always report data cleaning decisions.
+:::
+:::
+
+::: {.quiz id="sp-q6"}
+Which pair of statistics is most appropriate to describe a **strongly skewed** variable?
+
+- [ ] Mean and SD
+- [x] Median and IQR
+- [ ] Mode and range
+
+::: {.explanation}
+Both the median and the IQR are based on sorted positions, so extreme values in the tail affect them little. Mean and SD are best for roughly symmetric data.
+:::
+:::
+
+## Lesson summary
+
+| Measure | R | Robust to outliers? | Best for |
+|---|---|---|---|
+| Range | `diff(range(x))` | no | quick overview |
+| Variance | `var(x)` | no | mathematical basis of SD |
+| Standard deviation | `sd(x)` | no | symmetric data (report with the mean) |
+| Coefficient of variation | `sd(x) / mean(x) * 100` | no | comparing variability, reliability |
+| Quantiles / IQR | `quantile(x, probs)`, `IQR(x)` | **yes** | skewed data (report with the median), norms |
+
+- Outliers with the IQR rule: below Q1 − 1.5·IQR or above Q3 + 1.5·IQR.
+- Investigate outliers; don't delete them automatically.
+
+### Scratchpad
+
+`balance`, `cmj`, `cmj3` and `quiet` are loaded.
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

@@ -1,0 +1,430 @@
+---
+title: "2.4 The normal distribution and the central limit theorem"
+subtitle: "The bell curve, z-scores, and why averages behave so nicely"
+webr:
+  packages: ['ggplot2']
+  resources:
+    - data/balance.csv
+    - data/cmj.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+theme_set(theme_gray(base_size = 14))
+balance <- read.csv("data/balance.csv")
+cmj <- read.csv("data/cmj.csv")
+cmj3 <- subset(cmj, trial == "CMJ 3")
+quiet <- subset(cmj3, time_s <= 1.5)
+```
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- describe the **normal distribution** and the **68–95–99.7 rule**,
+- calculate and interpret **z-scores**,
+- check whether data look normal with a histogram and a **Q-Q plot**,
+- explain the **central limit theorem** (CLT) and the **standard error**, and see them in action with a simulation.
+
+⏱️ About 45 minutes. This lesson uses the mean and SD from [lesson 2.3](m2-03-spread.qmd), so make sure you're comfortable with them.
+:::
+
+## The normal distribution
+
+Many measurements in biology and sport, such as body height, the small fluctuations of a force signal, or repeated measurements of the same athlete, follow a typical pattern: most values are close to the mean, and values become rarer the further you go from it, equally on both sides. This symmetric, bell-shaped pattern is the **normal distribution** (or *Gaussian* distribution).
+
+A normal distribution is completely described by just two numbers: its **mean** (μ, where the peak is) and its **standard deviation** (σ, how wide the bell is).
+
+```{webr}
+#| fig-width: 9
+#| fig-height: 4
+ggplot() +
+  stat_function(fun = dnorm, args = list(mean = 40, sd = 5), linewidth = 1.2, colour = "steelblue") +
+  stat_function(fun = dnorm, args = list(mean = 40, sd = 2.5), linewidth = 1.2, colour = "firebrick") +
+  xlim(25, 55) +
+  labs(x = "Jump height (cm)", y = "Density",
+       title = "Two normal distributions with mean 40: SD 5 (blue) and SD 2.5 (red)")
+```
+
+`dnorm()` gives the height (density) of the normal curve, and `stat_function()` draws a function in a ggplot.
+
+### Real data: quiet standing force
+
+Remember the quiet-standing phase before CMJ 3? Let's look at the **distribution** of those 750 force samples, and overlay a normal curve with the same mean and SD:
+
+```{webr}
+#| fig-width: 9
+#| fig-height: 4.5
+m <- mean(quiet$force_total)
+s <- sd(quiet$force_total)
+
+ggplot(quiet, aes(x = force_total)) +
+  geom_histogram(aes(y = after_stat(density)), binwidth = 1, fill = "grey75", colour = "white") +
+  stat_function(fun = dnorm, args = list(mean = m, sd = s), colour = "firebrick", linewidth = 1.2) +
+  labs(x = "Force during quiet standing (N)", y = "Density")
+```
+
+(`aes(y = after_stat(density))` scales the histogram so its total area is 1, like the curve.)
+
+The fluctuations around body weight follow the normal curve quite closely. That's typical for **random noise**: many small, independent influences (sway, breathing, electronic noise) adding up.
+
+### The 68–95–99.7 rule
+
+For **any** normal distribution:
+
+- about **68 %** of the values lie within **1 SD** of the mean,
+- about **95 %** lie within **2 SDs** (more precisely 1.96),
+- about **99.7 %** lie within **3 SDs**.
+
+This is why the onset threshold in [lesson 2.3](m2-03-spread.qmd) used **5 SDs**: if the force were just noise, a drop of more than 5 SDs would essentially never happen (less than 1 in a million samples).
+
+::: {.task}
+Check the rule on the real data. Calculate the **proportion** of quiet-standing samples that lie within **1 SD** of the mean (`within_1sd`) and within **2 SDs** (`within_2sd`). Tip: `abs()` gives the absolute (positive) distance, and the `mean()` of a logical vector is the proportion of `TRUE`s.
+:::
+
+```{webr}
+#| exercise: no_1
+#| caption: "Exercise · The 68–95–99.7 rule"
+x <- quiet$force_total
+m <- mean(x)
+s <- sd(x)
+
+# Proportion within 1 SD and within 2 SDs of the mean
+within_1sd <- mean(abs(x - m) <= ______)
+within_2sd <- mean(abs(x - m) <= ______)
+
+within_1sd
+within_2sd
+```
+
+::: {.hint exercise="no_1"}
+Replace the blanks with `s` and `2 * s`.
+:::
+
+::: {.solution exercise="no_1"}
+```{webr}
+#| exercise: no_1
+#| solution: true
+x <- quiet$force_total
+m <- mean(x)
+s <- sd(x)
+
+# Proportion within 1 SD and within 2 SDs of the mean
+within_1sd <- mean(abs(x - m) <= s)
+within_2sd <- mean(abs(x - m) <= 2 * s)
+
+within_1sd
+within_2sd
+```
+:::
+
+```{webr}
+#| exercise: no_1
+#| check: true
+.check_vars(c("within_1sd", "within_2sd"), .envir_result, .checker_args$envir_solution,
+  ok = paste0("Correct! ", round(100 * get("within_1sd", envir = .envir_result)), " % within 1 SD and ",
+              round(100 * get("within_2sd", envir = .envir_result)), " % within 2 SDs: very close to 68 % and 95 %."))
+```
+
+## z-scores
+
+A **z-score** tells you how many standard deviations a value lies above (+) or below (−) the mean:
+
+$$z = \frac{x - \bar{x}}{SD}$$
+
+z-scores are popular in sport science for **athlete profiling**, because they put very different tests (jump height in cm, sprint time in s, VO₂max in mL/kg/min) on the same scale. A z of +1.5 means "1.5 SDs better than the squad average", whatever the test.
+
+If the data are normal, you can turn a z-score into a **percentile** with `pnorm()`, the proportion of the normal distribution below a z-score:
+
+```{webr}
+pnorm(0)      # 0.5: half of the values are below the mean
+pnorm(1)      # 0.84: a z of +1 is at the 84th percentile
+pnorm(-2)     # 0.02
+```
+
+::: {.task}
+A basketball squad's CMJ heights are given. Calculate every player's **z-score** and store the vector in `z`. Then select the names of the players with a z-score **above +1** and store them in `top_jumpers`.
+:::
+
+```{webr}
+#| exercise: no_2
+#| caption: "Exercise · z-scores"
+squad <- c(Alex = 38.2, Ben = 44.9, Chris = 41.0, Dimitris = 35.6, Eric = 47.3,
+           Filip = 40.4, George = 39.1, Hugo = 42.8, Ivan = 36.7, Jon = 43.5)
+
+# z-scores
+z <- (______ - ______) / ______
+
+# Names of players with z above +1
+top_jumpers <- names(z[______])
+
+round(z, 2)
+top_jumpers
+```
+
+::: {.hint exercise="no_2"}
+`z <- (squad - mean(squad)) / sd(squad)`, and `names(z[z > 1])`.
+:::
+
+::: {.solution exercise="no_2"}
+```{webr}
+#| exercise: no_2
+#| solution: true
+squad <- c(Alex = 38.2, Ben = 44.9, Chris = 41.0, Dimitris = 35.6, Eric = 47.3,
+           Filip = 40.4, George = 39.1, Hugo = 42.8, Ivan = 36.7, Jon = 43.5)
+
+# z-scores
+z <- (squad - mean(squad)) / sd(squad)
+
+# Names of players with z above +1
+top_jumpers <- names(z[z > 1])
+
+round(z, 2)
+top_jumpers
+```
+:::
+
+```{webr}
+#| exercise: no_2
+#| check: true
+.check_vars(c("z", "top_jumpers"), .envir_result, .checker_args$envir_solution,
+  ok = "Correct! Ben and Eric jump more than 1 SD above the squad mean. Note that the z-scores of a group always have mean 0 and SD 1.")
+```
+
+## Is my data normal?
+
+Many statistical methods (t-tests, ANOVA, regression) assume that the data, or more exactly the errors, are approximately normal. Two graphical checks:
+
+1. A **histogram**: is it roughly symmetric and bell-shaped?
+2. A **Q-Q plot** (quantile–quantile plot): it plots the quantiles of your data against the quantiles of a normal distribution. If the data are normal, the points lie close to a **straight line**.
+
+```{webr}
+#| fig-width: 9
+#| fig-height: 4.5
+ggplot(balance, aes(sample = height_cm)) +
+  geom_qq() +
+  geom_qq_line(colour = "firebrick") +
+  labs(title = "Body height: points follow the line, so approximately normal")
+```
+
+```{webr}
+#| fig-width: 9
+#| fig-height: 4.5
+ggplot(balance, aes(sample = tmt_b_s)) +
+  geom_qq() +
+  geom_qq_line(colour = "firebrick") +
+  labs(title = "TMT-B time: a strong curve, so clearly not normal (right-skewed)")
+```
+
+Note that a Q-Q plot uses the aesthetic `sample` instead of `x`.
+
+::: {.quiz id="no-q1"}
+A jump-height test has a squad mean of 40 cm and SD of 4 cm (approximately normal). Roughly what percentage of players jump **between 32 and 48 cm**?
+
+- [ ] 68 %
+- [x] 95 %
+- [ ] 99.7 %
+
+::: {.explanation}
+32 and 48 cm are 2 SDs below and above the mean (40 ± 2 × 4), so about 95 % of players lie between them.
+:::
+:::
+
+::: {.quiz id="no-q2"}
+A player's sprint **time** has a z-score of −1.5 relative to the squad. What does that mean?
+
+- [ ] They are 1.5 s slower than average
+- [x] Their time is 1.5 SDs below the squad mean, so they are one of the fastest
+- [ ] They are at the 15th percentile, so one of the slowest
+
+::: {.explanation}
+A negative z means below the mean. For sprint **times**, lower is better, so z = −1.5 is fast. (Coaches often flip the sign for "lower is better" tests so that a positive z always means good.)
+:::
+:::
+
+## The central limit theorem
+
+Now for one of the most important ideas in all of statistics.
+
+So far we've looked at the distribution of **individual values**. Now imagine you repeatedly take a **sample** of *n* values from a population and calculate the sample **mean** each time. Each sample gives a slightly different mean. How are these sample means distributed?
+
+::: {.callout-important}
+## The central limit theorem (CLT)
+If you take many random samples of size *n* from **any** population (with mean μ and SD σ), then, provided *n* is large enough, the **sample means**:
+
+1. are approximately **normally distributed**, *even if the population itself is not normal*,
+2. are centred on the population mean **μ**,
+3. have a standard deviation of $\sigma / \sqrt{n}$, called the **standard error (SE)** of the mean.
+:::
+
+A common rule of thumb is that *n* ≥ 30 is "large enough", though for populations that aren't very skewed, much smaller samples already work.
+
+### Seeing the CLT with a simulation
+
+Let's treat the 163 **TMT-B times**, which are strongly right-skewed, as our population, and simulate taking samples from it.
+
+Two new functions:
+
+- `sample(x, size = n, replace = TRUE)` draws *n* random values from `x`,
+- `replicate(1000, expression)` repeats an expression 1000 times and collects the results.
+
+`set.seed()` makes the random numbers reproducible: with the same seed you get the same "random" result every time.
+
+```{webr}
+#| fig-width: 9
+#| fig-height: 4.5
+population <- balance$tmt_b_s
+set.seed(1)
+
+n <- 2   # <-- change the sample size: try 2, 5, 10, 30 and 60
+
+sample_means <- replicate(1000, mean(sample(population, size = n, replace = TRUE)))
+
+ggplot(data.frame(sample_means), aes(x = sample_means)) +
+  geom_histogram(bins = 40, fill = "steelblue", colour = "white") +
+  geom_vline(xintercept = mean(population), colour = "firebrick", linewidth = 1) +
+  labs(x = paste("Mean of a sample of n =", n), y = "Count",
+       title = "1000 sample means; red line = population mean")
+```
+
+Run the code with `n <- 2`, then change it to 5, 10, 30 and 60. What happens?
+
+- With small *n*, the sample means are still skewed, like the population.
+- As *n* grows, the histogram becomes a **symmetric bell curve** centred on the population mean (red line).
+- It also becomes **narrower**: larger samples give more precise means.
+
+That narrowing is the standard error, σ/√*n*: to halve the SE, you need **four times** as many observations.
+
+::: {.task}
+1. Using `set.seed(42)`, simulate **1000 sample means** with sample size **n = 30** from `population` and store them in `means_30`.
+2. Calculate the SD of these sample means (`sd_of_means`).
+3. Calculate the theoretical standard error `se = sd(population) / sqrt(30)` and compare.
+:::
+
+```{webr}
+#| exercise: no_3
+#| caption: "Exercise · The central limit theorem"
+population <- balance$tmt_b_s
+set.seed(42)
+
+# 1. 1000 means of samples of size 30
+means_30 <- replicate(1000, mean(sample(population, size = ______, replace = TRUE)))
+
+# 2. SD of the sample means
+sd_of_means <- ______
+
+# 3. Theoretical standard error
+se <- ______
+
+sd_of_means
+se
+```
+
+::: {.hint exercise="no_3"}
+1. `size = 30`
+2. `sd(means_30)`
+3. `sd(population) / sqrt(30)`
+:::
+
+::: {.solution exercise="no_3"}
+```{webr}
+#| exercise: no_3
+#| solution: true
+population <- balance$tmt_b_s
+set.seed(42)
+
+# 1. 1000 means of samples of size 30
+means_30 <- replicate(1000, mean(sample(population, size = 30, replace = TRUE)))
+
+# 2. SD of the sample means
+sd_of_means <- sd(means_30)
+
+# 3. Theoretical standard error
+se <- sd(population) / sqrt(30)
+
+sd_of_means
+se
+```
+:::
+
+```{webr}
+#| exercise: no_3
+#| check: true
+e <- .envir_result
+if (!exists("means_30", envir = e, inherits = FALSE) || length(get("means_30", envir = e)) != 1000) {
+  .no("`means_30` should contain 1000 sample means. Check the `replicate()` line.")
+} else if (!exists("se", envir = e, inherits = FALSE) ||
+           !isTRUE(all.equal(get("se", envir = e), sd(balance$tmt_b_s) / sqrt(30)))) {
+  .no("`se` should be `sd(population) / sqrt(30)`.")
+} else if (!exists("sd_of_means", envir = e, inherits = FALSE) ||
+           abs(get("sd_of_means", envir = e) - get("se", envir = e)) > 3) {
+  .no("`sd_of_means` should be `sd(means_30)`, and it should come out close to `se`. Did you use size = 30?")
+} else {
+  .ok(paste0("Excellent! The simulated SD of the means (", round(get("sd_of_means", envir = e), 1),
+             " s) matches the theoretical standard error (", round(get("se", envir = e), 1),
+             " s), just as the CLT predicts."))
+}
+```
+
+### Why the CLT matters to you
+
+- **It's the foundation of inferential statistics.** Because sample means are approximately normal, we can calculate confidence intervals and run t-tests on means, even when the raw data aren't perfectly normal (Module 4).
+- **It explains why we average repeated trials.** If a single jump varies with SD σ around an athlete's "true" ability, the mean of 3 jumps varies with only σ/√3 ≈ 0.58σ. Averaging trials gives a more precise estimate. That's why test protocols ask for several jumps.
+- **It explains why the normal distribution is everywhere.** Many biological measurements are the sum of many small, independent influences, and sums (like means) tend to be normal.
+
+::: {.quiz id="no-q3"}
+According to the CLT, what happens to the distribution of **sample means** as the sample size increases?
+
+- [ ] It becomes more skewed, like the population
+- [x] It becomes more normal and narrower, centred on the population mean
+- [ ] It becomes wider
+
+::: {.explanation}
+Sample means approach a normal distribution centred on μ, with a standard error σ/√n that shrinks as n grows.
+:::
+:::
+
+::: {.quiz id="no-q4"}
+The SD of single CMJ trials of an athlete is 1.2 cm. What is the standard error of the **mean of 4 trials**?
+
+- [ ] 0.3 cm
+- [x] 0.6 cm
+- [ ] 1.2 cm
+
+::: {.explanation}
+SE = SD / √n = 1.2 / √4 = 1.2 / 2 = 0.6 cm.
+:::
+:::
+
+::: {.quiz id="no-q5"}
+Does the CLT say that your **raw data** become normal if you collect enough of it?
+
+- [ ] Yes, with n ≥ 30 the data are always normal
+- [x] No, it's about the distribution of **sample means**; the raw data keep their own shape (e.g. skewed)
+- [ ] Only if the data are continuous
+
+::: {.explanation}
+A common misconception! Measuring 1000 TMT-B times still gives a skewed histogram. It's the **means** of repeated samples that become normal.
+:::
+:::
+
+## Lesson summary
+
+- The **normal distribution** is symmetric and bell-shaped, defined by its mean and SD; ≈68 % / 95 % / 99.7 % of values lie within 1 / 2 / 3 SDs.
+- **z = (x − mean) / SD** puts different tests on a common scale; `pnorm(z)` converts it to a percentile for normal data.
+- Check normality with a histogram and a **Q-Q plot** (`geom_qq()` + `geom_qq_line()`).
+- **Central limit theorem:** means of samples of size *n* are approximately normal, centred on μ, with **standard error σ/√n**, whatever the shape of the population.
+
+### Scratchpad
+
+`balance`, `cmj`, `cmj3` and `quiet` are loaded. Try a Q-Q plot of `minibest`, or simulate sample means of `balance$falls_12m`, a very skewed count.
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

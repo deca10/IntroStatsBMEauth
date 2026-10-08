@@ -1,0 +1,53 @@
+{{< include ./_extensions/r-wasm/live/_knitr.qmd >}}
+
+```{webr}
+#| include: false
+# ---- Grading helpers (hidden from students) ----
+.ok <- function(msg = "Correct! Well done.") list(correct = TRUE, type = "success", message = msg)
+.no <- function(msg = "Not quite. Have a look at the hint and try again.") list(correct = FALSE, type = "error", message = msg)
+
+# Compare the value the student's code returned with the value the solution returned
+.check_result <- function(result, solution, ok = "Correct! Well done.",
+                          no = "Not quite. Compare your output with what the task asks for.") {
+  if (isTRUE(all.equal(result, solution, check.attributes = TRUE))) .ok(ok) else .no(no)
+}
+
+# Check that variables created by the student match those of the solution
+.check_vars <- function(vars, env, sol_env, ok = "Correct! Well done.") {
+  for (v in vars) {
+    if (!exists(v, envir = env, inherits = FALSE))
+      return(.no(paste0("I can't find a variable called `", v, "`. Did you create it (spelling matters!)?")))
+    if (!isTRUE(all.equal(get(v, envir = env), get(v, envir = sol_env))))
+      return(.no(paste0("`", v, "` exists, but its value isn't what I expected. Check it and try again.")))
+  }
+  .ok(ok)
+}
+
+# Check that the student's code contains certain pieces of text (e.g. function names)
+.check_code <- function(code, patterns, ok = "Correct! Well done.") {
+  code <- paste(code, collapse = "\n")
+  for (p in patterns) {
+    if (!grepl(p, code, fixed = TRUE))
+      return(.no(paste0("Your code should use `", p, "`. Have another look at the task.")))
+  }
+  .ok(ok)
+}
+
+# Check a ggplot: must be a plot, use the given geoms and the given aesthetics
+.check_plot <- function(p, geoms = character(), aes = character(), ok = "Great plot!") {
+  if (!inherits(p, "ggplot"))
+    return(.no("Your code should return a ggplot. Did you start with `ggplot(...)` and connect layers with `+`?"))
+  used_geoms <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  for (g in geoms) {
+    if (!g %in% used_geoms)
+      return(.no(paste0("Your plot needs a `", tolower(sub("^Geom", "geom_", g)), "()` layer.")))
+  }
+  mapped <- c(names(p$mapping), unlist(lapply(p$layers, function(l) names(l$mapping))),
+              unlist(lapply(p$layers, function(l) names(l$aes_params))))
+  for (a in aes) {
+    if (!a %in% mapped)
+      return(.no(paste0("Your plot should set the `", a, "` aesthetic.")))
+  }
+  .ok(ok)
+}
+```
