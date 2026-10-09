@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>4.5 Correlation – R for Sport &amp; Exercise Science</title>
+<title>4.6 Correlation – R for Sport &amp; Exercise Science</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -71,8 +71,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./m4-06-simple-regression.html" rel="next">
-<link href="./m4-04-anova.html" rel="prev">
+<link href="./m4-07-simple-regression.html" rel="next">
+<link href="./m4-05-rm-anova.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -323,7 +323,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m4-01-confidence-intervals.html">Module 4 · Inferential statistics</a></li><li class="breadcrumb-item"><a href="./m4-05-correlation.html">4.5 Correlation</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m4-01-confidence-intervals.html">Module 4 · Inferential statistics</a></li><li class="breadcrumb-item"><a href="./m4-06-correlation.html">4.6 Correlation</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -533,38 +533,44 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-05-correlation.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">4.5 Correlation</span></a>
+  <a href="./m4-05-rm-anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.5 Repeated-measures ANOVA</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-06-simple-regression.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.6 Simple linear regression</span></a>
+  <a href="./m4-06-correlation.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">4.6 Correlation</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-07-multiple-regression.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.7 Multiple regression</span></a>
+  <a href="./m4-07-simple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.7 Simple linear regression</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-08-chi-square.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.8 Chi-square tests</span></a>
+  <a href="./m4-08-multiple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.8 Multiple regression</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-09-reliability.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.9 Reliability</span></a>
+  <a href="./m4-09-chi-square.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.9 Chi-square tests</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-10-checkpoint.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.10 Module checkpoint</span></a>
+  <a href="./m4-10-reliability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.10 Reliability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m4-11-checkpoint.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.11 Module checkpoint</span></a>
   </div>
 </li>
       </ul>
@@ -592,9 +598,9 @@ window.Quarto = {
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m4-01-confidence-intervals.html">Module 4 · Inferential statistics</a></li><li class="breadcrumb-item"><a href="./m4-05-correlation.html">4.5 Correlation</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m4-01-confidence-intervals.html">Module 4 · Inferential statistics</a></li><li class="breadcrumb-item"><a href="./m4-06-correlation.html">4.6 Correlation</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">4.5 Correlation</h1>
+<h1 class="title">4.6 Correlation</h1>
 <p class="subtitle lead">Measuring relationships, and recognising when a high correlation tells you nothing new</p>
 </div>
 
@@ -660,6 +666,9 @@ eyJhdHRyIjp7ImVjaG8iOmZhbHNlLCJlZGl0IjpmYWxzZSwiZXZhbCI6dHJ1ZSwiaW5jbHVkZSI6ZmFs
 <li><em>r</em> = 0: no linear relationship,</li>
 <li><em>r</em> = −1: perfect negative linear relationship.</li>
 </ul>
+<p>It’s the <strong>covariance</strong> of <em>x</em> and <em>y</em> (how much they vary together) divided by the product of their standard deviations, which makes it unit-free:</p>
+<p><span class="math display">\[r = \frac{\sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum_{i=1}^{n} (x_i - \bar{x})^2}\,\sqrt{\sum_{i=1}^{n} (y_i - \bar{y})^2}} = \frac{\text{cov}(x, y)}{s_x \, s_y}\]</span></p>
+<p>Each product <span class="math inline">\((x_i - \bar{x})(y_i - \bar{y})\)</span> is positive when an athlete is above (or below) average on <strong>both</strong> variables, and negative when they’re above on one and below on the other.</p>
 <div class="cell">
 <div>
 <div id="webr-3" class="exercise-cell">
@@ -670,7 +679,11 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWUsImZpZy1oZWlnaHQiOjQsImZpZy13aWR0aCI6
 </script>
 </div>
 </div>
-<p><code>cor(x, y)</code> gives <em>r</em>; <code>cor.test(x, y)</code> also gives a <em>p</em>-value (H₀: <em>r</em> = 0 in the population) and a 95 % CI:</p>
+<p><code>cor(x, y)</code> gives <em>r</em>; <code>cor.test(x, y)</code> also gives a <em>p</em>-value (H₀: ρ = 0, no correlation in the population) and a 95 % CI. The test statistic is</p>
+<p><span class="math display">\[t = \frac{r\sqrt{n - 2}}{\sqrt{1 - r^2}}, \qquad df = n - 2\]</span></p>
+<p>and the CI is calculated on the <strong>Fisher <em>z</em></strong> scale, where the sampling distribution of <em>r</em> is approximately normal, then transformed back:</p>
+<p><span class="math display">\[z = \tfrac{1}{2}\ln\!\left(\frac{1 + r}{1 - r}\right), \qquad SE_z = \frac{1}{\sqrt{n - 3}}\]</span></p>
+<p><span class="math display">\[95\%\ CI_z = z \pm 1.96 \times SE_z\]</span></p>
 <div class="cell">
 <div>
 <div id="webr-4" class="exercise-cell">
@@ -726,7 +739,9 @@ eyJhdHRyIjp7ImNoZWNrIjp0cnVlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJleGVyY2lzZSI6ImNv
 </section>
 <section id="pearson-or-spearman" class="level2">
 <h2 class="anchored" data-anchor-id="pearson-or-spearman">Pearson or Spearman?</h2>
-<p>Pearson’s <em>r</em> assumes a <strong>linear</strong> relationship and is sensitive to <strong>outliers</strong>. <strong>Spearman’s ρ</strong> (rho) correlates the <strong>ranks</strong> of the values instead, so it captures any <strong>monotonic</strong> relationship (consistently increasing or decreasing) and is robust to outliers. It’s also the right choice for <strong>ordinal</strong> data.</p>
+<p>Pearson’s <em>r</em> assumes a <strong>linear</strong> relationship and is sensitive to <strong>outliers</strong>. <strong>Spearman’s ρ</strong> (rho) correlates the <strong>ranks</strong> of the values instead, so it captures any <strong>monotonic</strong> relationship (consistently increasing or decreasing) and is robust to outliers. It’s also the right choice for <strong>ordinal</strong> data. If there are no ties, with <span class="math inline">\(d_i\)</span> the difference between the two ranks of observation <em>i</em>:</p>
+<p><span class="math display">\[\rho = 1 - \frac{6 \sum_{i=1}^{n} d_i^2}{n(n^2 - 1)}\]</span></p>
+<p>(With ties, ρ is simply Pearson’s <em>r</em> calculated on the ranks.)</p>
 <div class="cell">
 <div>
 <div id="webr-10" class="exercise-cell">
@@ -973,7 +988,7 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoiY29yLnRlc3Qoc3F1YWQkY29u
 </section>
 <section id="correlation-is-not-causation" class="level2">
 <h2 class="anchored" data-anchor-id="correlation-is-not-causation">Correlation is not causation</h2>
-<p>Even when variables are measured independently, a correlation doesn’t show that one <strong>causes</strong> the other. Body mass correlates negatively with jump height (<em>r</em> = −0.37), but body mass also differs between the sports, and the sports differ in training, selection and playing demands. A <strong>third variable</strong> (a <em>confounder</em>) can create or hide a correlation. Multiple regression (<a href="./m4-07-multiple-regression.html">lesson 4.7</a>) lets you adjust for confounders, but only randomised experiments can establish causation convincingly.</p>
+<p>Even when variables are measured independently, a correlation doesn’t show that one <strong>causes</strong> the other. Body mass correlates negatively with jump height (<em>r</em> = −0.37), but body mass also differs between the sports, and the sports differ in training, selection and playing demands. A <strong>third variable</strong> (a <em>confounder</em>) can create or hide a correlation. Multiple regression (<a href="./m4-08-multiple-regression.html">lesson 4.8</a>) lets you adjust for confounders, but only randomised experiments can establish causation convincingly.</p>
 </section>
 <section id="a-correlation-matrix" class="level2">
 <h2 class="anchored" data-anchor-id="a-correlation-matrix">A correlation matrix</h2>
@@ -1075,12 +1090,13 @@ WyJkYXRhL2p1bXBfc3F1YWQuY3N2Il0=
     { file: "m4-02-hypothesis-testing.html", title: "4.2 Hypothesis testing", module: "Module 4 · Inferential statistics" },
     { file: "m4-03-t-tests.html", title: "4.3 Comparing two groups", module: "Module 4 · Inferential statistics" },
     { file: "m4-04-anova.html", title: "4.4 ANOVA", module: "Module 4 · Inferential statistics" },
-    { file: "m4-05-correlation.html", title: "4.5 Correlation", module: "Module 4 · Inferential statistics" },
-    { file: "m4-06-simple-regression.html", title: "4.6 Simple linear regression", module: "Module 4 · Inferential statistics" },
-    { file: "m4-07-multiple-regression.html", title: "4.7 Multiple regression", module: "Module 4 · Inferential statistics" },
-    { file: "m4-08-chi-square.html", title: "4.8 Chi-square tests", module: "Module 4 · Inferential statistics" },
-    { file: "m4-09-reliability.html", title: "4.9 Reliability", module: "Module 4 · Inferential statistics" },
-    { file: "m4-10-checkpoint.html", title: "4.10 Module checkpoint", module: "Module 4 · Inferential statistics" }
+    { file: "m4-05-rm-anova.html", title: "4.5 Repeated-measures ANOVA", module: "Module 4 · Inferential statistics" },
+    { file: "m4-06-correlation.html", title: "4.6 Correlation", module: "Module 4 · Inferential statistics" },
+    { file: "m4-07-simple-regression.html", title: "4.7 Simple linear regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-08-multiple-regression.html", title: "4.8 Multiple regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-09-chi-square.html", title: "4.9 Chi-square tests", module: "Module 4 · Inferential statistics" },
+    { file: "m4-10-reliability.html", title: "4.10 Reliability", module: "Module 4 · Inferential statistics" },
+    { file: "m4-11-checkpoint.html", title: "4.11 Module checkpoint", module: "Module 4 · Inferential statistics" }
   ];
   const PREFIX = "r4ss:";
   // Built from pieces so Quarto does not try to parse this as a document table
@@ -1744,13 +1760,13 @@ window._ojs.runtime.interpretFromScriptTags();
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./m4-04-anova.html" class="pagination-link" aria-label="4.4 ANOVA">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">4.4 ANOVA</span>
+      <a href="./m4-05-rm-anova.html" class="pagination-link" aria-label="4.5 Repeated-measures ANOVA">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">4.5 Repeated-measures ANOVA</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./m4-06-simple-regression.html" class="pagination-link" aria-label="4.6 Simple linear regression">
-        <span class="nav-page-text">4.6 Simple linear regression</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./m4-07-simple-regression.html" class="pagination-link" aria-label="4.7 Simple linear regression">
+        <span class="nav-page-text">4.7 Simple linear regression</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

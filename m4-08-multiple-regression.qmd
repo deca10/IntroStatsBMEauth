@@ -1,5 +1,5 @@
 ---
-title: "4.7 Multiple regression"
+title: "4.8 Multiple regression"
 subtitle: "Several predictors at once: adjusting for confounders, uncovering trade-offs, and choosing models"
 webr:
   packages: ['ggplot2']
@@ -42,6 +42,12 @@ lm(y ~ x1 + x2 + x3, data = df)
 ```
 
 The crucial change in interpretation: ***b*₁ is the expected change in *y* for a 1-unit increase in *x*₁, while all other predictors are held constant.** This is called the **adjusted** (or partial) effect.
+
+The coefficients are again found by **least squares**, minimising $\sum (y_i - \hat{y}_i)^2$. With several predictors there's no simple single formula; instead it's written with matrices. **X** is the data matrix (a column of 1s for the intercept, plus one column per predictor), **y** the outcome vector and **b** the vector of coefficients:
+
+$$\mathbf{b} = (\mathbf{X}^\top \mathbf{X})^{-1} \mathbf{X}^\top \mathbf{y}$$
+
+You never need to calculate this by hand (`lm()` does it), but it explains why strongly correlated predictors cause trouble (Part 4): $\mathbf{X}^\top \mathbf{X}$ becomes almost impossible to invert. Each coefficient is tested exactly as in simple regression, $t = b_j / SE(b_j)$, now with $df = n - p - 1$ for *p* predictors, and the residual SE is $s_e = \sqrt{SS_{residual} / (n - p - 1)}$.
 
 ## Part 1 · Adjusting for a confounder
 
@@ -140,7 +146,7 @@ It's an average, adjusted (partial) association, holding sport constant. It isn'
 
 ## Part 2 · Two weak predictors, one strong model
 
-Here's a puzzle. Physics says that take-off velocity comes from the **net impulse**, i.e. the average net force multiplied by the time it acts ([lesson 4.5](m4-05-correlation.qmd)). So both **mean propulsive force** and **propulsion time** should matter. But look at them one by one:
+Here's a puzzle. Physics says that take-off velocity comes from the **net impulse**, i.e. the average net force multiplied by the time it acts ([lesson 4.6](m4-06-correlation.qmd)). So both **mean propulsive force** and **propulsion time** should matter. But look at them one by one:
 
 ```{webr}
 summary(lm(jump_height_m ~ con_force_rel, data = squad))$r.squared
@@ -202,7 +208,11 @@ This phenomenon, where adding a predictor **increases** the importance of anothe
 
 ### Interactions: when effects multiply
 
-Physics says velocity = (force − g) × time: the effects **multiply** rather than add. A model with `+` assumes the force effect is the same at every propulsion time. An **interaction** term lets the effect of one predictor depend on the other. In R, `x1 * x2` means `x1 + x2 + x1:x2` (both main effects plus their product):
+Physics says velocity = (force − g) × time: the effects **multiply** rather than add. A model with `+` assumes the force effect is the same at every propulsion time. An **interaction** term lets the effect of one predictor depend on the other. The model becomes
+
+$$y = b_0 + b_1 x_1 + b_2 x_2 + b_3\, (x_1 \times x_2) + \varepsilon$$
+
+so the slope of $x_1$ is no longer a constant but $b_1 + b_3 x_2$: it depends on the value of $x_2$. In R, `x1 * x2` means `x1 + x2 + x1:x2` (both main effects plus their product):
 
 ```{webr}
 model_int <- lm(jump_height_m ~ con_force_rel * con_time_s, data = squad)
@@ -234,9 +244,12 @@ This is suppression. Adding *any* predictor increases R² a little, but a jump f
 
 Adding predictors **always** increases *R*² a little, even if the new predictor is pure noise. To compare models fairly:
 
-- **Adjusted *R*²** penalises for the number of predictors; it only increases if a new predictor helps more than chance would.
-- **AIC** (Akaike information criterion): lower is better; also balances fit and complexity.
-- **`anova(model_small, model_big)`**: an *F*-test of whether the extra predictors in a **nested** model (the big one contains all predictors of the small one) significantly improve the fit.
+- **Adjusted *R*²** penalises for the number of predictors *p*; it only increases if a new predictor helps more than chance would:
+  $$R^2_{adj} = 1 - (1 - R^2)\,\frac{n - 1}{n - p - 1}$$
+- **AIC** (Akaike information criterion): lower is better; it balances fit (the maximised likelihood $\hat{L}$) against complexity (the number of estimated parameters *q*):
+  $$AIC = 2q - 2\ln(\hat{L})$$
+- **`anova(model_small, model_big)`**: an *F*-test of whether the extra predictors in a **nested** model (the big one contains all predictors of the small one) significantly reduce the residual sum of squares. With $p_s$ and $p_b$ predictors:
+  $$F = \frac{(SS_{res,small} - SS_{res,big}) / (p_b - p_s)}{SS_{res,big} / (n - p_b - 1)}, \qquad df = (p_b - p_s,\; n - p_b - 1)$$
 
 ::: {.task}
 Does **countermovement depth** (`cmj_depth_m`) add information beyond force and time?

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>4.6 Simple linear regression – R for Sport &amp; Exercise Science</title>
+<title>4.7 Simple linear regression – R for Sport &amp; Exercise Science</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -71,8 +71,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./m4-07-multiple-regression.html" rel="next">
-<link href="./m4-05-correlation.html" rel="prev">
+<link href="./m4-08-multiple-regression.html" rel="next">
+<link href="./m4-06-correlation.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -323,7 +323,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m4-01-confidence-intervals.html">Module 4 · Inferential statistics</a></li><li class="breadcrumb-item"><a href="./m4-06-simple-regression.html">4.6 Simple linear regression</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m4-01-confidence-intervals.html">Module 4 · Inferential statistics</a></li><li class="breadcrumb-item"><a href="./m4-07-simple-regression.html">4.7 Simple linear regression</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -533,38 +533,44 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-05-correlation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.5 Correlation</span></a>
+  <a href="./m4-05-rm-anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.5 Repeated-measures ANOVA</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-06-simple-regression.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">4.6 Simple linear regression</span></a>
+  <a href="./m4-06-correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.6 Correlation</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-07-multiple-regression.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.7 Multiple regression</span></a>
+  <a href="./m4-07-simple-regression.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">4.7 Simple linear regression</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-08-chi-square.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.8 Chi-square tests</span></a>
+  <a href="./m4-08-multiple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.8 Multiple regression</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-09-reliability.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.9 Reliability</span></a>
+  <a href="./m4-09-chi-square.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.9 Chi-square tests</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-10-checkpoint.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.10 Module checkpoint</span></a>
+  <a href="./m4-10-reliability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.10 Reliability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m4-11-checkpoint.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.11 Module checkpoint</span></a>
   </div>
 </li>
       </ul>
@@ -593,9 +599,9 @@ window.Quarto = {
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m4-01-confidence-intervals.html">Module 4 · Inferential statistics</a></li><li class="breadcrumb-item"><a href="./m4-06-simple-regression.html">4.6 Simple linear regression</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m4-01-confidence-intervals.html">Module 4 · Inferential statistics</a></li><li class="breadcrumb-item"><a href="./m4-07-simple-regression.html">4.7 Simple linear regression</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">4.6 Simple linear regression</h1>
+<h1 class="title">4.7 Simple linear regression</h1>
 <p class="subtitle lead">Fitting a line, interpreting it, predicting with it, and log-log models for scaling</p>
 </div>
 
@@ -663,7 +669,9 @@ eyJhdHRyIjp7ImVjaG8iOmZhbHNlLCJlZGl0IjpmYWxzZSwiZXZhbCI6dHJ1ZSwiaW5jbHVkZSI6ZmFs
 <li><em>b</em>₁, the <strong>slope</strong>: the change in <em>y</em> for a 1-unit increase in <em>x</em>,</li>
 <li>ε, the <strong>residual</strong>: the part of <em>y</em> the line doesn’t explain.</li>
 </ul>
-<p>“Best” means <strong>least squares</strong>: the line that minimises the sum of the squared residuals.</p>
+<p>“Best” means <strong>least squares</strong>: the line that minimises the sum of the squared residuals, <span class="math inline">\(\sum e_i^2 = \sum (y_i - \hat{y}_i)^2\)</span>, where <span class="math inline">\(\hat{y}_i = b_0 + b_1 x_i\)</span> is the predicted value. Minimising it gives closed formulas for the two coefficients:</p>
+<p><span class="math display">\[b_1 = \frac{\sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^{n} (x_i - \bar{x})^2} = r \, \frac{s_y}{s_x} \qquad\qquad b_0 = \bar{y} - b_1 \bar{x}\]</span></p>
+<p>So the slope is the correlation rescaled into the units of <em>y</em> per unit of <em>x</em>, and the line always passes through the point <span class="math inline">\((\bar{x}, \bar{y})\)</span>.</p>
 <div class="cell">
 <div>
 <div id="webr-3" class="exercise-cell">
@@ -705,10 +713,10 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoic3VtbWFyeShtb2RlbCkifQ==
 </div>
 </div>
 <ul>
-<li><strong>Coefficients table</strong>: each estimate with its standard error, <em>t</em> value (= estimate / SE) and <em>p</em>-value (H₀: coefficient = 0).</li>
-<li><strong>Residual standard error</strong> (0.031 m): the typical size of a residual, i.e.&nbsp;how far athletes are from the line, about ±3 cm.</li>
-<li><strong>Multiple R-squared</strong> (0.69): the proportion of variance in <em>y</em> explained by the model. In simple regression it equals <em>r</em>².</li>
-<li><strong>F-statistic</strong>: tests the model as a whole (in simple regression, same <em>p</em> as the slope).</li>
+<li><strong>Coefficients table</strong>: each estimate with its standard error, <em>t</em> value and <em>p</em>-value (H₀: coefficient = 0). For the slope: <span class="math display">\[SE(b_1) = \frac{s_e}{\sqrt{\sum (x_i - \bar{x})^2}}, \qquad t = \frac{b_1}{SE(b_1)}, \qquad df = n - 2\]</span> <span class="math display">\[95\%\ CI = b_1 \pm t^*_{n-2}\, SE(b_1)\]</span></li>
+<li><strong>Residual standard error</strong> (0.031 m): the typical size of a residual, i.e.&nbsp;how far athletes are from the line, about ±3 cm. Two coefficients were estimated, so it divides by <em>n</em> − 2: <span class="math display">\[s_e = \sqrt{\frac{\sum e_i^2}{n - 2}} = \sqrt{\frac{SS_{residual}}{n - 2}}\]</span></li>
+<li><strong>Multiple R-squared</strong> (0.69): the proportion of variance in <em>y</em> explained by the model. In simple regression it equals <em>r</em>². <span class="math display">\[R^2 = 1 - \frac{SS_{residual}}{SS_{total}} = 1 - \frac{\sum (y_i - \hat{y}_i)^2}{\sum (y_i - \bar{y})^2}\]</span></li>
+<li><strong>F-statistic</strong>: tests the model as a whole, <span class="math inline">\(F = \dfrac{(SS_{total} - SS_{residual}) / 1}{SS_{residual} / (n - 2)}\)</span>. In simple regression <span class="math inline">\(F = t^2\)</span> for the slope, with the same <em>p</em>.</li>
 </ul>
 <p>Useful extractor functions: <code>coef(model)</code>, <code>confint(model)</code> (95 % CIs of the coefficients), <code>summary(model)$r.squared</code>, <code>residuals(model)</code>, <code>fitted(model)</code>.</p>
 <div class="task">
@@ -768,6 +776,10 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibW9kZWwgPC0gbG0oanVtcF9o
 <li><strong>confidence interval</strong> (39.1–40.4 cm): where is the <strong>average</strong> jump height of <em>all</em> athletes with 55 W/kg?</li>
 <li><strong>prediction interval</strong> (33.5–46.0 cm): where will a <strong>single new</strong> athlete with 55 W/kg probably land? It’s much wider, because it includes the individual scatter around the line.</li>
 </ul>
+<p>For a new value <span class="math inline">\(x_0\)</span>, with prediction <span class="math inline">\(\hat{y}_0 = b_0 + b_1 x_0\)</span>:</p>
+<p><span class="math display">\[\text{CI: } \hat{y}_0 \pm t^*_{n-2}\, s_e \sqrt{\frac{1}{n} + \frac{(x_0 - \bar{x})^2}{\sum (x_i - \bar{x})^2}}\]</span></p>
+<p><span class="math display">\[\text{PI: } \hat{y}_0 \pm t^*_{n-2}\, s_e \sqrt{1 + \frac{1}{n} + \frac{(x_0 - \bar{x})^2}{\sum (x_i - \bar{x})^2}}\]</span></p>
+<p>The extra “1 +” in the prediction interval is the individual scatter. Both intervals widen as <span class="math inline">\(x_0\)</span> moves away from <span class="math inline">\(\bar{x}\)</span>, which is one more reason not to extrapolate.</p>
 <div id="sr-q1" class="quiz">
 <p>A coach uses the model to predict the jump height of a 14-year-old with 30 W/kg peak power (the squad ranged from about 40 to 80 W/kg). What’s the problem?</p>
 <ul class="task-list">
@@ -804,7 +816,7 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibW9kZWwgPC0gbG0oanVtcF9o
 </section>
 <section id="a-perfect-model-that-explains-nothing" class="level2">
 <h2 class="anchored" data-anchor-id="a-perfect-model-that-explains-nothing">A “perfect” model that explains nothing</h2>
-<p>Remember mathematical coupling from <a href="./m4-05-correlation.html">lesson 4.5</a>? Regression doesn’t protect you from it:</p>
+<p>Remember mathematical coupling from <a href="./m4-06-correlation.html">lesson 4.6</a>? Regression doesn’t protect you from it:</p>
 <div class="cell">
 <div>
 <div id="webr-13" class="exercise-cell">
@@ -834,7 +846,7 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoic3F1YWQkdl90byA8LSBzcXJ0
 <p><span class="math display">\[Y = a \cdot M^{b}\]</span></p>
 <p>where <em>M</em> is body mass and <em>b</em> the <strong>scaling exponent</strong>. Taking logarithms turns it into a straight line:</p>
 <p><span class="math display">\[\log(Y) = \log(a) + b \cdot \log(M)\]</span></p>
-<p>So a regression of log(<em>Y</em>) on log(<em>M</em>) estimates <em>b</em> as its <strong>slope</strong>. Dividing by body mass (“per kg” values) silently assumes <strong>b = 1</strong>. If the true <em>b</em> is smaller, per-kg values will <strong>penalise heavier athletes</strong>, which is exactly the negative correlation between relative impulse and body mass you saw in lesson 4.5.</p>
+<p>So a regression of log(<em>Y</em>) on log(<em>M</em>) estimates <em>b</em> as its <strong>slope</strong>. Dividing by body mass (“per kg” values) silently assumes <strong>b = 1</strong>. If the true <em>b</em> is smaller, per-kg values will <strong>penalise heavier athletes</strong>, which is exactly the negative correlation between relative impulse and body mass you saw in lesson 4.6.</p>
 <div class="task">
 <ol type="1">
 <li>Recover the <strong>absolute</strong> propulsive impulse (N·s) by multiplying <code>con_impulse_rel</code> by <code>body_mass_kg</code>, and store it in <code>squad$impulse</code>.</li>
@@ -976,12 +988,13 @@ WyJkYXRhL2p1bXBfc3F1YWQuY3N2Il0=
     { file: "m4-02-hypothesis-testing.html", title: "4.2 Hypothesis testing", module: "Module 4 · Inferential statistics" },
     { file: "m4-03-t-tests.html", title: "4.3 Comparing two groups", module: "Module 4 · Inferential statistics" },
     { file: "m4-04-anova.html", title: "4.4 ANOVA", module: "Module 4 · Inferential statistics" },
-    { file: "m4-05-correlation.html", title: "4.5 Correlation", module: "Module 4 · Inferential statistics" },
-    { file: "m4-06-simple-regression.html", title: "4.6 Simple linear regression", module: "Module 4 · Inferential statistics" },
-    { file: "m4-07-multiple-regression.html", title: "4.7 Multiple regression", module: "Module 4 · Inferential statistics" },
-    { file: "m4-08-chi-square.html", title: "4.8 Chi-square tests", module: "Module 4 · Inferential statistics" },
-    { file: "m4-09-reliability.html", title: "4.9 Reliability", module: "Module 4 · Inferential statistics" },
-    { file: "m4-10-checkpoint.html", title: "4.10 Module checkpoint", module: "Module 4 · Inferential statistics" }
+    { file: "m4-05-rm-anova.html", title: "4.5 Repeated-measures ANOVA", module: "Module 4 · Inferential statistics" },
+    { file: "m4-06-correlation.html", title: "4.6 Correlation", module: "Module 4 · Inferential statistics" },
+    { file: "m4-07-simple-regression.html", title: "4.7 Simple linear regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-08-multiple-regression.html", title: "4.8 Multiple regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-09-chi-square.html", title: "4.9 Chi-square tests", module: "Module 4 · Inferential statistics" },
+    { file: "m4-10-reliability.html", title: "4.10 Reliability", module: "Module 4 · Inferential statistics" },
+    { file: "m4-11-checkpoint.html", title: "4.11 Module checkpoint", module: "Module 4 · Inferential statistics" }
   ];
   const PREFIX = "r4ss:";
   // Built from pieces so Quarto does not try to parse this as a document table
@@ -1645,13 +1658,13 @@ window._ojs.runtime.interpretFromScriptTags();
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./m4-05-correlation.html" class="pagination-link" aria-label="4.5 Correlation">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">4.5 Correlation</span>
+      <a href="./m4-06-correlation.html" class="pagination-link" aria-label="4.6 Correlation">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">4.6 Correlation</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./m4-07-multiple-regression.html" class="pagination-link" aria-label="4.7 Multiple regression">
-        <span class="nav-page-text">4.7 Multiple regression</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./m4-08-multiple-regression.html" class="pagination-link" aria-label="4.8 Multiple regression">
+        <span class="nav-page-text">4.8 Multiple regression</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

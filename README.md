@@ -15,12 +15,13 @@ solutions, and take quizzes. Progress (completed lessons, quiz results) is store
 | `m1-01-basics.qmd` … `m1-06-checkpoint.qmd` | Module 1 · Introduction to R |
 | `m2-01-what-is-statistics.qmd` … `m2-05-checkpoint.qmd` | Module 2 · Introduction to statistics |
 | `m3-01-summaries.qmd` … `m3-06-checkpoint.qmd` | Module 3 · Data visualisation in depth |
-| `m4-01-confidence-intervals.qmd` … `m4-10-checkpoint.qmd` | Module 4 · Inferential statistics |
+| `m4-01-confidence-intervals.qmd` … `m4-11-checkpoint.qmd` | Module 4 · Inferential statistics |
 | `_common.qmd` | Included on every live page: loads quarto-live + hidden grading helpers |
 | `assets/course.html` | Quiz engine, "mark complete", sidebar ✓ marks, sequence reminder, progress dashboard |
 | `assets/course.css`, `assets/theme.scss` | Styling |
 | `data/balance.csv`, `data/bds_trials.csv` | Course data (built by `scripts/prepare_data.R` from `BDSinfo.xlsx`) |
 | `data/cmj.csv` | 3 CMJ force recordings, 500 Hz, anonymised as "Athlete K" (built by `scripts/prepare_cmj.R`) |
+| `data/slope_walking.csv` | Heart rate and walking speed of 10 participants walking downhill, level and uphill (10°); participants coded P01–P10 |
 | `data/jump_squad.csv`, `data/cmj_trials.csv` | 84-athlete CMJ variables and 56 × 3 repeated CMJs, names replaced by codes (built by `scripts/prepare_squad.R` from the GRF classification project) |
 | `scripts/test_exercises.R` | Runs every demo block, and every solution through its grader, in local R |
 | `docs/` | Rendered website (publish this folder) |

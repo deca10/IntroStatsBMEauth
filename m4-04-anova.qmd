@@ -67,6 +67,18 @@ The ratio is the ***F*-statistic**:
 
 $$F = \frac{\text{variance between groups}}{\text{variance within groups}}$$
 
+In formulas, with *k* groups, $n_j$ observations in group *j*, *N* observations in total, group means $\bar{y}_j$ and grand mean $\bar{y}$:
+
+$$SS_{between} = \sum_{j=1}^{k} n_j (\bar{y}_j - \bar{y})^2 \qquad SS_{within} = \sum_{j=1}^{k} \sum_{i=1}^{n_j} (y_{ij} - \bar{y}_j)^2$$
+
+$$SS_{total} = SS_{between} + SS_{within}$$
+
+$$MS_{between} = \frac{SS_{between}}{k - 1} \qquad MS_{within} = \frac{SS_{within}}{N - k}$$
+
+$$F = \frac{MS_{between}}{MS_{within}}, \qquad df = (k - 1,\; N - k)$$
+
+The *p*-value is the probability of an *F* at least this large under H₀, from the *F*-distribution with those two degrees of freedom.
+
 If H₀ is true, the group means differ only by chance and *F* ≈ 1. A large *F* means the groups differ more than chance would explain.
 
 ## One-way ANOVA in R
@@ -117,7 +129,11 @@ res
 
 ## Post-hoc tests: which groups differ?
 
-A significant ANOVA says *some* means differ, not *which*. **Post-hoc tests** compare all pairs while controlling the overall false-positive rate. **Tukey's HSD** (honestly significant difference) is the standard choice:
+A significant ANOVA says *some* means differ, not *which*. **Post-hoc tests** compare all pairs while controlling the overall false-positive rate. **Tukey's HSD** (honestly significant difference) is the standard choice. For each pair of groups *a* and *b* it calculates the **studentised range** statistic
+
+$$q = \frac{|\bar{y}_a - \bar{y}_b|}{\sqrt{\dfrac{MS_{within}}{2}\left(\dfrac{1}{n_a} + \dfrac{1}{n_b}\right)}}$$
+
+and compares it with the studentised range distribution for *k* groups and *N* − *k* degrees of freedom. That distribution accounts for the number of comparisons, so the adjusted *p*-values and CIs keep the overall false-positive rate at 5 %.
 
 ```{webr}
 model <- aov(jump_height_m ~ mass_group, data = squad)
@@ -206,8 +222,11 @@ ggplot(data.frame(res = residuals(model)), aes(sample = res)) +
 
 If the assumptions are badly violated:
 
-- unequal variances → **Welch's ANOVA**: `oneway.test(y ~ group, data = ...)`,
-- non-normal / ordinal data → **Kruskal–Wallis test**: `kruskal.test(y ~ group, data = ...)`.
+- unequal variances → **Welch's ANOVA**: `oneway.test(y ~ group, data = ...)`. Each group is weighted by its precision, $w_j = n_j / s_j^2$, and the between-group variability is measured around the weighted mean $\bar{y}_w = \sum w_j \bar{y}_j / \sum w_j$:
+  $$F_W = \frac{\dfrac{1}{k-1}\sum_j w_j (\bar{y}_j - \bar{y}_w)^2}{1 + \dfrac{2(k-2)}{k^2 - 1}\sum_j \dfrac{(1 - w_j/\sum w)^2}{n_j - 1}}$$
+  (with adjusted, non-integer denominator degrees of freedom, as in the Welch *t*-test),
+- non-normal / ordinal data → **Kruskal–Wallis test**: `kruskal.test(y ~ group, data = ...)`. All *N* values are ranked together; with $R_j$ the rank sum of group *j*:
+  $$H = \frac{12}{N(N+1)} \sum_{j=1}^{k} \frac{R_j^2}{n_j} - 3(N+1), \qquad df = k - 1$$
 
 ```{webr}
 oneway.test(jump_height_m ~ mass_group, data = squad)

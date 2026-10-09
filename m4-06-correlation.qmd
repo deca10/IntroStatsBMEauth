@@ -1,5 +1,5 @@
 ---
-title: "4.5 Correlation"
+title: "4.6 Correlation"
 subtitle: "Measuring relationships, and recognising when a high correlation tells you nothing new"
 webr:
   packages: ['ggplot2', 'patchwork']
@@ -37,6 +37,12 @@ The **correlation coefficient *r*** measures the strength and direction of a **l
 - *r* = 0: no linear relationship,
 - *r* = −1: perfect negative linear relationship.
 
+It's the **covariance** of *x* and *y* (how much they vary together) divided by the product of their standard deviations, which makes it unit-free:
+
+$$r = \frac{\sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum_{i=1}^{n} (x_i - \bar{x})^2}\,\sqrt{\sum_{i=1}^{n} (y_i - \bar{y})^2}} = \frac{\text{cov}(x, y)}{s_x \, s_y}$$
+
+Each product $(x_i - \bar{x})(y_i - \bar{y})$ is positive when an athlete is above (or below) average on **both** variables, and negative when they're above on one and below on the other.
+
 ```{webr}
 #| fig-width: 10
 #| fig-height: 4
@@ -49,7 +55,16 @@ p3 <- ggplot(squad, aes(body_mass_kg, jump_height_m)) + geom_point() +
 p1 | p2 | p3
 ```
 
-`cor(x, y)` gives *r*; `cor.test(x, y)` also gives a *p*-value (H₀: *r* = 0 in the population) and a 95 % CI:
+`cor(x, y)` gives *r*; `cor.test(x, y)` also gives a *p*-value (H₀: ρ = 0, no correlation in the population) and a 95 % CI. The test statistic is
+
+$$t = \frac{r\sqrt{n - 2}}{\sqrt{1 - r^2}}, \qquad df = n - 2$$
+
+and the CI is calculated on the **Fisher *z*** scale, where the sampling distribution of *r* is approximately normal, then transformed back:
+
+$$z = \tfrac{1}{2}\ln\!\left(\frac{1 + r}{1 - r}\right), \qquad SE_z = \frac{1}{\sqrt{n - 3}}$$
+
+$$95\%\ CI_z = z \pm 1.96 \times SE_z$$
+
 
 ```{webr}
 cor.test(squad$body_mass_kg, squad$jump_height_m)
@@ -103,7 +118,11 @@ res
 
 ## Pearson or Spearman?
 
-Pearson's *r* assumes a **linear** relationship and is sensitive to **outliers**. **Spearman's ρ** (rho) correlates the **ranks** of the values instead, so it captures any **monotonic** relationship (consistently increasing or decreasing) and is robust to outliers. It's also the right choice for **ordinal** data.
+Pearson's *r* assumes a **linear** relationship and is sensitive to **outliers**. **Spearman's ρ** (rho) correlates the **ranks** of the values instead, so it captures any **monotonic** relationship (consistently increasing or decreasing) and is robust to outliers. It's also the right choice for **ordinal** data. If there are no ties, with $d_i$ the difference between the two ranks of observation *i*:
+
+$$\rho = 1 - \frac{6 \sum_{i=1}^{n} d_i^2}{n(n^2 - 1)}$$
+
+(With ties, ρ is simply Pearson's *r* calculated on the ranks.)
 
 ```{webr}
 cor(squad$ecc_rfd_max, squad$ecc_rfd_mean)                       # Pearson
@@ -315,7 +334,7 @@ RSI<sub>mod</sub> contains jump height, and net impulse/mass equals take-off vel
 
 ## Correlation is not causation
 
-Even when variables are measured independently, a correlation doesn't show that one **causes** the other. Body mass correlates negatively with jump height (*r* = −0.37), but body mass also differs between the sports, and the sports differ in training, selection and playing demands. A **third variable** (a *confounder*) can create or hide a correlation. Multiple regression ([lesson 4.7](m4-07-multiple-regression.qmd)) lets you adjust for confounders, but only randomised experiments can establish causation convincingly.
+Even when variables are measured independently, a correlation doesn't show that one **causes** the other. Body mass correlates negatively with jump height (*r* = −0.37), but body mass also differs between the sports, and the sports differ in training, selection and playing demands. A **third variable** (a *confounder*) can create or hide a correlation. Multiple regression ([lesson 4.8](m4-08-multiple-regression.qmd)) lets you adjust for confounders, but only randomised experiments can establish causation convincingly.
 
 ## A correlation matrix
 

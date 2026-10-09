@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>4.7 Multiple regression – R for Sport &amp; Exercise Science</title>
+<title>4.8 Multiple regression – R for Sport &amp; Exercise Science</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -71,8 +71,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./m4-08-chi-square.html" rel="next">
-<link href="./m4-06-simple-regression.html" rel="prev">
+<link href="./m4-09-chi-square.html" rel="next">
+<link href="./m4-07-simple-regression.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -323,7 +323,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m4-01-confidence-intervals.html">Module 4 · Inferential statistics</a></li><li class="breadcrumb-item"><a href="./m4-07-multiple-regression.html">4.7 Multiple regression</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m4-01-confidence-intervals.html">Module 4 · Inferential statistics</a></li><li class="breadcrumb-item"><a href="./m4-08-multiple-regression.html">4.8 Multiple regression</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -533,38 +533,44 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-05-correlation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.5 Correlation</span></a>
+  <a href="./m4-05-rm-anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.5 Repeated-measures ANOVA</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-06-simple-regression.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.6 Simple linear regression</span></a>
+  <a href="./m4-06-correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.6 Correlation</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-07-multiple-regression.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">4.7 Multiple regression</span></a>
+  <a href="./m4-07-simple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.7 Simple linear regression</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-08-chi-square.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.8 Chi-square tests</span></a>
+  <a href="./m4-08-multiple-regression.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">4.8 Multiple regression</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-09-reliability.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.9 Reliability</span></a>
+  <a href="./m4-09-chi-square.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.9 Chi-square tests</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-10-checkpoint.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.10 Module checkpoint</span></a>
+  <a href="./m4-10-reliability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.10 Reliability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m4-11-checkpoint.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.11 Module checkpoint</span></a>
   </div>
 </li>
       </ul>
@@ -593,9 +599,9 @@ window.Quarto = {
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m4-01-confidence-intervals.html">Module 4 · Inferential statistics</a></li><li class="breadcrumb-item"><a href="./m4-07-multiple-regression.html">4.7 Multiple regression</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m4-01-confidence-intervals.html">Module 4 · Inferential statistics</a></li><li class="breadcrumb-item"><a href="./m4-08-multiple-regression.html">4.8 Multiple regression</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">4.7 Multiple regression</h1>
+<h1 class="title">4.8 Multiple regression</h1>
 <p class="subtitle lead">Several predictors at once: adjusting for confounders, uncovering trade-offs, and choosing models</p>
 </div>
 
@@ -661,6 +667,9 @@ eyJhdHRyIjp7ImVjaG8iOmZhbHNlLCJlZGl0IjpmYWxzZSwiZXZhbCI6dHJ1ZSwiaW5jbHVkZSI6ZmFs
 <p>In R, you simply add predictors to the formula with <code>+</code>:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lm</span>(y <span class="sc">~</span> x1 <span class="sc">+</span> x2 <span class="sc">+</span> x3, <span class="at">data =</span> df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The crucial change in interpretation: <strong><em>b</em>₁ is the expected change in <em>y</em> for a 1-unit increase in <em>x</em>₁, while all other predictors are held constant.</strong> This is called the <strong>adjusted</strong> (or partial) effect.</p>
+<p>The coefficients are again found by <strong>least squares</strong>, minimising <span class="math inline">\(\sum (y_i - \hat{y}_i)^2\)</span>. With several predictors there’s no simple single formula; instead it’s written with matrices. <strong>X</strong> is the data matrix (a column of 1s for the intercept, plus one column per predictor), <strong>y</strong> the outcome vector and <strong>b</strong> the vector of coefficients:</p>
+<p><span class="math display">\[\mathbf{b} = (\mathbf{X}^\top \mathbf{X})^{-1} \mathbf{X}^\top \mathbf{y}\]</span></p>
+<p>You never need to calculate this by hand (<code>lm()</code> does it), but it explains why strongly correlated predictors cause trouble (Part 4): <span class="math inline">\(\mathbf{X}^\top \mathbf{X}\)</span> becomes almost impossible to invert. Each coefficient is tested exactly as in simple regression, <span class="math inline">\(t = b_j / SE(b_j)\)</span>, now with <span class="math inline">\(df = n - p - 1\)</span> for <em>p</em> predictors, and the residual SE is <span class="math inline">\(s_e = \sqrt{SS_{residual} / (n - p - 1)}\)</span>.</p>
 </section>
 <section id="part-1-adjusting-for-a-confounder" class="level2">
 <h2 class="anchored" data-anchor-id="part-1-adjusting-for-a-confounder">Part 1 · Adjusting for a confounder</h2>
@@ -767,7 +776,7 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibW9kZWxfYWRqIDwtIGxtKGp1
 </section>
 <section id="part-2-two-weak-predictors-one-strong-model" class="level2">
 <h2 class="anchored" data-anchor-id="part-2-two-weak-predictors-one-strong-model">Part 2 · Two weak predictors, one strong model</h2>
-<p>Here’s a puzzle. Physics says that take-off velocity comes from the <strong>net impulse</strong>, i.e.&nbsp;the average net force multiplied by the time it acts (<a href="./m4-05-correlation.html">lesson 4.5</a>). So both <strong>mean propulsive force</strong> and <strong>propulsion time</strong> should matter. But look at them one by one:</p>
+<p>Here’s a puzzle. Physics says that take-off velocity comes from the <strong>net impulse</strong>, i.e.&nbsp;the average net force multiplied by the time it acts (<a href="./m4-06-correlation.html">lesson 4.6</a>). So both <strong>mean propulsive force</strong> and <strong>propulsion time</strong> should matter. But look at them one by one:</p>
 <div class="cell">
 <div>
 <div id="webr-11" class="exercise-cell">
@@ -830,7 +839,9 @@ eyJhdHRyIjp7ImNoZWNrIjp0cnVlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJleGVyY2lzZSI6Im1y
 <p>This phenomenon, where adding a predictor <strong>increases</strong> the importance of another, is called <strong>suppression</strong>. It happens when predictors are correlated with each other in the opposite direction to their effects on the outcome. It’s a powerful reminder that <strong>simple correlations can be misleading when predictors are related</strong>.</p>
 <section id="interactions-when-effects-multiply" class="level3">
 <h3 class="anchored" data-anchor-id="interactions-when-effects-multiply">Interactions: when effects multiply</h3>
-<p>Physics says velocity = (force − g) × time: the effects <strong>multiply</strong> rather than add. A model with <code>+</code> assumes the force effect is the same at every propulsion time. An <strong>interaction</strong> term lets the effect of one predictor depend on the other. In R, <code>x1 * x2</code> means <code>x1 + x2 + x1:x2</code> (both main effects plus their product):</p>
+<p>Physics says velocity = (force − g) × time: the effects <strong>multiply</strong> rather than add. A model with <code>+</code> assumes the force effect is the same at every propulsion time. An <strong>interaction</strong> term lets the effect of one predictor depend on the other. The model becomes</p>
+<p><span class="math display">\[y = b_0 + b_1 x_1 + b_2 x_2 + b_3\, (x_1 \times x_2) + \varepsilon\]</span></p>
+<p>so the slope of <span class="math inline">\(x_1\)</span> is no longer a constant but <span class="math inline">\(b_1 + b_3 x_2\)</span>: it depends on the value of <span class="math inline">\(x_2\)</span>. In R, <code>x1 * x2</code> means <code>x1 + x2 + x1:x2</code> (both main effects plus their product):</p>
 <div class="cell">
 <div>
 <div id="webr-18" class="exercise-cell">
@@ -873,9 +884,9 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibW9kZWxfaW50IDwtIGxtKGp1
 <h2 class="anchored" data-anchor-id="part-3-choosing-between-models">Part 3 · Choosing between models</h2>
 <p>Adding predictors <strong>always</strong> increases <em>R</em>² a little, even if the new predictor is pure noise. To compare models fairly:</p>
 <ul>
-<li><strong>Adjusted <em>R</em>²</strong> penalises for the number of predictors; it only increases if a new predictor helps more than chance would.</li>
-<li><strong>AIC</strong> (Akaike information criterion): lower is better; also balances fit and complexity.</li>
-<li><strong><code>anova(model_small, model_big)</code></strong>: an <em>F</em>-test of whether the extra predictors in a <strong>nested</strong> model (the big one contains all predictors of the small one) significantly improve the fit.</li>
+<li><strong>Adjusted <em>R</em>²</strong> penalises for the number of predictors <em>p</em>; it only increases if a new predictor helps more than chance would: <span class="math display">\[R^2_{adj} = 1 - (1 - R^2)\,\frac{n - 1}{n - p - 1}\]</span></li>
+<li><strong>AIC</strong> (Akaike information criterion): lower is better; it balances fit (the maximised likelihood <span class="math inline">\(\hat{L}\)</span>) against complexity (the number of estimated parameters <em>q</em>): <span class="math display">\[AIC = 2q - 2\ln(\hat{L})\]</span></li>
+<li><strong><code>anova(model_small, model_big)</code></strong>: an <em>F</em>-test of whether the extra predictors in a <strong>nested</strong> model (the big one contains all predictors of the small one) significantly reduce the residual sum of squares. With <span class="math inline">\(p_s\)</span> and <span class="math inline">\(p_b\)</span> predictors: <span class="math display">\[F = \frac{(SS_{res,small} - SS_{res,big}) / (p_b - p_s)}{SS_{res,big} / (n - p_b - 1)}, \qquad df = (p_b - p_s,\; n - p_b - 1)\]</span></li>
 </ul>
 <div class="task">
 <p>Does <strong>countermovement depth</strong> (<code>cmj_depth_m</code>) add information beyond force and time?</p>
@@ -1095,12 +1106,13 @@ WyJkYXRhL2p1bXBfc3F1YWQuY3N2Il0=
     { file: "m4-02-hypothesis-testing.html", title: "4.2 Hypothesis testing", module: "Module 4 · Inferential statistics" },
     { file: "m4-03-t-tests.html", title: "4.3 Comparing two groups", module: "Module 4 · Inferential statistics" },
     { file: "m4-04-anova.html", title: "4.4 ANOVA", module: "Module 4 · Inferential statistics" },
-    { file: "m4-05-correlation.html", title: "4.5 Correlation", module: "Module 4 · Inferential statistics" },
-    { file: "m4-06-simple-regression.html", title: "4.6 Simple linear regression", module: "Module 4 · Inferential statistics" },
-    { file: "m4-07-multiple-regression.html", title: "4.7 Multiple regression", module: "Module 4 · Inferential statistics" },
-    { file: "m4-08-chi-square.html", title: "4.8 Chi-square tests", module: "Module 4 · Inferential statistics" },
-    { file: "m4-09-reliability.html", title: "4.9 Reliability", module: "Module 4 · Inferential statistics" },
-    { file: "m4-10-checkpoint.html", title: "4.10 Module checkpoint", module: "Module 4 · Inferential statistics" }
+    { file: "m4-05-rm-anova.html", title: "4.5 Repeated-measures ANOVA", module: "Module 4 · Inferential statistics" },
+    { file: "m4-06-correlation.html", title: "4.6 Correlation", module: "Module 4 · Inferential statistics" },
+    { file: "m4-07-simple-regression.html", title: "4.7 Simple linear regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-08-multiple-regression.html", title: "4.8 Multiple regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-09-chi-square.html", title: "4.9 Chi-square tests", module: "Module 4 · Inferential statistics" },
+    { file: "m4-10-reliability.html", title: "4.10 Reliability", module: "Module 4 · Inferential statistics" },
+    { file: "m4-11-checkpoint.html", title: "4.11 Module checkpoint", module: "Module 4 · Inferential statistics" }
   ];
   const PREFIX = "r4ss:";
   // Built from pieces so Quarto does not try to parse this as a document table
@@ -1764,13 +1776,13 @@ window._ojs.runtime.interpretFromScriptTags();
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./m4-06-simple-regression.html" class="pagination-link" aria-label="4.6 Simple linear regression">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">4.6 Simple linear regression</span>
+      <a href="./m4-07-simple-regression.html" class="pagination-link" aria-label="4.7 Simple linear regression">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">4.7 Simple linear regression</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./m4-08-chi-square.html" class="pagination-link" aria-label="4.8 Chi-square tests">
-        <span class="nav-page-text">4.8 Chi-square tests</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./m4-09-chi-square.html" class="pagination-link" aria-label="4.9 Chi-square tests">
+        <span class="nav-page-text">4.9 Chi-square tests</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

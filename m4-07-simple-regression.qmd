@@ -1,5 +1,5 @@
 ---
-title: "4.6 Simple linear regression"
+title: "4.7 Simple linear regression"
 subtitle: "Fitting a line, interpreting it, predicting with it, and log-log models for scaling"
 webr:
   packages: ['ggplot2']
@@ -39,7 +39,11 @@ $$y = b_0 + b_1 x + \varepsilon$$
 - *b*₁, the **slope**: the change in *y* for a 1-unit increase in *x*,
 - ε, the **residual**: the part of *y* the line doesn't explain.
 
-"Best" means **least squares**: the line that minimises the sum of the squared residuals.
+"Best" means **least squares**: the line that minimises the sum of the squared residuals, $\sum e_i^2 = \sum (y_i - \hat{y}_i)^2$, where $\hat{y}_i = b_0 + b_1 x_i$ is the predicted value. Minimising it gives closed formulas for the two coefficients:
+
+$$b_1 = \frac{\sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^{n} (x_i - \bar{x})^2} = r \, \frac{s_y}{s_x} \qquad\qquad b_0 = \bar{y} - b_1 \bar{x}$$
+
+So the slope is the correlation rescaled into the units of *y* per unit of *x*, and the line always passes through the point $(\bar{x}, \bar{y})$.
 
 ```{webr}
 ggplot(squad, aes(x = peak_power_rel, y = jump_height_m)) +
@@ -66,10 +70,14 @@ The formula reads "jump height **is modelled by** peak power". The coefficients:
 summary(model)
 ```
 
-- **Coefficients table**: each estimate with its standard error, *t* value (= estimate / SE) and *p*-value (H₀: coefficient = 0).
-- **Residual standard error** (0.031 m): the typical size of a residual, i.e. how far athletes are from the line, about ±3 cm.
+- **Coefficients table**: each estimate with its standard error, *t* value and *p*-value (H₀: coefficient = 0). For the slope:
+  $$SE(b_1) = \frac{s_e}{\sqrt{\sum (x_i - \bar{x})^2}}, \qquad t = \frac{b_1}{SE(b_1)}, \qquad df = n - 2$$
+  $$95\%\ CI = b_1 \pm t^*_{n-2}\, SE(b_1)$$
+- **Residual standard error** (0.031 m): the typical size of a residual, i.e. how far athletes are from the line, about ±3 cm. Two coefficients were estimated, so it divides by *n* − 2:
+  $$s_e = \sqrt{\frac{\sum e_i^2}{n - 2}} = \sqrt{\frac{SS_{residual}}{n - 2}}$$
 - **Multiple R-squared** (0.69): the proportion of variance in *y* explained by the model. In simple regression it equals *r*².
-- **F-statistic**: tests the model as a whole (in simple regression, same *p* as the slope).
+  $$R^2 = 1 - \frac{SS_{residual}}{SS_{total}} = 1 - \frac{\sum (y_i - \hat{y}_i)^2}{\sum (y_i - \bar{y})^2}$$
+- **F-statistic**: tests the model as a whole, $F = \dfrac{(SS_{total} - SS_{residual}) / 1}{SS_{residual} / (n - 2)}$. In simple regression $F = t^2$ for the slope, with the same *p*.
 
 Useful extractor functions: `coef(model)`, `confint(model)` (95 % CIs of the coefficients), `summary(model)$r.squared`, `residuals(model)`, `fitted(model)`.
 
@@ -130,6 +138,14 @@ The two intervals answer different questions:
 - **confidence interval** (39.1–40.4 cm): where is the **average** jump height of *all* athletes with 55 W/kg?
 - **prediction interval** (33.5–46.0 cm): where will a **single new** athlete with 55 W/kg probably land? It's much wider, because it includes the individual scatter around the line.
 
+For a new value $x_0$, with prediction $\hat{y}_0 = b_0 + b_1 x_0$:
+
+$$\text{CI: } \hat{y}_0 \pm t^*_{n-2}\, s_e \sqrt{\frac{1}{n} + \frac{(x_0 - \bar{x})^2}{\sum (x_i - \bar{x})^2}}$$
+
+$$\text{PI: } \hat{y}_0 \pm t^*_{n-2}\, s_e \sqrt{1 + \frac{1}{n} + \frac{(x_0 - \bar{x})^2}{\sum (x_i - \bar{x})^2}}$$
+
+The extra "1 +" in the prediction interval is the individual scatter. Both intervals widen as $x_0$ moves away from $\bar{x}$, which is one more reason not to extrapolate.
+
 ::: {.quiz id="sr-q1"}
 A coach uses the model to predict the jump height of a 14-year-old with 30 W/kg peak power (the squad ranged from about 40 to 80 W/kg). What's the problem?
 
@@ -168,7 +184,7 @@ ggplot(diag_df, aes(x = fitted, y = residual)) +
 
 ## A "perfect" model that explains nothing
 
-Remember mathematical coupling from [lesson 4.5](m4-05-correlation.qmd)? Regression doesn't protect you from it:
+Remember mathematical coupling from [lesson 4.6](m4-06-correlation.qmd)? Regression doesn't protect you from it:
 
 ```{webr}
 squad$v_to <- sqrt(2 * 9.81 * squad$jump_height_m)
@@ -199,7 +215,7 @@ where *M* is body mass and *b* the **scaling exponent**. Taking logarithms turns
 
 $$\log(Y) = \log(a) + b \cdot \log(M)$$
 
-So a regression of log(*Y*) on log(*M*) estimates *b* as its **slope**. Dividing by body mass ("per kg" values) silently assumes **b = 1**. If the true *b* is smaller, per-kg values will **penalise heavier athletes**, which is exactly the negative correlation between relative impulse and body mass you saw in lesson 4.5.
+So a regression of log(*Y*) on log(*M*) estimates *b* as its **slope**. Dividing by body mass ("per kg" values) silently assumes **b = 1**. If the true *b* is smaller, per-kg values will **penalise heavier athletes**, which is exactly the negative correlation between relative impulse and body mass you saw in lesson 4.6.
 
 ::: {.task}
 1. Recover the **absolute** propulsive impulse (N·s) by multiplying `con_impulse_rel` by `body_mass_kg`, and store it in `squad$impulse`.

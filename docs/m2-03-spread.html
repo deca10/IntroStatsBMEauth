@@ -533,38 +533,44 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-05-correlation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.5 Correlation</span></a>
+  <a href="./m4-05-rm-anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.5 Repeated-measures ANOVA</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-06-simple-regression.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.6 Simple linear regression</span></a>
+  <a href="./m4-06-correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.6 Correlation</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-07-multiple-regression.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.7 Multiple regression</span></a>
+  <a href="./m4-07-simple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.7 Simple linear regression</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-08-chi-square.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.8 Chi-square tests</span></a>
+  <a href="./m4-08-multiple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.8 Multiple regression</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-09-reliability.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.9 Reliability</span></a>
+  <a href="./m4-09-chi-square.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.9 Chi-square tests</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-10-checkpoint.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.10 Module checkpoint</span></a>
+  <a href="./m4-10-reliability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.10 Reliability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m4-11-checkpoint.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.11 Module checkpoint</span></a>
   </div>
 </li>
       </ul>
@@ -664,7 +670,7 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoiYXRobGV0ZV9BIDwtIGMoNDAs
 </div>
 </div>
 <p>Both have a mean of exactly 40 cm, but they are clearly not the same: A is very <strong>consistent</strong>, B is all over the place. A measure of center alone hides this. A <strong>measure of spread</strong> (or <em>variability</em>, <em>dispersion</em>) describes how far the values are scattered around the center.</p>
-<p>The simplest is the <strong>range</strong>: maximum minus minimum.</p>
+<p>The simplest is the <strong>range</strong>: <span class="math inline">\(\text{range} = x_{max} - x_{min}\)</span>.</p>
 <div class="cell">
 <div>
 <div id="webr-4" class="exercise-cell">
@@ -959,7 +965,7 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoicXVhbnRpbGUoYmFsYW5jZSRt
 </div>
 </div>
 <p><code>seq(0.1, 0.9, by = 0.1)</code> creates the sequence 0.1, 0.2, …, 0.9.</p>
-<p>The distance between Q3 and Q1 is the <strong>interquartile range (IQR)</strong>: the range of the middle 50 % of the data. Like the median, it’s <strong>robust</strong> to extreme values.</p>
+<p>The distance between Q3 and Q1 is the <strong>interquartile range</strong>, <span class="math inline">\(IQR = Q_3 - Q_1\)</span>: the range of the middle 50 % of the data. Like the median, it’s <strong>robust</strong> to extreme values.</p>
 <div class="cell">
 <div>
 <div id="webr-25" class="exercise-cell">
@@ -1304,12 +1310,13 @@ WyJkYXRhL2JhbGFuY2UuY3N2IiwiZGF0YS9jbWouY3N2Il0=
     { file: "m4-02-hypothesis-testing.html", title: "4.2 Hypothesis testing", module: "Module 4 · Inferential statistics" },
     { file: "m4-03-t-tests.html", title: "4.3 Comparing two groups", module: "Module 4 · Inferential statistics" },
     { file: "m4-04-anova.html", title: "4.4 ANOVA", module: "Module 4 · Inferential statistics" },
-    { file: "m4-05-correlation.html", title: "4.5 Correlation", module: "Module 4 · Inferential statistics" },
-    { file: "m4-06-simple-regression.html", title: "4.6 Simple linear regression", module: "Module 4 · Inferential statistics" },
-    { file: "m4-07-multiple-regression.html", title: "4.7 Multiple regression", module: "Module 4 · Inferential statistics" },
-    { file: "m4-08-chi-square.html", title: "4.8 Chi-square tests", module: "Module 4 · Inferential statistics" },
-    { file: "m4-09-reliability.html", title: "4.9 Reliability", module: "Module 4 · Inferential statistics" },
-    { file: "m4-10-checkpoint.html", title: "4.10 Module checkpoint", module: "Module 4 · Inferential statistics" }
+    { file: "m4-05-rm-anova.html", title: "4.5 Repeated-measures ANOVA", module: "Module 4 · Inferential statistics" },
+    { file: "m4-06-correlation.html", title: "4.6 Correlation", module: "Module 4 · Inferential statistics" },
+    { file: "m4-07-simple-regression.html", title: "4.7 Simple linear regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-08-multiple-regression.html", title: "4.8 Multiple regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-09-chi-square.html", title: "4.9 Chi-square tests", module: "Module 4 · Inferential statistics" },
+    { file: "m4-10-reliability.html", title: "4.10 Reliability", module: "Module 4 · Inferential statistics" },
+    { file: "m4-11-checkpoint.html", title: "4.11 Module checkpoint", module: "Module 4 · Inferential statistics" }
   ];
   const PREFIX = "r4ss:";
   // Built from pieces so Quarto does not try to parse this as a document table

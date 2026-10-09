@@ -504,38 +504,44 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-05-correlation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.5 Correlation</span></a>
+  <a href="./m4-05-rm-anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.5 Repeated-measures ANOVA</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-06-simple-regression.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.6 Simple linear regression</span></a>
+  <a href="./m4-06-correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.6 Correlation</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-07-multiple-regression.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.7 Multiple regression</span></a>
+  <a href="./m4-07-simple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.7 Simple linear regression</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-08-chi-square.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.8 Chi-square tests</span></a>
+  <a href="./m4-08-multiple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.8 Multiple regression</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-09-reliability.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.9 Reliability</span></a>
+  <a href="./m4-09-chi-square.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.9 Chi-square tests</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-10-checkpoint.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.10 Module checkpoint</span></a>
+  <a href="./m4-10-reliability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.10 Reliability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m4-11-checkpoint.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.11 Module checkpoint</span></a>
   </div>
 </li>
       </ul>
@@ -814,7 +820,11 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoiYmFsYW5jZSA8LSByZWFkLmNz
 </section>
 <section id="repeated-jumps-trials" class="level3">
 <h3 class="anchored" data-anchor-id="repeated-jumps-trials">Repeated jumps (<code>trials</code>)</h3>
-<p>Three consecutive CMJs of <strong>56 professional basketball and soccer players</strong> (codes A01–A56): <code>athlete</code>, <code>sport</code>, <code>trial</code> (1–3), the body mass estimated by the force platform in that trial (<code>body_mass_kg</code>), and <code>jump_height_cm</code>. Used for reliability analysis in <a href="./m4-09-reliability.html">lesson 4.9</a>.</p>
+<p>Three consecutive CMJs of <strong>56 professional basketball and soccer players</strong> (codes A01–A56): <code>athlete</code>, <code>sport</code>, <code>trial</code> (1–3), the body mass estimated by the force platform in that trial (<code>body_mass_kg</code>), and <code>jump_height_cm</code>. Used for reliability analysis in <a href="./m4-10-reliability.html">lesson 4.10</a>.</p>
+</section>
+<section id="walking-on-slopes-slopes" class="level3">
+<h3 class="anchored" data-anchor-id="walking-on-slopes-slopes">Walking on slopes (<code>slopes</code>)</h3>
+<p>Average <strong>heart rate</strong> (bpm) and <strong>walking speed</strong> (m/s) of <strong>10 participants</strong> (codes P01–P10) who walked <strong>downhill, on level ground and uphill</strong> (gradient of 10°). Every participant walked in all three conditions, so it’s a repeated-measures design. One row per participant, with the columns <code>hr_downhill</code>, <code>hr_level</code>, <code>hr_uphill</code>, <code>speed_downhill</code>, <code>speed_level</code> and <code>speed_uphill</code>. Used in <a href="./m4-05-rm-anova.html">lesson 4.5</a>.</p>
 </section>
 </section>
 <section id="working-in-rstudio-later" class="level2">
@@ -823,7 +833,7 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoiYmFsYW5jZSA8LSByZWFkLmNz
 <ol type="1">
 <li>Install R from <a href="https://cran.r-project.org/">cran.r-project.org</a>.</li>
 <li>Install RStudio Desktop from <a href="https://posit.co/download/rstudio-desktop/">posit.co</a>.</li>
-<li>Download the course data: <a href="data/balance.csv">balance.csv</a>, <a href="data/bds_trials.csv">bds_trials.csv</a>, <a href="data/cmj.csv">cmj.csv</a>, <a href="data/jump_squad.csv">jump_squad.csv</a> and <a href="data/cmj_trials.csv">cmj_trials.csv</a>.</li>
+<li>Download the course data: <a href="data/balance.csv">balance.csv</a>, <a href="data/bds_trials.csv">bds_trials.csv</a>, <a href="data/cmj.csv">cmj.csv</a>, <a href="data/jump_squad.csv">jump_squad.csv</a>, <a href="data/cmj_trials.csv">cmj_trials.csv</a> and <a href="data/slope_walking.csv">slope_walking.csv</a>.</li>
 <li>In RStudio, install the plotting packages once with <code>install.packages(c("ggplot2", "ggdist", "ggrepel", "patchwork"))</code>.</li>
 </ol>
 <p>Ready? Start with <a href="./m1-01-basics.html"><strong>1.1 R basics →</strong></a></p>
@@ -877,12 +887,13 @@ WyJkYXRhL2JhbGFuY2UuY3N2Il0=
     { file: "m4-02-hypothesis-testing.html", title: "4.2 Hypothesis testing", module: "Module 4 · Inferential statistics" },
     { file: "m4-03-t-tests.html", title: "4.3 Comparing two groups", module: "Module 4 · Inferential statistics" },
     { file: "m4-04-anova.html", title: "4.4 ANOVA", module: "Module 4 · Inferential statistics" },
-    { file: "m4-05-correlation.html", title: "4.5 Correlation", module: "Module 4 · Inferential statistics" },
-    { file: "m4-06-simple-regression.html", title: "4.6 Simple linear regression", module: "Module 4 · Inferential statistics" },
-    { file: "m4-07-multiple-regression.html", title: "4.7 Multiple regression", module: "Module 4 · Inferential statistics" },
-    { file: "m4-08-chi-square.html", title: "4.8 Chi-square tests", module: "Module 4 · Inferential statistics" },
-    { file: "m4-09-reliability.html", title: "4.9 Reliability", module: "Module 4 · Inferential statistics" },
-    { file: "m4-10-checkpoint.html", title: "4.10 Module checkpoint", module: "Module 4 · Inferential statistics" }
+    { file: "m4-05-rm-anova.html", title: "4.5 Repeated-measures ANOVA", module: "Module 4 · Inferential statistics" },
+    { file: "m4-06-correlation.html", title: "4.6 Correlation", module: "Module 4 · Inferential statistics" },
+    { file: "m4-07-simple-regression.html", title: "4.7 Simple linear regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-08-multiple-regression.html", title: "4.8 Multiple regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-09-chi-square.html", title: "4.9 Chi-square tests", module: "Module 4 · Inferential statistics" },
+    { file: "m4-10-reliability.html", title: "4.10 Reliability", module: "Module 4 · Inferential statistics" },
+    { file: "m4-11-checkpoint.html", title: "4.11 Module checkpoint", module: "Module 4 · Inferential statistics" }
   ];
   const PREFIX = "r4ss:";
   // Built from pieces so Quarto does not try to parse this as a document table

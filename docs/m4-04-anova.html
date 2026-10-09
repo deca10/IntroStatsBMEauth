@@ -71,7 +71,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./m4-05-correlation.html" rel="next">
+<link href="./m4-05-rm-anova.html" rel="next">
 <link href="./m4-03-t-tests.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -533,38 +533,44 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-05-correlation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.5 Correlation</span></a>
+  <a href="./m4-05-rm-anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.5 Repeated-measures ANOVA</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-06-simple-regression.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.6 Simple linear regression</span></a>
+  <a href="./m4-06-correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.6 Correlation</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-07-multiple-regression.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.7 Multiple regression</span></a>
+  <a href="./m4-07-simple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.7 Simple linear regression</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-08-chi-square.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.8 Chi-square tests</span></a>
+  <a href="./m4-08-multiple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.8 Multiple regression</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-09-reliability.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.9 Reliability</span></a>
+  <a href="./m4-09-chi-square.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.9 Chi-square tests</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-10-checkpoint.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.10 Module checkpoint</span></a>
+  <a href="./m4-10-reliability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.10 Reliability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m4-11-checkpoint.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.11 Module checkpoint</span></a>
   </div>
 </li>
       </ul>
@@ -685,6 +691,12 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoidGFibGUoc3F1YWQkbWFzc19n
 </ul>
 <p>The ratio is the <strong><em>F</em>-statistic</strong>:</p>
 <p><span class="math display">\[F = \frac{\text{variance between groups}}{\text{variance within groups}}\]</span></p>
+<p>In formulas, with <em>k</em> groups, <span class="math inline">\(n_j\)</span> observations in group <em>j</em>, <em>N</em> observations in total, group means <span class="math inline">\(\bar{y}_j\)</span> and grand mean <span class="math inline">\(\bar{y}\)</span>:</p>
+<p><span class="math display">\[SS_{between} = \sum_{j=1}^{k} n_j (\bar{y}_j - \bar{y})^2 \qquad SS_{within} = \sum_{j=1}^{k} \sum_{i=1}^{n_j} (y_{ij} - \bar{y}_j)^2\]</span></p>
+<p><span class="math display">\[SS_{total} = SS_{between} + SS_{within}\]</span></p>
+<p><span class="math display">\[MS_{between} = \frac{SS_{between}}{k - 1} \qquad MS_{within} = \frac{SS_{within}}{N - k}\]</span></p>
+<p><span class="math display">\[F = \frac{MS_{between}}{MS_{within}}, \qquad df = (k - 1,\; N - k)\]</span></p>
+<p>The <em>p</em>-value is the probability of an <em>F</em> at least this large under H₀, from the <em>F</em>-distribution with those two degrees of freedom.</p>
 <p>If H₀ is true, the group means differ only by chance and <em>F</em> ≈ 1. A large <em>F</em> means the groups differ more than chance would explain.</p>
 </section>
 <section id="one-way-anova-in-r" class="level2">
@@ -736,7 +748,9 @@ eyJhdHRyIjp7ImNoZWNrIjp0cnVlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJleGVyY2lzZSI6ImFu
 </section>
 <section id="post-hoc-tests-which-groups-differ" class="level2">
 <h2 class="anchored" data-anchor-id="post-hoc-tests-which-groups-differ">Post-hoc tests: which groups differ?</h2>
-<p>A significant ANOVA says <em>some</em> means differ, not <em>which</em>. <strong>Post-hoc tests</strong> compare all pairs while controlling the overall false-positive rate. <strong>Tukey’s HSD</strong> (honestly significant difference) is the standard choice:</p>
+<p>A significant ANOVA says <em>some</em> means differ, not <em>which</em>. <strong>Post-hoc tests</strong> compare all pairs while controlling the overall false-positive rate. <strong>Tukey’s HSD</strong> (honestly significant difference) is the standard choice. For each pair of groups <em>a</em> and <em>b</em> it calculates the <strong>studentised range</strong> statistic</p>
+<p><span class="math display">\[q = \frac{|\bar{y}_a - \bar{y}_b|}{\sqrt{\dfrac{MS_{within}}{2}\left(\dfrac{1}{n_a} + \dfrac{1}{n_b}\right)}}\]</span></p>
+<p>and compares it with the studentised range distribution for <em>k</em> groups and <em>N</em> − <em>k</em> degrees of freedom. That distribution accounts for the number of comparisons, so the adjusted <em>p</em>-values and CIs keep the overall false-positive rate at 5 %.</p>
 <div class="cell">
 <div>
 <div id="webr-10" class="exercise-cell">
@@ -826,8 +840,8 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibW9kZWwgPC0gYW92KGp1bXBf
 </div>
 <p>If the assumptions are badly violated:</p>
 <ul>
-<li>unequal variances → <strong>Welch’s ANOVA</strong>: <code>oneway.test(y ~ group, data = ...)</code>,</li>
-<li>non-normal / ordinal data → <strong>Kruskal–Wallis test</strong>: <code>kruskal.test(y ~ group, data = ...)</code>.</li>
+<li>unequal variances → <strong>Welch’s ANOVA</strong>: <code>oneway.test(y ~ group, data = ...)</code>. Each group is weighted by its precision, <span class="math inline">\(w_j = n_j / s_j^2\)</span>, and the between-group variability is measured around the weighted mean <span class="math inline">\(\bar{y}_w = \sum w_j \bar{y}_j / \sum w_j\)</span>: <span class="math display">\[F_W = \frac{\dfrac{1}{k-1}\sum_j w_j (\bar{y}_j - \bar{y}_w)^2}{1 + \dfrac{2(k-2)}{k^2 - 1}\sum_j \dfrac{(1 - w_j/\sum w)^2}{n_j - 1}}\]</span> (with adjusted, non-integer denominator degrees of freedom, as in the Welch <em>t</em>-test),</li>
+<li>non-normal / ordinal data → <strong>Kruskal–Wallis test</strong>: <code>kruskal.test(y ~ group, data = ...)</code>. All <em>N</em> values are ranked together; with <span class="math inline">\(R_j\)</span> the rank sum of group <em>j</em>: <span class="math display">\[H = \frac{12}{N(N+1)} \sum_{j=1}^{k} \frac{R_j^2}{n_j} - 3(N+1), \qquad df = k - 1\]</span></li>
 </ul>
 <div class="cell">
 <div>
@@ -938,12 +952,13 @@ WyJkYXRhL2p1bXBfc3F1YWQuY3N2IiwiZGF0YS9iYWxhbmNlLmNzdiJd
     { file: "m4-02-hypothesis-testing.html", title: "4.2 Hypothesis testing", module: "Module 4 · Inferential statistics" },
     { file: "m4-03-t-tests.html", title: "4.3 Comparing two groups", module: "Module 4 · Inferential statistics" },
     { file: "m4-04-anova.html", title: "4.4 ANOVA", module: "Module 4 · Inferential statistics" },
-    { file: "m4-05-correlation.html", title: "4.5 Correlation", module: "Module 4 · Inferential statistics" },
-    { file: "m4-06-simple-regression.html", title: "4.6 Simple linear regression", module: "Module 4 · Inferential statistics" },
-    { file: "m4-07-multiple-regression.html", title: "4.7 Multiple regression", module: "Module 4 · Inferential statistics" },
-    { file: "m4-08-chi-square.html", title: "4.8 Chi-square tests", module: "Module 4 · Inferential statistics" },
-    { file: "m4-09-reliability.html", title: "4.9 Reliability", module: "Module 4 · Inferential statistics" },
-    { file: "m4-10-checkpoint.html", title: "4.10 Module checkpoint", module: "Module 4 · Inferential statistics" }
+    { file: "m4-05-rm-anova.html", title: "4.5 Repeated-measures ANOVA", module: "Module 4 · Inferential statistics" },
+    { file: "m4-06-correlation.html", title: "4.6 Correlation", module: "Module 4 · Inferential statistics" },
+    { file: "m4-07-simple-regression.html", title: "4.7 Simple linear regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-08-multiple-regression.html", title: "4.8 Multiple regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-09-chi-square.html", title: "4.9 Chi-square tests", module: "Module 4 · Inferential statistics" },
+    { file: "m4-10-reliability.html", title: "4.10 Reliability", module: "Module 4 · Inferential statistics" },
+    { file: "m4-11-checkpoint.html", title: "4.11 Module checkpoint", module: "Module 4 · Inferential statistics" }
   ];
   const PREFIX = "r4ss:";
   // Built from pieces so Quarto does not try to parse this as a document table
@@ -1612,8 +1627,8 @@ window._ojs.runtime.interpretFromScriptTags();
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./m4-05-correlation.html" class="pagination-link" aria-label="4.5 Correlation">
-        <span class="nav-page-text">4.5 Correlation</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./m4-05-rm-anova.html" class="pagination-link" aria-label="4.5 Repeated-measures ANOVA">
+        <span class="nav-page-text">4.5 Repeated-measures ANOVA</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

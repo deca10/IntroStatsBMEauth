@@ -70,18 +70,20 @@ website:
             text: "4.3 Comparing two groups"
           - href: m4-04-anova.qmd
             text: "4.4 ANOVA"
-          - href: m4-05-correlation.qmd
-            text: "4.5 Correlation"
-          - href: m4-06-simple-regression.qmd
-            text: "4.6 Simple linear regression"
-          - href: m4-07-multiple-regression.qmd
-            text: "4.7 Multiple regression"
-          - href: m4-08-chi-square.qmd
-            text: "4.8 Chi-square tests"
-          - href: m4-09-reliability.qmd
-            text: "4.9 Reliability"
-          - href: m4-10-checkpoint.qmd
-            text: "4.10 Module checkpoint"
+          - href: m4-05-rm-anova.qmd
+            text: "4.5 Repeated-measures ANOVA"
+          - href: m4-06-correlation.qmd
+            text: "4.6 Correlation"
+          - href: m4-07-simple-regression.qmd
+            text: "4.7 Simple linear regression"
+          - href: m4-08-multiple-regression.qmd
+            text: "4.8 Multiple regression"
+          - href: m4-09-chi-square.qmd
+            text: "4.9 Chi-square tests"
+          - href: m4-10-reliability.qmd
+            text: "4.10 Reliability"
+          - href: m4-11-checkpoint.qmd
+            text: "4.11 Module checkpoint"
   page-footer:
     center: "R for Sport & Exercise Science · Built with Quarto + webR"
 

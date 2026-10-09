@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>4.9 Reliability – R for Sport &amp; Exercise Science</title>
+<title>4.10 Reliability – R for Sport &amp; Exercise Science</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -71,8 +71,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./m4-10-checkpoint.html" rel="next">
-<link href="./m4-08-chi-square.html" rel="prev">
+<link href="./m4-11-checkpoint.html" rel="next">
+<link href="./m4-09-chi-square.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -323,7 +323,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m4-01-confidence-intervals.html">Module 4 · Inferential statistics</a></li><li class="breadcrumb-item"><a href="./m4-09-reliability.html">4.9 Reliability</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m4-01-confidence-intervals.html">Module 4 · Inferential statistics</a></li><li class="breadcrumb-item"><a href="./m4-10-reliability.html">4.10 Reliability</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -533,38 +533,44 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-05-correlation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.5 Correlation</span></a>
+  <a href="./m4-05-rm-anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.5 Repeated-measures ANOVA</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-06-simple-regression.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.6 Simple linear regression</span></a>
+  <a href="./m4-06-correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.6 Correlation</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-07-multiple-regression.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.7 Multiple regression</span></a>
+  <a href="./m4-07-simple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.7 Simple linear regression</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-08-chi-square.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.8 Chi-square tests</span></a>
+  <a href="./m4-08-multiple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.8 Multiple regression</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-09-reliability.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">4.9 Reliability</span></a>
+  <a href="./m4-09-chi-square.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.9 Chi-square tests</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-10-checkpoint.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.10 Module checkpoint</span></a>
+  <a href="./m4-10-reliability.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">4.10 Reliability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m4-11-checkpoint.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.11 Module checkpoint</span></a>
   </div>
 </li>
       </ul>
@@ -594,9 +600,9 @@ window.Quarto = {
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m4-01-confidence-intervals.html">Module 4 · Inferential statistics</a></li><li class="breadcrumb-item"><a href="./m4-09-reliability.html">4.9 Reliability</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m4-01-confidence-intervals.html">Module 4 · Inferential statistics</a></li><li class="breadcrumb-item"><a href="./m4-10-reliability.html">4.10 Reliability</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">4.9 Reliability</h1>
+<h1 class="title">4.10 Reliability</h1>
 <p class="subtitle lead">Typical error, CV, Bland–Altman plots, ICC and the smallest worthwhile change</p>
 </div>
 
@@ -677,6 +683,8 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoiaGVhZCh0cmlhbHMsIDkpIn0=
 <li><strong>Systematic bias</strong>: a consistent shift between trials, e.g.&nbsp;athletes jump higher in trial 2 because of a warm-up or learning effect. It’s the <strong>mean</strong> of the differences.</li>
 <li><strong>Random error</strong>: the unpredictable trial-to-trial scatter. It’s the <strong>SD</strong> of the differences.</li>
 </ol>
+<p>With <span class="math inline">\(d_i = x_{2,i} - x_{1,i}\)</span> the difference between the two trials of athlete <em>i</em>:</p>
+<p><span class="math display">\[\text{bias} = \bar{d} = \frac{1}{n}\sum_{i=1}^{n} d_i \qquad\qquad s_d = \sqrt{\frac{\sum_{i=1}^{n} (d_i - \bar{d})^2}{n - 1}}\]</span></p>
 </section>
 <section id="typical-error-and-cv" class="level2">
 <h2 class="anchored" data-anchor-id="typical-error-and-cv">Typical error and CV</h2>
@@ -739,7 +747,7 @@ eyJhdHRyIjp7ImNoZWNrIjp0cnVlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJleGVyY2lzZSI6InJs
 <p>A <strong>Bland–Altman plot</strong> shows agreement between two measurements: for each athlete, the <strong>difference</strong> (y) is plotted against the <strong>mean</strong> of the two trials (x). Three horizontal lines summarise it:</p>
 <ul>
 <li>the <strong>bias</strong> (mean difference),</li>
-<li>the <strong>95 % limits of agreement</strong>: bias ± 1.96 × SD of the differences. About 95 % of differences should fall between them.</li>
+<li>the <strong>95 % limits of agreement</strong>: about 95 % of differences should fall between them (if the differences are roughly normal): <span class="math display">\[LoA = \bar{d} \pm 1.96\, s_d\]</span></li>
 </ul>
 <p>It shows whether the error depends on the size of the measurement, and it makes <strong>outliers</strong> stand out.</p>
 <div class="task">
@@ -918,7 +926,10 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoiaWNjIDwtIGZ1bmN0aW9uKGRh
 </section>
 <section id="the-smallest-worthwhile-change" class="level2">
 <h2 class="anchored" data-anchor-id="the-smallest-worthwhile-change">The smallest worthwhile change</h2>
-<p>How big must a change be to <strong>matter</strong>? For team-sport athletes, a common approach defines the <strong>smallest worthwhile change (SWC)</strong> as <strong>0.2 × the between-athlete SD</strong>, i.e.&nbsp;a “small” effect size (Hopkins).</p>
+<p>How big must a change be to <strong>matter</strong>? For team-sport athletes, a common approach defines the <strong>smallest worthwhile change (SWC)</strong> as <strong>0.2 × the between-athlete SD</strong>, i.e.&nbsp;a “small” effect size (Hopkins):</p>
+<p><span class="math display">\[SWC = 0.2 \times SD_{between}\]</span></p>
+<p>and remember from the central limit theorem that averaging <em>m</em> trials reduces the typical error of an athlete’s score:</p>
+<p><span class="math display">\[TE_{\text{mean of } m} = \frac{TE}{\sqrt{m}}\]</span></p>
 <p>Compare the TE with the SWC:</p>
 <ul>
 <li><strong>TE &lt; SWC</strong>: the test can detect the smallest worthwhile change in a single athlete (“good” sensitivity),</li>
@@ -1087,12 +1098,13 @@ WyJkYXRhL2Ntal90cmlhbHMuY3N2Il0=
     { file: "m4-02-hypothesis-testing.html", title: "4.2 Hypothesis testing", module: "Module 4 · Inferential statistics" },
     { file: "m4-03-t-tests.html", title: "4.3 Comparing two groups", module: "Module 4 · Inferential statistics" },
     { file: "m4-04-anova.html", title: "4.4 ANOVA", module: "Module 4 · Inferential statistics" },
-    { file: "m4-05-correlation.html", title: "4.5 Correlation", module: "Module 4 · Inferential statistics" },
-    { file: "m4-06-simple-regression.html", title: "4.6 Simple linear regression", module: "Module 4 · Inferential statistics" },
-    { file: "m4-07-multiple-regression.html", title: "4.7 Multiple regression", module: "Module 4 · Inferential statistics" },
-    { file: "m4-08-chi-square.html", title: "4.8 Chi-square tests", module: "Module 4 · Inferential statistics" },
-    { file: "m4-09-reliability.html", title: "4.9 Reliability", module: "Module 4 · Inferential statistics" },
-    { file: "m4-10-checkpoint.html", title: "4.10 Module checkpoint", module: "Module 4 · Inferential statistics" }
+    { file: "m4-05-rm-anova.html", title: "4.5 Repeated-measures ANOVA", module: "Module 4 · Inferential statistics" },
+    { file: "m4-06-correlation.html", title: "4.6 Correlation", module: "Module 4 · Inferential statistics" },
+    { file: "m4-07-simple-regression.html", title: "4.7 Simple linear regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-08-multiple-regression.html", title: "4.8 Multiple regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-09-chi-square.html", title: "4.9 Chi-square tests", module: "Module 4 · Inferential statistics" },
+    { file: "m4-10-reliability.html", title: "4.10 Reliability", module: "Module 4 · Inferential statistics" },
+    { file: "m4-11-checkpoint.html", title: "4.11 Module checkpoint", module: "Module 4 · Inferential statistics" }
   ];
   const PREFIX = "r4ss:";
   // Built from pieces so Quarto does not try to parse this as a document table
@@ -1756,13 +1768,13 @@ window._ojs.runtime.interpretFromScriptTags();
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./m4-08-chi-square.html" class="pagination-link" aria-label="4.8 Chi-square tests">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">4.8 Chi-square tests</span>
+      <a href="./m4-09-chi-square.html" class="pagination-link" aria-label="4.9 Chi-square tests">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">4.9 Chi-square tests</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./m4-10-checkpoint.html" class="pagination-link" aria-label="4.10 Module checkpoint">
-        <span class="nav-page-text">4.10 Module checkpoint</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./m4-11-checkpoint.html" class="pagination-link" aria-label="4.11 Module checkpoint">
+        <span class="nav-page-text">4.11 Module checkpoint</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

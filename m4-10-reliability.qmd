@@ -1,5 +1,5 @@
 ---
-title: "4.9 Reliability"
+title: "4.10 Reliability"
 subtitle: "Typical error, CV, Bland–Altman plots, ICC and the smallest worthwhile change"
 webr:
   packages: ['ggplot2']
@@ -44,6 +44,10 @@ Each athlete's true ability didn't change within those few minutes, so differenc
 
 1. **Systematic bias**: a consistent shift between trials, e.g. athletes jump higher in trial 2 because of a warm-up or learning effect. It's the **mean** of the differences.
 2. **Random error**: the unpredictable trial-to-trial scatter. It's the **SD** of the differences.
+
+With $d_i = x_{2,i} - x_{1,i}$ the difference between the two trials of athlete *i*:
+
+$$\text{bias} = \bar{d} = \frac{1}{n}\sum_{i=1}^{n} d_i \qquad\qquad s_d = \sqrt{\frac{\sum_{i=1}^{n} (d_i - \bar{d})^2}{n - 1}}$$
 
 ## Typical error and CV
 
@@ -110,7 +114,8 @@ round(c(bias = bias, te = te, cv = cv), 2)
 A **Bland–Altman plot** shows agreement between two measurements: for each athlete, the **difference** (y) is plotted against the **mean** of the two trials (x). Three horizontal lines summarise it:
 
 - the **bias** (mean difference),
-- the **95 % limits of agreement**: bias ± 1.96 × SD of the differences. About 95 % of differences should fall between them.
+- the **95 % limits of agreement**: about 95 % of differences should fall between them (if the differences are roughly normal):
+  $$LoA = \bar{d} \pm 1.96\, s_d$$
 
 It shows whether the error depends on the size of the measurement, and it makes **outliers** stand out.
 
@@ -287,7 +292,13 @@ The ICC depends on how different the athletes are. In a very heterogeneous group
 
 ## The smallest worthwhile change
 
-How big must a change be to **matter**? For team-sport athletes, a common approach defines the **smallest worthwhile change (SWC)** as **0.2 × the between-athlete SD**, i.e. a "small" effect size (Hopkins).
+How big must a change be to **matter**? For team-sport athletes, a common approach defines the **smallest worthwhile change (SWC)** as **0.2 × the between-athlete SD**, i.e. a "small" effect size (Hopkins):
+
+$$SWC = 0.2 \times SD_{between}$$
+
+and remember from the central limit theorem that averaging *m* trials reduces the typical error of an athlete's score:
+
+$$TE_{\text{mean of } m} = \frac{TE}{\sqrt{m}}$$
 
 Compare the TE with the SWC:
 

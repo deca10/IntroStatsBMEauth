@@ -533,38 +533,44 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-05-correlation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.5 Correlation</span></a>
+  <a href="./m4-05-rm-anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.5 Repeated-measures ANOVA</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-06-simple-regression.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.6 Simple linear regression</span></a>
+  <a href="./m4-06-correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.6 Correlation</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-07-multiple-regression.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.7 Multiple regression</span></a>
+  <a href="./m4-07-simple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.7 Simple linear regression</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-08-chi-square.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.8 Chi-square tests</span></a>
+  <a href="./m4-08-multiple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.8 Multiple regression</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-09-reliability.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.9 Reliability</span></a>
+  <a href="./m4-09-chi-square.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.9 Chi-square tests</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-10-checkpoint.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.10 Module checkpoint</span></a>
+  <a href="./m4-10-reliability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.10 Reliability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m4-11-checkpoint.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.11 Module checkpoint</span></a>
   </div>
 </li>
       </ul>
@@ -694,7 +700,15 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoiZ2dwbG90KHNxdWFkLCBhZXMo
 </script>
 </div>
 </div>
-<p>H₀: the population means are equal (difference = 0). Use <code>t.test()</code> with a <strong>formula</strong> <code>outcome ~ group</code>:</p>
+<p>H₀: the population means are equal (μ₁ − μ₂ = 0). The test statistic compares the difference between the sample means with its standard error. There are two versions.</p>
+<p><strong>Student’s <em>t</em>-test</strong> assumes both groups have the same population variance and <strong>pools</strong> the two SDs:</p>
+<p><span class="math display">\[t = \frac{\bar{x}_1 - \bar{x}_2}{s_p \sqrt{\dfrac{1}{n_1} + \dfrac{1}{n_2}}}, \qquad df = n_1 + n_2 - 2\]</span></p>
+<p><span class="math display">\[s_p = \sqrt{\frac{(n_1 - 1)\,s_1^2 + (n_2 - 1)\,s_2^2}{n_1 + n_2 - 2}}\]</span></p>
+<p><strong>Welch’s <em>t</em>-test</strong> doesn’t assume equal variances. Each group keeps its own variance, and the degrees of freedom are estimated with the <strong>Welch–Satterthwaite</strong> equation (which is why they’re usually not a whole number):</p>
+<p><span class="math display">\[t = \frac{\bar{x}_1 - \bar{x}_2}{\sqrt{\dfrac{s_1^2}{n_1} + \dfrac{s_2^2}{n_2}}}\]</span></p>
+<p><span class="math display">\[df \approx \frac{\left(\dfrac{s_1^2}{n_1} + \dfrac{s_2^2}{n_2}\right)^2}{\dfrac{(s_1^2/n_1)^2}{n_1 - 1} + \dfrac{(s_2^2/n_2)^2}{n_2 - 1}}\]</span></p>
+<p>In both cases the 95 % CI of the difference is <span class="math inline">\((\bar{x}_1 - \bar{x}_2) \pm t^*_{df} \times SE\)</span>, the same idea as in <a href="./m4-01-confidence-intervals.html">lesson 4.1</a>.</p>
+<p>Use <code>t.test()</code> with a <strong>formula</strong> <code>outcome ~ group</code>:</p>
 <div class="cell">
 <div>
 <div id="webr-4" class="exercise-cell">
@@ -763,7 +777,7 @@ eyJhdHRyIjp7ImNoZWNrIjp0cnVlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJleGVyY2lzZSI6InR0
 <h2 class="anchored" data-anchor-id="effect-size-cohens-d">Effect size: Cohen’s <em>d</em></h2>
 <p>The <em>p</em>-value tells you whether a difference is detectable, not how <strong>large</strong> it is. Cohen’s <em>d</em> expresses the difference in units of standard deviation:</p>
 <p><span class="math display">\[d = \frac{\bar{x}_1 - \bar{x}_2}{SD_{pooled}}, \qquad SD_{pooled} = \sqrt{\frac{SD_1^2 + SD_2^2}{2}}\]</span></p>
-<p>(this simple pooled SD is correct when the groups have the same size). Conventional benchmarks: <strong>0.2 small, 0.5 medium, 0.8 large</strong>. In sport science, also compare the raw difference with the <strong>smallest worthwhile change</strong> (<a href="./m4-09-reliability.html">lesson 4.9</a>).</p>
+<p>(this simple pooled SD is correct when the groups have the same size). Conventional benchmarks: <strong>0.2 small, 0.5 medium, 0.8 large</strong>. In sport science, also compare the raw difference with the <strong>smallest worthwhile change</strong> (<a href="./m4-10-reliability.html">lesson 4.10</a>).</p>
 <div class="task">
 <p>Calculate Cohen’s <em>d</em> for the difference in <strong>jump height</strong> between soccer and basketball players (soccer − basketball).</p>
 </div>
@@ -800,7 +814,7 @@ d</code>
 </div>
 <div class="cell" data-exercise="tt_2" data-check="true">
 <script type="exercise-check-tt_2-contents">
-eyJhdHRyIjp7ImNoZWNrIjp0cnVlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJleGVyY2lzZSI6InR0XzIifSwiY29kZSI6Ii5jaGVja192YXJzKGMoXCJzZF9wb29sZWRcIiwgXCJkXCIpLCAuZW52aXJfcmVzdWx0LCAuY2hlY2tlcl9hcmdzJGVudmlyX3NvbHV0aW9uLFxuICBvayA9IFwiQ29ycmVjdCEgZCDiiYggMC40NTogYSBzbWFsbC10by1tZWRpdW0gZWZmZWN0LiBSZW1lbWJlciBmcm9tIHRoZSBNb2R1bGUgMyBmaWd1cmVzOiBzb2NjZXIgcGxheWVycyBhcmUgYWxzbyBtdWNoIGxpZ2h0ZXIuIElzIGl0IHRoZSBzcG9ydCBvciB0aGUgYm9keSBtYXNzPyBMZXNzb24gNC43IHdpbGwgdGVsbC5cIikifQ==
+eyJhdHRyIjp7ImNoZWNrIjp0cnVlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJleGVyY2lzZSI6InR0XzIifSwiY29kZSI6Ii5jaGVja192YXJzKGMoXCJzZF9wb29sZWRcIiwgXCJkXCIpLCAuZW52aXJfcmVzdWx0LCAuY2hlY2tlcl9hcmdzJGVudmlyX3NvbHV0aW9uLFxuICBvayA9IFwiQ29ycmVjdCEgZCDiiYggMC40NTogYSBzbWFsbC10by1tZWRpdW0gZWZmZWN0LiBSZW1lbWJlciBmcm9tIHRoZSBNb2R1bGUgMyBmaWd1cmVzOiBzb2NjZXIgcGxheWVycyBhcmUgYWxzbyBtdWNoIGxpZ2h0ZXIuIElzIGl0IHRoZSBzcG9ydCBvciB0aGUgYm9keSBtYXNzPyBMZXNzb24gNC44IHdpbGwgdGVsbC5cIikifQ==
 </script>
 </div>
 <div id="tt-q1" class="quiz">
@@ -828,7 +842,10 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoiaGVhZCh0cmlhbHMpIn0=
 </script>
 </div>
 </div>
-<p>Do athletes jump higher in their <strong>third</strong> trial than in their first (a warm-up or learning effect)? These are the <strong>same athletes</strong>, so the measurements are paired. A paired <em>t</em>-test is a one-sample <em>t</em>-test on the <strong>differences</strong>: H₀ says the mean difference is 0.</p>
+<p>Do athletes jump higher in their <strong>third</strong> trial than in their first (a warm-up or learning effect)? These are the <strong>same athletes</strong>, so the measurements are paired. A paired <em>t</em>-test is a one-sample <em>t</em>-test on the <strong>differences</strong>: H₀ says the mean difference is 0. With <span class="math inline">\(d_i\)</span> the difference of athlete <em>i</em>, <span class="math inline">\(\bar{d}\)</span> their mean and <span class="math inline">\(s_d\)</span> their SD:</p>
+<p><span class="math display">\[t = \frac{\bar{d}}{s_d / \sqrt{n}}, \qquad df = n - 1\]</span></p>
+<p><span class="math display">\[95\%\ CI = \bar{d} \pm t^*_{n-1} \times \frac{s_d}{\sqrt{n}}\]</span></p>
+<p>The matching effect size is <span class="math inline">\(d_z = \bar{d} / s_d\)</span>, the mean change in units of the SD of the changes.</p>
 <p>First, put trial 1 and trial 3 next to each other. Because <code>trials</code> is sorted by athlete, the athletes are in the same order in both vectors:</p>
 <div class="cell">
 <div>
@@ -915,8 +932,8 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoidDEgPC0gdHJpYWxzJGp1bXBf
 <p><em>t</em>-tests assume that the data (or for paired tests, the differences) are roughly <strong>normally distributed</strong>, and that observations are <strong>independent</strong> (each athlete appears once per group). Thanks to the central limit theorem, <em>t</em>-tests are robust to moderate non-normality when samples aren’t tiny. Check with a histogram or Q-Q plot (<a href="./m2-04-normal-clt.html">lesson 2.4</a>).</p>
 <p>For clearly skewed data, small samples or ordinal outcomes, use the <strong>non-parametric</strong> alternatives, which work on ranks:</p>
 <ul>
-<li>independent groups: <strong>Mann–Whitney <em>U</em></strong> / Wilcoxon rank-sum test, <code>wilcox.test(y ~ group, data = ...)</code>,</li>
-<li>paired data: <strong>Wilcoxon signed-rank test</strong>, <code>wilcox.test(x, y, paired = TRUE)</code>.</li>
+<li>independent groups: <strong>Mann–Whitney <em>U</em></strong> / Wilcoxon rank-sum test, <code>wilcox.test(y ~ group, data = ...)</code>. All observations are ranked together; with <span class="math inline">\(R_1\)</span> the sum of the ranks of group 1: <span class="math display">\[U_1 = R_1 - \frac{n_1 (n_1 + 1)}{2}\]</span> If the groups don’t differ, <span class="math inline">\(U_1\)</span> is close to <span class="math inline">\(n_1 n_2 / 2\)</span>. (R reports it as <code>W</code>.)</li>
+<li>paired data: <strong>Wilcoxon signed-rank test</strong>, <code>wilcox.test(x, y, paired = TRUE)</code>. The absolute differences <span class="math inline">\(|d_i|\)</span> are ranked, each rank gets the sign of its difference, and the test statistic is the sum of the positive ranks: <span class="math display">\[V = \sum_{d_i &gt; 0} \text{rank}(|d_i|)\]</span> Under H₀ it’s close to <span class="math inline">\(n(n+1)/4\)</span>.</li>
 </ul>
 <div class="cell">
 <div>
@@ -1015,12 +1032,13 @@ WyJkYXRhL2p1bXBfc3F1YWQuY3N2IiwiZGF0YS9jbWpfdHJpYWxzLmNzdiIsImRhdGEvYmFsYW5jZS5j
     { file: "m4-02-hypothesis-testing.html", title: "4.2 Hypothesis testing", module: "Module 4 · Inferential statistics" },
     { file: "m4-03-t-tests.html", title: "4.3 Comparing two groups", module: "Module 4 · Inferential statistics" },
     { file: "m4-04-anova.html", title: "4.4 ANOVA", module: "Module 4 · Inferential statistics" },
-    { file: "m4-05-correlation.html", title: "4.5 Correlation", module: "Module 4 · Inferential statistics" },
-    { file: "m4-06-simple-regression.html", title: "4.6 Simple linear regression", module: "Module 4 · Inferential statistics" },
-    { file: "m4-07-multiple-regression.html", title: "4.7 Multiple regression", module: "Module 4 · Inferential statistics" },
-    { file: "m4-08-chi-square.html", title: "4.8 Chi-square tests", module: "Module 4 · Inferential statistics" },
-    { file: "m4-09-reliability.html", title: "4.9 Reliability", module: "Module 4 · Inferential statistics" },
-    { file: "m4-10-checkpoint.html", title: "4.10 Module checkpoint", module: "Module 4 · Inferential statistics" }
+    { file: "m4-05-rm-anova.html", title: "4.5 Repeated-measures ANOVA", module: "Module 4 · Inferential statistics" },
+    { file: "m4-06-correlation.html", title: "4.6 Correlation", module: "Module 4 · Inferential statistics" },
+    { file: "m4-07-simple-regression.html", title: "4.7 Simple linear regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-08-multiple-regression.html", title: "4.8 Multiple regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-09-chi-square.html", title: "4.9 Chi-square tests", module: "Module 4 · Inferential statistics" },
+    { file: "m4-10-reliability.html", title: "4.10 Reliability", module: "Module 4 · Inferential statistics" },
+    { file: "m4-11-checkpoint.html", title: "4.11 Module checkpoint", module: "Module 4 · Inferential statistics" }
   ];
   const PREFIX = "r4ss:";
   // Built from pieces so Quarto does not try to parse this as a document table

@@ -60,12 +60,13 @@ New here? Read [How this course works](how-to-use.qmd) first (5 minutes).
 2. [Hypothesis testing](m4-02-hypothesis-testing.qmd)
 3. [Comparing two groups](m4-03-t-tests.qmd)
 4. [ANOVA](m4-04-anova.qmd)
-5. [Correlation](m4-05-correlation.qmd)
-6. [Simple linear regression](m4-06-simple-regression.qmd)
-7. [Multiple regression](m4-07-multiple-regression.qmd)
-8. [Chi-square tests](m4-08-chi-square.qmd)
-9. [Reliability](m4-09-reliability.qmd)
-10. [Module checkpoint](m4-10-checkpoint.qmd)
+5. [Repeated-measures ANOVA](m4-05-rm-anova.qmd)
+6. [Correlation](m4-06-correlation.qmd)
+7. [Simple linear regression](m4-07-simple-regression.qmd)
+8. [Multiple regression](m4-08-multiple-regression.qmd)
+9. [Chi-square tests](m4-09-chi-square.qmd)
+10. [Reliability](m4-10-reliability.qmd)
+11. [Module checkpoint](m4-11-checkpoint.qmd)
 
 ## The data you will use
 

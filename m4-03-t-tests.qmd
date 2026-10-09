@@ -53,7 +53,23 @@ ggplot(squad, aes(x = sport, y = jump_height_m * 100, colour = sport)) +
   labs(x = NULL, y = "Jump height (cm)")
 ```
 
-H₀: the population means are equal (difference = 0). Use `t.test()` with a **formula** `outcome ~ group`:
+H₀: the population means are equal (μ₁ − μ₂ = 0). The test statistic compares the difference between the sample means with its standard error. There are two versions.
+
+**Student's *t*-test** assumes both groups have the same population variance and **pools** the two SDs:
+
+$$t = \frac{\bar{x}_1 - \bar{x}_2}{s_p \sqrt{\dfrac{1}{n_1} + \dfrac{1}{n_2}}}, \qquad df = n_1 + n_2 - 2$$
+
+$$s_p = \sqrt{\frac{(n_1 - 1)\,s_1^2 + (n_2 - 1)\,s_2^2}{n_1 + n_2 - 2}}$$
+
+**Welch's *t*-test** doesn't assume equal variances. Each group keeps its own variance, and the degrees of freedom are estimated with the **Welch–Satterthwaite** equation (which is why they're usually not a whole number):
+
+$$t = \frac{\bar{x}_1 - \bar{x}_2}{\sqrt{\dfrac{s_1^2}{n_1} + \dfrac{s_2^2}{n_2}}}$$
+
+$$df \approx \frac{\left(\dfrac{s_1^2}{n_1} + \dfrac{s_2^2}{n_2}\right)^2}{\dfrac{(s_1^2/n_1)^2}{n_1 - 1} + \dfrac{(s_2^2/n_2)^2}{n_2 - 1}}$$
+
+In both cases the 95 % CI of the difference is $(\bar{x}_1 - \bar{x}_2) \pm t^*_{df} \times SE$, the same idea as in [lesson 4.1](m4-01-confidence-intervals.qmd).
+
+Use `t.test()` with a **formula** `outcome ~ group`:
 
 ```{webr}
 t.test(jump_height_m ~ sport, data = squad)
@@ -114,7 +130,7 @@ The *p*-value tells you whether a difference is detectable, not how **large** it
 
 $$d = \frac{\bar{x}_1 - \bar{x}_2}{SD_{pooled}}, \qquad SD_{pooled} = \sqrt{\frac{SD_1^2 + SD_2^2}{2}}$$
 
-(this simple pooled SD is correct when the groups have the same size). Conventional benchmarks: **0.2 small, 0.5 medium, 0.8 large**. In sport science, also compare the raw difference with the **smallest worthwhile change** ([lesson 4.9](m4-09-reliability.qmd)).
+(this simple pooled SD is correct when the groups have the same size). Conventional benchmarks: **0.2 small, 0.5 medium, 0.8 large**. In sport science, also compare the raw difference with the **smallest worthwhile change** ([lesson 4.10](m4-10-reliability.qmd)).
 
 ::: {.task}
 Calculate Cohen's *d* for the difference in **jump height** between soccer and basketball players (soccer − basketball).
@@ -152,7 +168,7 @@ d
 #| exercise: tt_2
 #| check: true
 .check_vars(c("sd_pooled", "d"), .envir_result, .checker_args$envir_solution,
-  ok = "Correct! d ≈ 0.45: a small-to-medium effect. Remember from the Module 3 figures: soccer players are also much lighter. Is it the sport or the body mass? Lesson 4.7 will tell.")
+  ok = "Correct! d ≈ 0.45: a small-to-medium effect. Remember from the Module 3 figures: soccer players are also much lighter. Is it the sport or the body mass? Lesson 4.8 will tell.")
 ```
 
 ::: {.quiz id="tt-q1"}
@@ -175,7 +191,13 @@ The `trials` data contains **three CMJs per athlete** (56 athletes), performed o
 head(trials)
 ```
 
-Do athletes jump higher in their **third** trial than in their first (a warm-up or learning effect)? These are the **same athletes**, so the measurements are paired. A paired *t*-test is a one-sample *t*-test on the **differences**: H₀ says the mean difference is 0.
+Do athletes jump higher in their **third** trial than in their first (a warm-up or learning effect)? These are the **same athletes**, so the measurements are paired. A paired *t*-test is a one-sample *t*-test on the **differences**: H₀ says the mean difference is 0. With $d_i$ the difference of athlete *i*, $\bar{d}$ their mean and $s_d$ their SD:
+
+$$t = \frac{\bar{d}}{s_d / \sqrt{n}}, \qquad df = n - 1$$
+
+$$95\%\ CI = \bar{d} \pm t^*_{n-1} \times \frac{s_d}{\sqrt{n}}$$
+
+The matching effect size is $d_z = \bar{d} / s_d$, the mean change in units of the SD of the changes.
 
 First, put trial 1 and trial 3 next to each other. Because `trials` is sorted by athlete, the athletes are in the same order in both vectors:
 
@@ -263,8 +285,12 @@ Both legs belong to the same athlete, so the measurements are paired. (Technical
 
 For clearly skewed data, small samples or ordinal outcomes, use the **non-parametric** alternatives, which work on ranks:
 
-- independent groups: **Mann–Whitney *U*** / Wilcoxon rank-sum test, `wilcox.test(y ~ group, data = ...)`,
-- paired data: **Wilcoxon signed-rank test**, `wilcox.test(x, y, paired = TRUE)`.
+- independent groups: **Mann–Whitney *U*** / Wilcoxon rank-sum test, `wilcox.test(y ~ group, data = ...)`. All observations are ranked together; with $R_1$ the sum of the ranks of group 1:
+  $$U_1 = R_1 - \frac{n_1 (n_1 + 1)}{2}$$
+  If the groups don't differ, $U_1$ is close to $n_1 n_2 / 2$. (R reports it as `W`.)
+- paired data: **Wilcoxon signed-rank test**, `wilcox.test(x, y, paired = TRUE)`. The absolute differences $|d_i|$ are ranked, each rank gets the sign of its difference, and the test statistic is the sum of the positive ranks:
+  $$V = \sum_{d_i > 0} \text{rank}(|d_i|)$$
+  Under H₀ it's close to $n(n+1)/4$.
 
 ```{webr}
 # Trail Making Test B is strongly skewed: compare young vs. old with a rank-based test

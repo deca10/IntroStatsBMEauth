@@ -1,0 +1,475 @@
+---
+title: "4.5 Repeated-measures ANOVA"
+subtitle: "Comparing three or more conditions measured on the same participants"
+webr:
+  packages: ['ggplot2']
+  resources:
+    - data/slope_walking.csv
+---
+
+{{< include _common.qmd >}}
+
+```{webr}
+#| include: false
+library(ggplot2)
+theme_set(theme_classic(base_size = 14))
+slopes <- read.csv("data/slope_walking.csv")
+```
+
+::: {.callout-note appearance="simple"}
+## In this lesson you will learn to
+- recognise a **within-subjects** (repeated-measures) design with three or more conditions,
+- reshape **wide** data into **long** format for analysis,
+- partition the variability into **conditions**, **participants** and **error**, and calculate *F* by hand,
+- run a **one-way repeated-measures ANOVA** in R with `aov(... + Error(...))`,
+- check **sphericity** (Mauchly's test) and apply the **Greenhouse–Geisser correction**,
+- follow up with **Bonferroni-corrected paired *t*-tests** and report **partial η²**,
+- use the **Friedman test** as the non-parametric alternative.
+
+⏱️ About 50 minutes. You need [lesson 4.3](m4-03-t-tests.qmd) (paired *t*-test) and [lesson 4.4](m4-04-anova.qmd) (one-way ANOVA).
+:::
+
+## The study: walking on slopes
+
+Ten participants walked in three conditions: **downhill**, on **level** ground and **uphill**, on a gradient of **10°**. For each condition, their average **heart rate** (bpm) and **walking speed** (m/s) were recorded. The data frame `slopes` has one row per participant:
+
+```{webr}
+slopes
+```
+
+Every participant was measured in **all three** conditions. This is a **within-subjects** (repeated-measures) design. It's the extension of the paired *t*-test to more than two conditions, just as one-way ANOVA extends the independent *t*-test.
+
+| | 2 conditions/groups | 3+ conditions/groups |
+|---|---|---|
+| **Different** participants | independent *t*-test | one-way ANOVA |
+| **Same** participants | paired *t*-test | **repeated-measures ANOVA** |
+
+## Wide and long data
+
+`slopes` is in **wide** format: one row per participant, one column per condition. For plotting and for `aov()`, we need **long** format: one row per **measurement**, with a column saying which participant and which condition it belongs to.
+
+With three conditions, we can stack the columns with `c()` and repeat the labels with `rep()`:
+
+- `rep(x, times = 3)` repeats the whole vector `x` three times,
+- `rep(x, each = 10)` repeats every element 10 times.
+
+::: {.task}
+Create `hr_long`, the heart-rate data in long format, with the columns `participant`, `gradient` and `hr`. Make `gradient` a factor with the levels in the order **Downhill, Level, Uphill**.
+:::
+
+```{webr}
+#| exercise: rm_1
+#| caption: "Exercise · Wide to long"
+hr_long <- data.frame(
+  participant = factor(rep(slopes$participant, times = ______)),
+  gradient    = factor(rep(c("Downhill", "Level", "Uphill"), each = ______),
+                       levels = c("Downhill", "Level", "Uphill")),
+  hr          = c(slopes$hr_downhill, slopes$______, slopes$______)
+)
+head(hr_long, 12)
+```
+
+::: {.hint exercise="rm_1"}
+`times = 3` (three conditions), `each = 10` (ten participants), and the HR columns in the same order as the labels: `hr_downhill`, `hr_level`, `hr_uphill`.
+:::
+
+::: {.solution exercise="rm_1"}
+```{webr}
+#| exercise: rm_1
+#| solution: true
+hr_long <- data.frame(
+  participant = factor(rep(slopes$participant, times = 3)),
+  gradient    = factor(rep(c("Downhill", "Level", "Uphill"), each = 10),
+                       levels = c("Downhill", "Level", "Uphill")),
+  hr          = c(slopes$hr_downhill, slopes$hr_level, slopes$hr_uphill)
+)
+head(hr_long, 12)
+```
+:::
+
+```{webr}
+#| exercise: rm_1
+#| check: true
+.check_vars("hr_long", .envir_result, .checker_args$envir_solution,
+  ok = "Correct! 30 rows: 10 participants × 3 gradients. Every participant appears once per condition.")
+```
+
+Now we can plot it. For repeated measures, a **spaghetti plot**, with one line per participant, shows what the condition means hide: how **each person** responds.
+
+```{webr}
+hr_long <- data.frame(
+  participant = factor(rep(slopes$participant, times = 3)),
+  gradient    = factor(rep(c("Downhill", "Level", "Uphill"), each = 10), levels = c("Downhill", "Level", "Uphill")),
+  hr          = c(slopes$hr_downhill, slopes$hr_level, slopes$hr_uphill)
+)
+
+ggplot(hr_long, aes(x = gradient, y = hr)) +
+  geom_line(aes(group = participant), colour = "grey60") +
+  geom_point(colour = "grey40") +
+  stat_summary(fun = mean, fun.min = function(x) mean(x) - sd(x), fun.max = function(x) mean(x) + sd(x),
+               geom = "pointrange", colour = "firebrick", size = 0.8, linewidth = 1) +
+  labs(x = NULL, y = "Heart rate (bpm)")
+```
+
+Uphill walking raises heart rate in every participant, but by very different amounts (from ≈120 to ≈177 bpm). Keep that spread in mind: it becomes important for the sphericity assumption below.
+
+## The logic: removing the differences between people
+
+In a one-way ANOVA ([lesson 4.4](m4-04-anova.qmd)), all variability that isn't explained by the groups counts as error. With repeated measures, part of that "error" is simply that **some people have a higher heart rate than others in every condition**. Because each participant is their own control, we can measure that part and **remove it from the error**.
+
+The total variability is split into three parts:
+
+$$SS_{total} = SS_{conditions} + SS_{participants} + SS_{error}$$
+
+With *n* participants, *k* conditions, $y_{ij}$ the value of participant *i* in condition *j*, $\bar{y}_{\cdot j}$ the mean of condition *j*, $\bar{y}_{i \cdot}$ the mean of participant *i*, and $\bar{y}$ the grand mean:
+
+$$SS_{total} = \sum_{i=1}^{n}\sum_{j=1}^{k} (y_{ij} - \bar{y})^2$$
+
+$$SS_{conditions} = n \sum_{j=1}^{k} (\bar{y}_{\cdot j} - \bar{y})^2$$
+
+$$SS_{participants} = k \sum_{i=1}^{n} (\bar{y}_{i \cdot} - \bar{y})^2$$
+
+$$SS_{error} = SS_{total} - SS_{conditions} - SS_{participants}$$
+
+Each sum of squares is divided by its degrees of freedom to get a **mean square** (MS), and *F* compares the conditions with the error:
+
+$$df_{conditions} = k - 1 \qquad df_{error} = (k - 1)(n - 1)$$
+
+$$F = \frac{MS_{conditions}}{MS_{error}} = \frac{SS_{conditions} / (k-1)}{SS_{error} / \big((k-1)(n-1)\big)}$$
+
+The participants' variability is **not** in the denominator, which is why repeated-measures designs are so powerful.
+
+::: {.task}
+Calculate the repeated-measures ANOVA for **heart rate by hand**. The matrix `Y` (10 participants × 3 conditions) is created for you; `rowMeans()` and `colMeans()` give the participant and condition means.
+
+1. Calculate `ss_total`, `ss_cond` and `ss_subj`, then `ss_error`.
+2. Calculate the two degrees of freedom and `F_value`.
+:::
+
+```{webr}
+#| exercise: rm_2
+#| caption: "Exercise · F by hand"
+Y <- as.matrix(slopes[, c("hr_downhill", "hr_level", "hr_uphill")])
+n <- nrow(Y)          # participants
+k <- ncol(Y)          # conditions
+grand <- mean(Y)
+
+# 1. Sums of squares
+ss_total <- sum((Y - grand)^2)
+ss_cond  <- n * sum((colMeans(Y) - grand)^2)
+ss_subj  <- ______ * sum((rowMeans(Y) - grand)^2)
+ss_error <- ______
+
+# 2. Degrees of freedom and F
+df_cond  <- ______
+df_error <- ______
+F_value  <- (ss_cond / df_cond) / (ss_error / df_error)
+
+round(c(ss_cond = ss_cond, ss_subj = ss_subj, ss_error = ss_error, F = F_value), 2)
+```
+
+::: {.hint exercise="rm_2"}
+`ss_subj` uses `k`; `ss_error <- ss_total - ss_cond - ss_subj`; `df_cond <- k - 1`; `df_error <- (k - 1) * (n - 1)`.
+:::
+
+::: {.solution exercise="rm_2"}
+```{webr}
+#| exercise: rm_2
+#| solution: true
+Y <- as.matrix(slopes[, c("hr_downhill", "hr_level", "hr_uphill")])
+n <- nrow(Y)          # participants
+k <- ncol(Y)          # conditions
+grand <- mean(Y)
+
+# 1. Sums of squares
+ss_total <- sum((Y - grand)^2)
+ss_cond  <- n * sum((colMeans(Y) - grand)^2)
+ss_subj  <- k * sum((rowMeans(Y) - grand)^2)
+ss_error <- ss_total - ss_cond - ss_subj
+
+# 2. Degrees of freedom and F
+df_cond  <- k - 1
+df_error <- (k - 1) * (n - 1)
+F_value  <- (ss_cond / df_cond) / (ss_error / df_error)
+
+round(c(ss_cond = ss_cond, ss_subj = ss_subj, ss_error = ss_error, F = F_value), 2)
+```
+:::
+
+```{webr}
+#| exercise: rm_2
+#| check: true
+e <- .checker_args$envir_solution
+.check_vars(c("ss_subj", "ss_error", "df_cond", "df_error", "F_value"), .envir_result, e,
+  ok = paste0("Correct! F(", get("df_cond", envir = e), ", ", get("df_error", envir = e), ") = ", round(get("F_value", envir = e), 1),
+              ". Of the total variability, ", round(get("ss_subj", envir = e)), " (bpm²) is due to differences between participants, and it has been taken out of the error term."))
+```
+
+## Repeated-measures ANOVA in R
+
+In `aov()`, the `Error()` term tells R which variability belongs to the participants. `Error(participant/gradient)` means "conditions are measured **within** participants":
+
+```{webr}
+hr_long <- data.frame(
+  participant = factor(rep(slopes$participant, times = 3)),
+  gradient    = factor(rep(c("Downhill", "Level", "Uphill"), each = 10), levels = c("Downhill", "Level", "Uphill")),
+  hr          = c(slopes$hr_downhill, slopes$hr_level, slopes$hr_uphill)
+)
+
+rm_model <- aov(hr ~ gradient + Error(participant / gradient), data = hr_long)
+summary(rm_model)
+```
+
+The output has two **strata**:
+
+- `Error: participant`: the between-participant variability (SS_participants), which has been set aside,
+- `Error: participant:gradient`: the within-participant part, with the test of `gradient` against the error. These are the same numbers you calculated by hand.
+
+***F*(2, 18) = 68.3, *p* < 0.001**: heart rate differs between the gradients.
+
+::: {.callout-tip}
+## What if we had ignored the repeated measures?
+`summary(aov(hr ~ gradient, data = hr_long))` treats the 30 values as if they came from 30 different people, so the participants' variability stays in the error term. For walking speed this lowers *F* from 12.5 to 8.7. Try it in the scratchpad! Using the wrong analysis also violates the independence assumption.
+:::
+
+## Assumption: sphericity
+
+Besides roughly normal residuals, repeated-measures ANOVA assumes **sphericity**: the **variances of the differences** between all pairs of conditions are equal.
+
+$$\sigma^2_{\text{Downhill} - \text{Level}} = \sigma^2_{\text{Downhill} - \text{Uphill}} = \sigma^2_{\text{Level} - \text{Uphill}}$$
+
+(With only two conditions there's only one difference, so sphericity always holds; that's why the paired *t*-test doesn't need it.) Let's look:
+
+```{webr}
+c(down_level = var(slopes$hr_downhill - slopes$hr_level),
+  down_up    = var(slopes$hr_downhill - slopes$hr_uphill),
+  level_up   = var(slopes$hr_level - slopes$hr_uphill))
+```
+
+The differences involving **uphill** vary much more, because people's heart-rate response to uphill walking is so different (the spaghetti plot!). Sphericity looks doubtful.
+
+**Mauchly's test** checks it formally (H₀: sphericity holds). When it's violated, the *F*-test becomes too liberal (too many false positives). The **Greenhouse–Geisser correction** fixes this by multiplying both degrees of freedom by an estimate $\hat{\varepsilon}$ (between $1/(k-1)$ and 1; 1 = perfect sphericity):
+
+$$df_{conditions}^{GG} = \hat{\varepsilon}\,(k - 1) \qquad df_{error}^{GG} = \hat{\varepsilon}\,(k - 1)(n - 1)$$
+
+The *F* value stays the same, but the *p*-value is calculated with fewer degrees of freedom. (The Huynh–Feldt ε is a less conservative alternative, often preferred when $\hat{\varepsilon}_{GG} > 0.75$.)
+
+In base R, both are available through a **multivariate** model of the wide data: `lm(Y ~ 1)` fits the three conditions as a multivariate outcome, `mauchly.test()` tests sphericity, and `anova(..., test = "Spherical")` gives the ε estimates and the corrected *p*-values (`G-G Pr`, `H-F Pr`).
+
+::: {.task}
+For **heart rate**:
+
+1. Fit the multivariate model `fit` with `lm(Y ~ 1)`.
+2. Run Mauchly's test with `mauchly.test(fit, X = ~1)` and store it in `mauchly`.
+3. Get the sphericity-corrected ANOVA with `anova(fit, X = ~1, test = "Spherical")` and store it in `corrected`.
+:::
+
+```{webr}
+#| exercise: rm_3
+#| caption: "Exercise · Sphericity and Greenhouse–Geisser"
+Y <- as.matrix(slopes[, c("hr_downhill", "hr_level", "hr_uphill")])
+
+fit <- lm(______ ~ 1)
+mauchly <- mauchly.test(______, X = ~1)
+mauchly
+
+corrected <- anova(fit, X = ~1, test = "______")
+corrected
+```
+
+::: {.hint exercise="rm_3"}
+`lm(Y ~ 1)`, `mauchly.test(fit, X = ~1)`, `test = "Spherical"`.
+:::
+
+::: {.solution exercise="rm_3"}
+```{webr}
+#| exercise: rm_3
+#| solution: true
+Y <- as.matrix(slopes[, c("hr_downhill", "hr_level", "hr_uphill")])
+
+fit <- lm(Y ~ 1)
+mauchly <- mauchly.test(fit, X = ~1)
+mauchly
+
+corrected <- anova(fit, X = ~1, test = "Spherical")
+corrected
+```
+:::
+
+```{webr}
+#| exercise: rm_3
+#| check: true
+e <- .checker_args$envir_solution
+m <- get("mauchly", envir = e)
+res <- .check_vars("mauchly", .envir_result, e)
+if (isTRUE(res$correct)) {
+  cr <- get("corrected", envir = .envir_result)
+  if (!inherits(cr, "anova") || is.null(attr(cr, "heading")) || !any(grepl("Greenhouse", attr(cr, "heading"))))
+    res <- .no("Use `anova(fit, X = ~1, test = \"Spherical\")` for the corrected ANOVA.")
+  else res <- .ok(paste0("Correct! Mauchly's W = ", round(m$statistic, 2), ", p = ", signif(m$p.value, 2),
+    ": sphericity is violated. Greenhouse–Geisser ε = 0.56, so the corrected test is F(1.12, 10.1) = 68.3, p < 0.001. The effect of gradient is so large that it stays highly significant, but always report the corrected result when sphericity is violated."))
+}
+res
+```
+
+Reporting example: *"Mauchly's test indicated a violation of sphericity (W = 0.22, p = 0.002), so Greenhouse–Geisser-corrected values are reported (ε = 0.56). Heart rate differed between gradients, F(1.12, 10.11) = 68.35, p < 0.001, η²p = 0.88."*
+
+::: {.quiz id="rm-q1"}
+Mauchly's test for a repeated-measures ANOVA with three conditions gives *p* = 0.86. What do you do?
+
+- [ ] Apply the Greenhouse–Geisser correction
+- [x] Sphericity is not violated, so the uncorrected *F*-test can be reported
+- [ ] Switch to a one-way ANOVA
+
+::: {.explanation}
+H₀ of Mauchly's test is sphericity; *p* > 0.05 means no evidence of a violation. (With small samples Mauchly's test has low power, which is why many researchers report the GG correction whenever ε is clearly below 1.)
+:::
+:::
+
+## Post-hoc tests and effect size
+
+A significant repeated-measures ANOVA says that *some* conditions differ. To find which, compare all pairs with **paired *t*-tests** ([lesson 4.3](m4-03-t-tests.qmd)), each one
+
+$$t = \frac{\bar{d}}{s_d / \sqrt{n}}, \qquad df = n - 1$$
+
+and correct for the number of comparisons *m*. The **Bonferroni correction** multiplies each *p*-value by *m* (capped at 1):
+
+$$p_{adj} = \min(1,\; m \times p)$$
+
+With three conditions, *m* = 3. `pairwise.t.test(y, condition, paired = TRUE, p.adjust.method = "bonferroni")` does all of this. It pairs the values by their **position** within each condition, so the long data must have the participants in the same order in every condition (ours does).
+
+The effect size is **partial eta squared**, the proportion of the within-participant variability explained by the conditions:
+
+$$\eta^2_p = \frac{SS_{conditions}}{SS_{conditions} + SS_{error}}$$
+
+::: {.task}
+Now analyse **walking speed**:
+
+1. `speed_long` is created for you. Fit the repeated-measures ANOVA `speed_model` and look at its summary.
+2. Run Bonferroni-corrected paired post-hoc tests (`posthoc`).
+3. Calculate partial η² (`eta_p`) from the sums of squares (given).
+:::
+
+```{webr}
+#| exercise: rm_4
+#| caption: "Exercise · Walking speed"
+speed_long <- data.frame(
+  participant = factor(rep(slopes$participant, times = 3)),
+  gradient    = factor(rep(c("Downhill", "Level", "Uphill"), each = 10), levels = c("Downhill", "Level", "Uphill")),
+  speed       = c(slopes$speed_downhill, slopes$speed_level, slopes$speed_uphill)
+)
+
+# 1. Repeated-measures ANOVA
+speed_model <- aov(speed ~ gradient + Error(______ / ______), data = speed_long)
+summary(speed_model)
+
+# 2. Post-hoc tests
+posthoc <- pairwise.t.test(speed_long$speed, speed_long$gradient,
+                           paired = ______, p.adjust.method = "______")
+posthoc
+
+# 3. Partial eta squared
+ss <- summary(speed_model)[["Error: participant:gradient"]][[1]]$"Sum Sq"   # conditions, error
+eta_p <- ______ / (______ + ______)
+eta_p
+```
+
+::: {.hint exercise="rm_4"}
+`Error(participant / gradient)`, `paired = TRUE`, `p.adjust.method = "bonferroni"`, `eta_p <- ss[1] / (ss[1] + ss[2])`.
+:::
+
+::: {.solution exercise="rm_4"}
+```{webr}
+#| exercise: rm_4
+#| solution: true
+speed_long <- data.frame(
+  participant = factor(rep(slopes$participant, times = 3)),
+  gradient    = factor(rep(c("Downhill", "Level", "Uphill"), each = 10), levels = c("Downhill", "Level", "Uphill")),
+  speed       = c(slopes$speed_downhill, slopes$speed_level, slopes$speed_uphill)
+)
+
+# 1. Repeated-measures ANOVA
+speed_model <- aov(speed ~ gradient + Error(participant / gradient), data = speed_long)
+summary(speed_model)
+
+# 2. Post-hoc tests
+posthoc <- pairwise.t.test(speed_long$speed, speed_long$gradient,
+                           paired = TRUE, p.adjust.method = "bonferroni")
+posthoc
+
+# 3. Partial eta squared
+ss <- summary(speed_model)[["Error: participant:gradient"]][[1]]$"Sum Sq"   # conditions, error
+eta_p <- ss[1] / (ss[1] + ss[2])
+eta_p
+```
+:::
+
+```{webr}
+#| exercise: rm_4
+#| check: true
+e <- .checker_args$envir_solution
+ph <- get("posthoc", envir = e)$p.value
+res <- .check_vars(c("posthoc", "eta_p"), .envir_result, e)
+if (isTRUE(res$correct)) res <- .ok(paste0("Correct! F(2, 18) = 12.5, p < 0.001, η²p = ", round(get("eta_p", envir = e), 2),
+  ". People walk fastest downhill (1.58 m/s) and slowest uphill (1.38 m/s). Bonferroni-adjusted: downhill vs. level p = ", signif(ph["Level", "Downhill"], 2),
+  ", downhill vs. uphill p = ", signif(ph["Uphill", "Downhill"], 2), ", level vs. uphill p = ", signif(ph["Uphill", "Level"], 2),
+  " (not significant). Here Mauchly's test is not significant (p = 0.86), so no correction is needed."))
+res
+```
+
+::: {.quiz id="rm-q2"}
+You compare 4 conditions with all pairwise paired *t*-tests. With Bonferroni, an unadjusted *p* of 0.012 becomes…
+
+- [ ] 0.012
+- [ ] 0.048
+- [x] 0.072
+
+::: {.explanation}
+4 conditions give 4 × 3 / 2 = 6 pairs, so *p*<sub>adj</sub> = 6 × 0.012 = 0.072: no longer significant at α = 0.05.
+:::
+:::
+
+## Non-parametric alternative: the Friedman test
+
+For small samples with clearly non-normal data, or ordinal outcomes (e.g. RPE in three conditions), use the **Friedman test**. It ranks the *k* values **within each participant** (1 = lowest) and checks whether the rank sums $R_j$ of the conditions differ more than chance would allow:
+
+$$\chi^2_F = \frac{12}{n\,k\,(k+1)} \sum_{j=1}^{k} R_j^2 \; - \; 3\,n\,(k+1), \qquad df = k - 1$$
+
+`friedman.test()` accepts the wide data as a matrix (rows = participants, columns = conditions):
+
+```{webr}
+friedman.test(as.matrix(slopes[, c("hr_downhill", "hr_level", "hr_uphill")]))
+```
+
+::: {.quiz id="rm-q3"}
+Why is a repeated-measures ANOVA usually more powerful than a one-way ANOVA with the same number of measurements?
+
+- [ ] Because it uses more participants
+- [x] Because the stable differences between participants are removed from the error term, so the same effect gives a larger *F*
+- [ ] Because it doesn't need any assumptions
+
+::: {.explanation}
+Each participant serves as their own control. The between-participant variability (SS<sub>participants</sub>) is separated out instead of being counted as error.
+:::
+:::
+
+## Lesson summary
+
+- Same participants in 3+ conditions → **one-way repeated-measures ANOVA**: `aov(y ~ condition + Error(participant / condition), data = long_df)`.
+- SS<sub>total</sub> = SS<sub>conditions</sub> + SS<sub>participants</sub> + SS<sub>error</sub>; *F* = MS<sub>conditions</sub> / MS<sub>error</sub> with df = (*k* − 1) and (*k* − 1)(*n* − 1).
+- **Sphericity**: equal variances of all pairwise differences. Check with `mauchly.test(lm(Y ~ 1), X = ~1)`; if violated, report **Greenhouse–Geisser**-corrected results (`anova(lm(Y ~ 1), X = ~1, test = "Spherical")`).
+- Post-hoc: `pairwise.t.test(..., paired = TRUE, p.adjust.method = "bonferroni")`; effect size **η²p** = SS<sub>conditions</sub> / (SS<sub>conditions</sub> + SS<sub>error</sub>).
+- Non-parametric: `friedman.test(matrix)`.
+
+### Scratchpad
+
+`slopes` is loaded. Try the one-way (wrong) ANOVA for walking speed and compare its *F* with the repeated-measures result.
+
+```{webr}
+#| autorun: false
+# Your code here
+
+```
+
+::: {.lesson-complete}
+:::

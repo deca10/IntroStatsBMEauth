@@ -59,7 +59,9 @@ mean(cmj_cm)
 
 ### The median
 
-To find the median, sort the values and take the middle one:
+To find the median, sort the values and take the middle one. For *n* sorted values $x_{(1)} \le x_{(2)} \le \dots \le x_{(n)}$:
+
+$$\text{median} = \begin{cases} x_{\left(\frac{n+1}{2}\right)} & \text{if } n \text{ is odd} \\[6pt] \dfrac{x_{\left(\frac{n}{2}\right)} + x_{\left(\frac{n}{2}+1\right)}}{2} & \text{if } n \text{ is even} \end{cases}$$
 
 ```{webr}
 sort(cmj_cm)       # 36 38 41 45 50 -> the middle (3rd) value is 41

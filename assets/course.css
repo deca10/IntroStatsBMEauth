@@ -94,3 +94,11 @@
 }
 .task::before { content: "Your turn"; display: block; font-weight: 700; color: #b57a00; margin-bottom: 0.2rem; }
 .task > :last-child { margin-bottom: 0; }
+
+/* ---------- Display equations: scroll instead of overflowing on narrow screens ---------- */
+.math.display, mjx-container[display="true"] {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}

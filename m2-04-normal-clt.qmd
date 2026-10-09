@@ -34,7 +34,11 @@ quiet <- subset(cmj3, time_s <= 1.5)
 
 Many measurements in biology and sport, such as body height, the small fluctuations of a force signal, or repeated measurements of the same athlete, follow a typical pattern: most values are close to the mean, and values become rarer the further you go from it, equally on both sides. This symmetric, bell-shaped pattern is the **normal distribution** (or *Gaussian* distribution).
 
-A normal distribution is completely described by just two numbers: its **mean** (μ, where the peak is) and its **standard deviation** (σ, how wide the bell is).
+A normal distribution is completely described by just two numbers: its **mean** (μ, where the peak is) and its **standard deviation** (σ, how wide the bell is). The height of the curve (the **probability density**) at a value *x* is
+
+$$f(x) = \frac{1}{\sigma\sqrt{2\pi}} \, e^{-\frac{(x - \mu)^2}{2\sigma^2}}$$
+
+You'll never need to calculate it by hand: R's `dnorm(x, mean, sd)` does it.
 
 ```{webr}
 #| fig-width: 9

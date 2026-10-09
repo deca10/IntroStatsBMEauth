@@ -533,38 +533,44 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-05-correlation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.5 Correlation</span></a>
+  <a href="./m4-05-rm-anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.5 Repeated-measures ANOVA</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-06-simple-regression.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.6 Simple linear regression</span></a>
+  <a href="./m4-06-correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.6 Correlation</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-07-multiple-regression.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.7 Multiple regression</span></a>
+  <a href="./m4-07-simple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.7 Simple linear regression</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-08-chi-square.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.8 Chi-square tests</span></a>
+  <a href="./m4-08-multiple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.8 Multiple regression</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-09-reliability.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.9 Reliability</span></a>
+  <a href="./m4-09-chi-square.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.9 Chi-square tests</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-10-checkpoint.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.10 Module checkpoint</span></a>
+  <a href="./m4-10-reliability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.10 Reliability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m4-11-checkpoint.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.11 Module checkpoint</span></a>
   </div>
 </li>
       </ul>
@@ -813,7 +819,9 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoic2V0LnNlZWQoMSlcbnBfdmFs
 </script>
 </div>
 </div>
-<p>About 5 % false positives, as promised. Now imagine a study measuring <strong>20 different variables</strong>, each tested at α = 0.05: you’d expect one “significant” result even if nothing is going on. This is the <strong>multiple comparisons problem</strong>, and it’s why fishing through many variables for <em>p</em> &lt; 0.05 is bad practice.</p>
+<p>About 5 % false positives, as promised. Now imagine a study measuring <strong>20 different variables</strong>, each tested at α = 0.05: you’d expect one “significant” result even if nothing is going on. This is the <strong>multiple comparisons problem</strong>. With <em>m</em> independent tests of true null hypotheses, the chance of at least one false positive (the <strong>family-wise error rate</strong>) is</p>
+<p><span class="math display">\[P(\text{at least one false positive}) = 1 - (1 - \alpha)^m\]</span></p>
+<p>For <em>m</em> = 20 that’s 1 − 0.95²⁰ = 64 %. The simplest fix is the <strong>Bonferroni correction</strong>: test each hypothesis at α / <em>m</em> (equivalently, multiply each <em>p</em>-value by <em>m</em>). That’s why fishing through many variables for <em>p</em> &lt; 0.05 is bad practice.</p>
 </section>
 <section id="statistical-power" class="level2">
 <h2 class="anchored" data-anchor-id="statistical-power">Statistical power</h2>
@@ -893,7 +901,7 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoic2V0LnNlZWQoNylcbmdyb3Vw
 <ol type="1">
 <li>the <strong>effect size</strong> in meaningful units (cm, %, s) or as a standardised effect (Cohen’s <em>d</em>, <a href="./m4-03-t-tests.html">lesson 4.3</a>),</li>
 <li>its <strong>confidence interval</strong>,</li>
-<li>whether it exceeds the <strong>smallest worthwhile change</strong> for your context (<a href="./m4-09-reliability.html">lesson 4.9</a>).</li>
+<li>whether it exceeds the <strong>smallest worthwhile change</strong> for your context (<a href="./m4-10-reliability.html">lesson 4.10</a>).</li>
 </ol>
 <div id="ht-q3" class="quiz">
 <p>A large study reports that a new shoe improves sprint time by 0.004 s over 30 m (<em>p</em> = 0.001). The best summary is:</p>
@@ -982,12 +990,13 @@ WyJkYXRhL2p1bXBfc3F1YWQuY3N2Il0=
     { file: "m4-02-hypothesis-testing.html", title: "4.2 Hypothesis testing", module: "Module 4 · Inferential statistics" },
     { file: "m4-03-t-tests.html", title: "4.3 Comparing two groups", module: "Module 4 · Inferential statistics" },
     { file: "m4-04-anova.html", title: "4.4 ANOVA", module: "Module 4 · Inferential statistics" },
-    { file: "m4-05-correlation.html", title: "4.5 Correlation", module: "Module 4 · Inferential statistics" },
-    { file: "m4-06-simple-regression.html", title: "4.6 Simple linear regression", module: "Module 4 · Inferential statistics" },
-    { file: "m4-07-multiple-regression.html", title: "4.7 Multiple regression", module: "Module 4 · Inferential statistics" },
-    { file: "m4-08-chi-square.html", title: "4.8 Chi-square tests", module: "Module 4 · Inferential statistics" },
-    { file: "m4-09-reliability.html", title: "4.9 Reliability", module: "Module 4 · Inferential statistics" },
-    { file: "m4-10-checkpoint.html", title: "4.10 Module checkpoint", module: "Module 4 · Inferential statistics" }
+    { file: "m4-05-rm-anova.html", title: "4.5 Repeated-measures ANOVA", module: "Module 4 · Inferential statistics" },
+    { file: "m4-06-correlation.html", title: "4.6 Correlation", module: "Module 4 · Inferential statistics" },
+    { file: "m4-07-simple-regression.html", title: "4.7 Simple linear regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-08-multiple-regression.html", title: "4.8 Multiple regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-09-chi-square.html", title: "4.9 Chi-square tests", module: "Module 4 · Inferential statistics" },
+    { file: "m4-10-reliability.html", title: "4.10 Reliability", module: "Module 4 · Inferential statistics" },
+    { file: "m4-11-checkpoint.html", title: "4.11 Module checkpoint", module: "Module 4 · Inferential statistics" }
   ];
   const PREFIX = "r4ss:";
   // Built from pieces so Quarto does not try to parse this as a document table

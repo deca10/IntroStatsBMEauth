@@ -135,7 +135,11 @@ p_values <- replicate(1000, t.test(rnorm(20, mean = 40, sd = 5), rnorm(20, mean 
 mean(p_values < 0.05)
 ```
 
-About 5 % false positives, as promised. Now imagine a study measuring **20 different variables**, each tested at α = 0.05: you'd expect one "significant" result even if nothing is going on. This is the **multiple comparisons problem**, and it's why fishing through many variables for *p* < 0.05 is bad practice.
+About 5 % false positives, as promised. Now imagine a study measuring **20 different variables**, each tested at α = 0.05: you'd expect one "significant" result even if nothing is going on. This is the **multiple comparisons problem**. With *m* independent tests of true null hypotheses, the chance of at least one false positive (the **family-wise error rate**) is
+
+$$P(\text{at least one false positive}) = 1 - (1 - \alpha)^m$$
+
+For *m* = 20 that's 1 − 0.95²⁰ = 64 %. The simplest fix is the **Bonferroni correction**: test each hypothesis at α / *m* (equivalently, multiply each *p*-value by *m*). That's why fishing through many variables for *p* < 0.05 is bad practice.
 
 ## Statistical power
 
@@ -222,7 +226,7 @@ t.test(group_a, group_b)$p.value
 
 1. the **effect size** in meaningful units (cm, %, s) or as a standardised effect (Cohen's *d*, [lesson 4.3](m4-03-t-tests.qmd)),
 2. its **confidence interval**,
-3. whether it exceeds the **smallest worthwhile change** for your context ([lesson 4.9](m4-09-reliability.qmd)).
+3. whether it exceeds the **smallest worthwhile change** for your context ([lesson 4.10](m4-10-reliability.qmd)).
 
 ::: {.quiz id="ht-q3"}
 A large study reports that a new shoe improves sprint time by 0.004 s over 30 m (*p* = 0.001). The best summary is:

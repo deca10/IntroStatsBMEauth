@@ -145,7 +145,11 @@ CMJ force-platform variables of **84 professional athletes (42 basketball, 42 so
 
 ### Repeated jumps (`trials`)
 
-Three consecutive CMJs of **56 professional basketball and soccer players** (codes A01–A56): `athlete`, `sport`, `trial` (1–3), the body mass estimated by the force platform in that trial (`body_mass_kg`), and `jump_height_cm`. Used for reliability analysis in [lesson 4.9](m4-09-reliability.qmd).
+Three consecutive CMJs of **56 professional basketball and soccer players** (codes A01–A56): `athlete`, `sport`, `trial` (1–3), the body mass estimated by the force platform in that trial (`body_mass_kg`), and `jump_height_cm`. Used for reliability analysis in [lesson 4.10](m4-10-reliability.qmd).
+
+### Walking on slopes (`slopes`)
+
+Average **heart rate** (bpm) and **walking speed** (m/s) of **10 participants** (codes P01–P10) who walked **downhill, on level ground and uphill** (gradient of 10°). Every participant walked in all three conditions, so it's a repeated-measures design. One row per participant, with the columns `hr_downhill`, `hr_level`, `hr_uphill`, `speed_downhill`, `speed_level` and `speed_uphill`. Used in [lesson 4.5](m4-05-rm-anova.qmd).
 
 ## Working in RStudio later
 
@@ -153,7 +157,7 @@ Everything in this course also works in **R + RStudio** on your own computer. Wh
 
 1. Install R from [cran.r-project.org](https://cran.r-project.org/).
 2. Install RStudio Desktop from [posit.co](https://posit.co/download/rstudio-desktop/).
-3. Download the course data: [balance.csv](data/balance.csv), [bds_trials.csv](data/bds_trials.csv), [cmj.csv](data/cmj.csv), [jump_squad.csv](data/jump_squad.csv) and [cmj_trials.csv](data/cmj_trials.csv).
+3. Download the course data: [balance.csv](data/balance.csv), [bds_trials.csv](data/bds_trials.csv), [cmj.csv](data/cmj.csv), [jump_squad.csv](data/jump_squad.csv), [cmj_trials.csv](data/cmj_trials.csv) and [slope_walking.csv](data/slope_walking.csv).
 4. In RStudio, install the plotting packages once with `install.packages(c("ggplot2", "ggdist", "ggrepel", "patchwork"))`.
 
 Ready? Start with [**1.1 R basics →**](m1-01-basics.qmd)

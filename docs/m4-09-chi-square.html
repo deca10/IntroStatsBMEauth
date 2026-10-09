@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>4.8 Categorical data: chi-square tests – R for Sport &amp; Exercise Science</title>
+<title>4.9 Categorical data: chi-square tests – R for Sport &amp; Exercise Science</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -71,8 +71,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./m4-09-reliability.html" rel="next">
-<link href="./m4-07-multiple-regression.html" rel="prev">
+<link href="./m4-10-reliability.html" rel="next">
+<link href="./m4-08-multiple-regression.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -323,7 +323,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m4-01-confidence-intervals.html">Module 4 · Inferential statistics</a></li><li class="breadcrumb-item"><a href="./m4-08-chi-square.html">4.8 Chi-square tests</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m4-01-confidence-intervals.html">Module 4 · Inferential statistics</a></li><li class="breadcrumb-item"><a href="./m4-09-chi-square.html">4.9 Chi-square tests</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -533,38 +533,44 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-05-correlation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.5 Correlation</span></a>
+  <a href="./m4-05-rm-anova.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.5 Repeated-measures ANOVA</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-06-simple-regression.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.6 Simple linear regression</span></a>
+  <a href="./m4-06-correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.6 Correlation</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-07-multiple-regression.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.7 Multiple regression</span></a>
+  <a href="./m4-07-simple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.7 Simple linear regression</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-08-chi-square.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">4.8 Chi-square tests</span></a>
+  <a href="./m4-08-multiple-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.8 Multiple regression</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-09-reliability.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.9 Reliability</span></a>
+  <a href="./m4-09-chi-square.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">4.9 Chi-square tests</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./m4-10-checkpoint.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4.10 Module checkpoint</span></a>
+  <a href="./m4-10-reliability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.10 Reliability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./m4-11-checkpoint.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4.11 Module checkpoint</span></a>
   </div>
 </li>
       </ul>
@@ -593,9 +599,9 @@ window.Quarto = {
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m4-01-confidence-intervals.html">Module 4 · Inferential statistics</a></li><li class="breadcrumb-item"><a href="./m4-08-chi-square.html">4.8 Chi-square tests</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./m4-01-confidence-intervals.html">Module 4 · Inferential statistics</a></li><li class="breadcrumb-item"><a href="./m4-09-chi-square.html">4.9 Chi-square tests</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">4.8 Categorical data: chi-square tests</h1>
+<h1 class="title">4.9 Categorical data: chi-square tests</h1>
 <p class="subtitle lead">Testing proportions and associations between categorical variables</p>
 </div>
 
@@ -680,16 +686,17 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoidGFibGUoYmFsYW5jZSRzZXgp
 </script>
 </div>
 </div>
-<p>The test compares <strong>observed</strong> counts (116 F, 47 M) with <strong>expected</strong> counts under H₀ (81.5 each):</p>
+<p>The test compares <strong>observed</strong> counts <em>O</em> (116 F, 47 M) with <strong>expected</strong> counts <em>E</em> under H₀. With <em>n</em> observations and hypothesised proportions <span class="math inline">\(p_j\)</span>, <span class="math inline">\(E_j = n \times p_j\)</span>, here 163 × 0.5 = 81.5 each:</p>
 <p><span class="math display">\[\chi^2 = \sum \frac{(\text{observed} - \text{expected})^2}{\text{expected}}\]</span></p>
-<p>χ² = 29.2, <em>p</em> &lt; 0.001: women are clearly over-represented in this sample. That’s worth knowing before generalising any result to men!</p>
+<p>with <em>df</em> = (number of categories) − 1. χ² = 29.2, <em>p</em> &lt; 0.001: women are clearly over-represented in this sample. That’s worth knowing before generalising any result to men!</p>
 </section>
 <section id="test-of-independence" class="level2">
 <h2 class="anchored" data-anchor-id="test-of-independence">Test of independence</h2>
 <p>Is falling <strong>associated</strong> with age group? H₀: the two variables are independent (the proportion of fallers is the same in both age groups).</p>
 <p>Under H₀, the expected count in each cell is</p>
 <p><span class="math display">\[E = \frac{\text{row total} \times \text{column total}}{\text{grand total}}\]</span></p>
-<p>and the χ² statistic sums the squared differences between observed and expected counts, as above.</p>
+<p>and the χ² statistic sums the squared differences between observed and expected counts over all cells, as above. For a table with <em>r</em> rows and <em>c</em> columns:</p>
+<p><span class="math display">\[\chi^2 = \sum_{\text{all cells}} \frac{(O - E)^2}{E}, \qquad df = (r - 1)(c - 1)\]</span></p>
 <div class="task">
 <p>Test whether falling (<code>faller</code>) is associated with <code>age_group</code>.</p>
 <ol type="1">
@@ -740,7 +747,9 @@ eyJhdHRyIjp7ImNoZWNrIjp0cnVlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJleGVyY2lzZSI6ImNz
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>For 2 × 2 tables, R applies <strong>Yates’ correction</strong> by default (it says so in the output), which makes the test slightly more conservative. With larger tables, no correction is applied.</p>
+<p>For 2 × 2 tables, R applies <strong>Yates’ correction</strong> by default (it says so in the output), which makes the test slightly more conservative by shrinking each |O − E| by 0.5:</p>
+<p><span class="math display">\[\chi^2_{Yates} = \sum \frac{(|O - E| - 0.5)^2}{E}\]</span></p>
+<p>With larger tables, no correction is applied.</p>
 </div>
 </div>
 </section>
@@ -799,13 +808,15 @@ unname(V)</code>
 </div>
 <div class="cell" data-exercise="cs_2" data-check="true">
 <script type="exercise-check-cs_2-contents">
-eyJhdHRyIjp7ImNoZWNrIjp0cnVlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJleGVyY2lzZSI6ImNzXzIifSwiY29kZSI6Ii5jaGVja192YXJzKFwiVlwiLCAuZW52aXJfcmVzdWx0LCAuY2hlY2tlcl9hcmdzJGVudmlyX3NvbHV0aW9uLFxuICBvayA9IHBhc3RlMChcIkNvcnJlY3QhIFYgPSBcIiwgcm91bmQoZ2V0KFwiVlwiLCBlbnZpciA9IC5jaGVja2VyX2FyZ3MkZW52aXJfc29sdXRpb24pLCAyKSwgXCI6IGEgbGFyZ2UgYXNzb2NpYXRpb24uIEJvZHkgbWFzcyBhbmQgc3BvcnQgYXJlIHN0cm9uZ2x5IGxpbmtlZCwgd2hpY2ggaXMgd2h5IHNwb3J0IGFuZCBib2R5IG1hc3Mgd2VyZSBjb25mb3VuZGVkIGluIGxlc3NvbiA0LjcuXCIpKSJ9
+eyJhdHRyIjp7ImNoZWNrIjp0cnVlLCJlZGl0Ijp0cnVlLCJldmFsIjp0cnVlLCJleGVyY2lzZSI6ImNzXzIifSwiY29kZSI6Ii5jaGVja192YXJzKFwiVlwiLCAuZW52aXJfcmVzdWx0LCAuY2hlY2tlcl9hcmdzJGVudmlyX3NvbHV0aW9uLFxuICBvayA9IHBhc3RlMChcIkNvcnJlY3QhIFYgPSBcIiwgcm91bmQoZ2V0KFwiVlwiLCBlbnZpciA9IC5jaGVja2VyX2FyZ3MkZW52aXJfc29sdXRpb24pLCAyKSwgXCI6IGEgbGFyZ2UgYXNzb2NpYXRpb24uIEJvZHkgbWFzcyBhbmQgc3BvcnQgYXJlIHN0cm9uZ2x5IGxpbmtlZCwgd2hpY2ggaXMgd2h5IHNwb3J0IGFuZCBib2R5IG1hc3Mgd2VyZSBjb25mb3VuZGVkIGluIGxlc3NvbiA0LjguXCIpKSJ9
 </script>
 </div>
 </section>
 <section id="small-expected-counts-fishers-exact-test" class="level2">
 <h2 class="anchored" data-anchor-id="small-expected-counts-fishers-exact-test">Small expected counts: Fisher’s exact test</h2>
-<p>The χ² test is an approximation that works well when <strong>all expected counts are at least 5</strong>. R warns you when they aren’t. Then use <strong>Fisher’s exact test</strong>, which calculates the <em>p</em>-value exactly:</p>
+<p>The χ² test is an approximation that works well when <strong>all expected counts are at least 5</strong>. R warns you when they aren’t. Then use <strong>Fisher’s exact test</strong>, which calculates the <em>p</em>-value exactly. For a 2 × 2 table with cells <em>a</em>, <em>b</em> (first row) and <em>c</em>, <em>d</em> (second row) and total <em>n</em>, the probability of exactly this table, given the row and column totals, follows the <strong>hypergeometric distribution</strong>:</p>
+<p><span class="math display">\[P = \frac{(a+b)!\,(c+d)!\,(a+c)!\,(b+d)!}{a!\; b!\; c!\; d!\; n!}\]</span></p>
+<p>The <em>p</em>-value is the sum of the probabilities of all tables with the same totals that are as extreme as, or more extreme than, the observed one.</p>
 <div class="cell">
 <div>
 <div id="webr-16" class="exercise-cell">
@@ -816,7 +827,9 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoidGFiMyA8LSB0YWJsZShiYWxh
 </script>
 </div>
 </div>
-<p>For 2 × 2 tables, <code>fisher.test()</code> also gives an <strong>odds ratio</strong> with its 95 % CI: the odds of being a faller in one group divided by the odds in the other.</p>
+<p>For 2 × 2 tables, <code>fisher.test()</code> also gives an <strong>odds ratio</strong> with its 95 % CI: the odds of being a faller in one group divided by the odds in the other:</p>
+<p><span class="math display">\[OR = \frac{a / b}{c / d} = \frac{a\,d}{b\,c}\]</span></p>
+<p>OR = 1 means no association. (<code>fisher.test()</code> reports a slightly different “conditional maximum-likelihood” estimate, which is usually close to this simple one.)</p>
 <div id="cs-q1" class="quiz">
 <p>Which situation calls for <strong>Fisher’s exact test</strong> instead of a χ² test?</p>
 <ul class="task-list">
@@ -941,12 +954,13 @@ WyJkYXRhL2JhbGFuY2UuY3N2IiwiZGF0YS9qdW1wX3NxdWFkLmNzdiJd
     { file: "m4-02-hypothesis-testing.html", title: "4.2 Hypothesis testing", module: "Module 4 · Inferential statistics" },
     { file: "m4-03-t-tests.html", title: "4.3 Comparing two groups", module: "Module 4 · Inferential statistics" },
     { file: "m4-04-anova.html", title: "4.4 ANOVA", module: "Module 4 · Inferential statistics" },
-    { file: "m4-05-correlation.html", title: "4.5 Correlation", module: "Module 4 · Inferential statistics" },
-    { file: "m4-06-simple-regression.html", title: "4.6 Simple linear regression", module: "Module 4 · Inferential statistics" },
-    { file: "m4-07-multiple-regression.html", title: "4.7 Multiple regression", module: "Module 4 · Inferential statistics" },
-    { file: "m4-08-chi-square.html", title: "4.8 Chi-square tests", module: "Module 4 · Inferential statistics" },
-    { file: "m4-09-reliability.html", title: "4.9 Reliability", module: "Module 4 · Inferential statistics" },
-    { file: "m4-10-checkpoint.html", title: "4.10 Module checkpoint", module: "Module 4 · Inferential statistics" }
+    { file: "m4-05-rm-anova.html", title: "4.5 Repeated-measures ANOVA", module: "Module 4 · Inferential statistics" },
+    { file: "m4-06-correlation.html", title: "4.6 Correlation", module: "Module 4 · Inferential statistics" },
+    { file: "m4-07-simple-regression.html", title: "4.7 Simple linear regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-08-multiple-regression.html", title: "4.8 Multiple regression", module: "Module 4 · Inferential statistics" },
+    { file: "m4-09-chi-square.html", title: "4.9 Chi-square tests", module: "Module 4 · Inferential statistics" },
+    { file: "m4-10-reliability.html", title: "4.10 Reliability", module: "Module 4 · Inferential statistics" },
+    { file: "m4-11-checkpoint.html", title: "4.11 Module checkpoint", module: "Module 4 · Inferential statistics" }
   ];
   const PREFIX = "r4ss:";
   // Built from pieces so Quarto does not try to parse this as a document table
@@ -1610,13 +1624,13 @@ window._ojs.runtime.interpretFromScriptTags();
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./m4-07-multiple-regression.html" class="pagination-link" aria-label="4.7 Multiple regression">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">4.7 Multiple regression</span>
+      <a href="./m4-08-multiple-regression.html" class="pagination-link" aria-label="4.8 Multiple regression">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">4.8 Multiple regression</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./m4-09-reliability.html" class="pagination-link" aria-label="4.9 Reliability">
-        <span class="nav-page-text">4.9 Reliability</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./m4-10-reliability.html" class="pagination-link" aria-label="4.10 Reliability">
+        <span class="nav-page-text">4.10 Reliability</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

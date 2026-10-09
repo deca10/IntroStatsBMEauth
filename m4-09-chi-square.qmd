@@ -1,5 +1,5 @@
 ---
-title: "4.8 Categorical data: chi-square tests"
+title: "4.9 Categorical data: chi-square tests"
 subtitle: "Testing proportions and associations between categorical variables"
 webr:
   packages: ['ggplot2']
@@ -53,11 +53,11 @@ table(balance$sex)
 chisq.test(table(balance$sex), p = c(0.5, 0.5))
 ```
 
-The test compares **observed** counts (116 F, 47 M) with **expected** counts under H₀ (81.5 each):
+The test compares **observed** counts *O* (116 F, 47 M) with **expected** counts *E* under H₀. With *n* observations and hypothesised proportions $p_j$, $E_j = n \times p_j$, here 163 × 0.5 = 81.5 each:
 
 $$\chi^2 = \sum \frac{(\text{observed} - \text{expected})^2}{\text{expected}}$$
 
-χ² = 29.2, *p* < 0.001: women are clearly over-represented in this sample. That's worth knowing before generalising any result to men!
+with *df* = (number of categories) − 1. χ² = 29.2, *p* < 0.001: women are clearly over-represented in this sample. That's worth knowing before generalising any result to men!
 
 ## Test of independence
 
@@ -67,7 +67,9 @@ Under H₀, the expected count in each cell is
 
 $$E = \frac{\text{row total} \times \text{column total}}{\text{grand total}}$$
 
-and the χ² statistic sums the squared differences between observed and expected counts, as above.
+and the χ² statistic sums the squared differences between observed and expected counts over all cells, as above. For a table with *r* rows and *c* columns:
+
+$$\chi^2 = \sum_{\text{all cells}} \frac{(O - E)^2}{E}, \qquad df = (r - 1)(c - 1)$$
 
 ::: {.task}
 Test whether falling (`faller`) is associated with `age_group`.
@@ -118,7 +120,11 @@ if (!exists("res", envir = e, inherits = FALSE) || !inherits(get("res", envir = 
 
 ::: {.callout-note}
 ## Yates' continuity correction
-For 2 × 2 tables, R applies **Yates' correction** by default (it says so in the output), which makes the test slightly more conservative. With larger tables, no correction is applied.
+For 2 × 2 tables, R applies **Yates' correction** by default (it says so in the output), which makes the test slightly more conservative by shrinking each |O − E| by 0.5:
+
+$$\chi^2_{Yates} = \sum \frac{(|O - E| - 0.5)^2}{E}$$
+
+With larger tables, no correction is applied.
 :::
 
 ## A significant association, and its size
@@ -177,12 +183,16 @@ unname(V)
 #| exercise: cs_2
 #| check: true
 .check_vars("V", .envir_result, .checker_args$envir_solution,
-  ok = paste0("Correct! V = ", round(get("V", envir = .checker_args$envir_solution), 2), ": a large association. Body mass and sport are strongly linked, which is why sport and body mass were confounded in lesson 4.7."))
+  ok = paste0("Correct! V = ", round(get("V", envir = .checker_args$envir_solution), 2), ": a large association. Body mass and sport are strongly linked, which is why sport and body mass were confounded in lesson 4.8."))
 ```
 
 ## Small expected counts: Fisher's exact test
 
-The χ² test is an approximation that works well when **all expected counts are at least 5**. R warns you when they aren't. Then use **Fisher's exact test**, which calculates the *p*-value exactly:
+The χ² test is an approximation that works well when **all expected counts are at least 5**. R warns you when they aren't. Then use **Fisher's exact test**, which calculates the *p*-value exactly. For a 2 × 2 table with cells *a*, *b* (first row) and *c*, *d* (second row) and total *n*, the probability of exactly this table, given the row and column totals, follows the **hypergeometric distribution**:
+
+$$P = \frac{(a+b)!\,(c+d)!\,(a+c)!\,(b+d)!}{a!\; b!\; c!\; d!\; n!}$$
+
+The *p*-value is the sum of the probabilities of all tables with the same totals that are as extreme as, or more extreme than, the observed one.
 
 ```{webr}
 tab3 <- table(balance$disability, balance$faller)
@@ -191,7 +201,11 @@ chisq.test(tab3)$expected   # one expected count is about 4.1: below 5
 fisher.test(tab3)
 ```
 
-For 2 × 2 tables, `fisher.test()` also gives an **odds ratio** with its 95 % CI: the odds of being a faller in one group divided by the odds in the other.
+For 2 × 2 tables, `fisher.test()` also gives an **odds ratio** with its 95 % CI: the odds of being a faller in one group divided by the odds in the other:
+
+$$OR = \frac{a / b}{c / d} = \frac{a\,d}{b\,c}$$
+
+OR = 1 means no association. (`fisher.test()` reports a slightly different "conditional maximum-likelihood" estimate, which is usually close to this simple one.)
 
 ::: {.quiz id="cs-q1"}
 Which situation calls for **Fisher's exact test** instead of a χ² test?

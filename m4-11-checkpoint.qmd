@@ -1,5 +1,5 @@
 ---
-title: "4.10 Module checkpoint"
+title: "4.11 Module checkpoint"
 subtitle: "Choose the right test, run it, and interpret it critically"
 webr:
   packages: ['ggplot2']
@@ -47,7 +47,7 @@ Does the injury rate (injured yes/no) differ between goalkeepers, defenders, mid
 - [x] Chi-square test of independence
 
 ::: {.explanation}
-Both variables are categorical, so you compare counts in a 4 × 2 table. See [lesson 4.8](m4-08-chi-square.qmd).
+Both variables are categorical, so you compare counts in a 4 × 2 table. See [lesson 4.9](m4-09-chi-square.qmd).
 :::
 :::
 
@@ -63,6 +63,18 @@ Does VO₂max differ between three groups of runners (sprinters, middle-distance
 :::
 :::
 
+::: {.quiz id="cp4-q3b"}
+Twelve cyclists ride at three cadences (60, 90 and 120 rpm) in random order, and oxygen uptake is measured in each. Which analysis?
+
+- [ ] One-way ANOVA
+- [x] One-way repeated-measures ANOVA (checking sphericity), followed by Bonferroni-corrected paired *t*-tests
+- [ ] Three independent *t*-tests
+
+::: {.explanation}
+The same cyclists are measured in all three conditions: a within-subjects design. See [lesson 4.5](m4-05-rm-anova.qmd).
+:::
+:::
+
 ::: {.quiz id="cp4-q4"}
 Is the relationship between sprint time and jump height still present after accounting for body mass and sex?
 
@@ -71,7 +83,7 @@ Is the relationship between sprint time and jump height still present after acco
 - [ ] Paired *t*-test
 
 ::: {.explanation}
-"After accounting for" = adjusting for other variables, which is what multiple regression does. See [lesson 4.7](m4-07-multiple-regression.qmd).
+"After accounting for" = adjusting for other variables, which is what multiple regression does. See [lesson 4.8](m4-08-multiple-regression.qmd).
 :::
 :::
 
@@ -83,7 +95,7 @@ How consistent is a new jump mat across two trials performed 5 minutes apart?
 - [ ] Pearson correlation between trial 1 and trial 2 only
 
 ::: {.explanation}
-Reliability needs absolute (TE, CV, limits of agreement) and relative (ICC) measures. A correlation alone ignores systematic bias. See [lesson 4.9](m4-09-reliability.qmd).
+Reliability needs absolute (TE, CV, limits of agreement) and relative (ICC) measures. A correlation alone ignores systematic bias. See [lesson 4.10](m4-10-reliability.qmd).
 :::
 :::
 
@@ -235,7 +247,7 @@ What's the best revision of the colleague's sentence?
 - [x] Remove it as a "finding": state that net impulse and jump height are mechanically equivalent, and analyse independent determinants (e.g. force–time strategy, depth, body mass) instead
 
 ::: {.explanation}
-Changing the statistic doesn't fix mathematical coupling. The analysis has to be redesigned around variables that are not definitions of the outcome. See [lesson 4.5](m4-05-correlation.qmd).
+Changing the statistic doesn't fix mathematical coupling. The analysis has to be redesigned around variables that are not definitions of the outcome. See [lesson 4.6](m4-06-correlation.qmd).
 :::
 :::
 

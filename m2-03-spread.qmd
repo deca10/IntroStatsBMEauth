@@ -43,7 +43,7 @@ mean(athlete_B)
 
 Both have a mean of exactly 40 cm, but they are clearly not the same: A is very **consistent**, B is all over the place. A measure of center alone hides this. A **measure of spread** (or *variability*, *dispersion*) describes how far the values are scattered around the center.
 
-The simplest is the **range**: maximum minus minimum.
+The simplest is the **range**: $\text{range} = x_{max} - x_{min}$.
 
 ```{webr}
 range(athlete_B)          # min and max
@@ -301,7 +301,7 @@ quantile(balance$minibest, probs = seq(0.1, 0.9, by = 0.1)) # deciles
 
 `seq(0.1, 0.9, by = 0.1)` creates the sequence 0.1, 0.2, …, 0.9.
 
-The distance between Q3 and Q1 is the **interquartile range (IQR)**: the range of the middle 50 % of the data. Like the median, it's **robust** to extreme values.
+The distance between Q3 and Q1 is the **interquartile range**, $IQR = Q_3 - Q_1$: the range of the middle 50 % of the data. Like the median, it's **robust** to extreme values.
 
 ```{webr}
 IQR(balance$minibest)
