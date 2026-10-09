@@ -5,6 +5,7 @@ project:
     - "*.qmd"
   resources:
     - data/*.csv
+    - .nojekyll
 
 website:
   title: "R for Sport & Exercise Science"
